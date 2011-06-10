@@ -1,0 +1,4 @@
+As it currently stands, this software calculates heliocentric postions for the five main planets and compares against test data provided by NASA. That data, and much more, can be found in the file VSOP87.CHK.
+
+Work on this software stopped with the routine run_geotest () in vsop.c. That was intended to complete the system by calculating geocentric coordinates. All the necessary rectangular coordinates are ready, just needing to be used.
+
