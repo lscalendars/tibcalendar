@@ -26,7 +26,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <stdio.h>
 #include <ctype.h>
 #include <math.h>
-#include <conio.h>
 #include "tcn.h"
 #include "tc.ext"
 #include "bcd.h"
