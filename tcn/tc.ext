@@ -1,0 +1,148 @@
+/*********************************************************************************
+License for TCG - Tibetan Calendar software for "grub rtsis"
+
+Copyright (c) 2009-2011 Edward Henning
+
+Permission is hereby granted, free of charge, to any person  obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in the
+Software without restriction, including without limitation the rights to use, 
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the 
+Software, and to permit persons to whom the Software is furnished to do so, subject 
+to the following conditions: 
+
+The above copyright notice and this permission notice shall be included in all copies
+or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A 
+PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT 
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION 
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE 
+OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+************************************************************************************/
+
+extern int d_bug;
+
+extern long int     zladag[2], tt, tm, ty, nyidor, tmth;
+extern long int     zlasho1, zlasho2;
+extern long int     ltt, ltm, lty;
+extern long int     nyidru[6], nyilon[6], nyibar[6], gzadru[6], tsedru[6],
+                                                                    tsebar[6];
+extern long int     nyiwor[6], nyidag[6], rilcha[2], gzadag[6];
+extern long int     nyibarl, tsebarl;
+extern long int     prv_gzadag[6], prv_nyidag[6], prv_nyibar[6];                
+extern long int     prv2_gzadag[6], prv2_nyidag[6], prv2_nyibar[6];                
+extern long int     nxt_gzadag[6], nxt_nyidag[6], nxt_nyibar[6]; 
+extern long int     prv_sbyorlong[6], sbyorlong[6];
+extern long int     spz_frac_b, spz_frac_c;
+extern long int     nyi_cnt; // Count of days for solar longitude calculation;
+extern long int     rahutsa[6], rahudong[6], rahudong30[6], rahujug[6];
+extern long int     rahupart; // 230 fraction for Rahu cycle
+extern double rahurealf;
+extern long int     zerlst[6];
+extern long int     cur_mth;   /*** Current month number, full form ***/
+extern long int     cur_tsh;   /*** Current Tithi ***/
+extern long int     ch_lh[6];
+extern long int     lst_dy, cur_dy;
+extern int  zeromthfg;  // Flag for zero fractional part in month;
+extern int scndzero;  // New flag for zero fractional part of month.
+extern long int     spizag, spizag15, spizag30;
+extern long int   juldat;  /** Julian day number **/
+extern long int   wd, wm, wy;  /** Western dates **/
+extern long int   doweek;      // Day of the week
+extern long int   epch_yr, eyr_a, ril_a, ril_b;
+extern int  epch;
+extern int  zlapure;
+extern int  tsurlug;
+extern int  gza_short_flg;
+extern long int  gza_f;
+extern long int  sun_f;
+
+extern long int    lista[6], listb[6], listc[6];
+extern long int    monlong[6];
+extern long int    prv_monlong[6];
+extern long int    list1[6], list2[6], list3[6];
+extern long int    adj_mth;
+
+// Planet figures
+
+extern long int meradd;  // Figures to be added for planets for the
+extern long int venadd;  // nyin zhag dal ba. These are days of cycle.
+extern long int maradd;
+extern long int jupadd;
+extern long int satadd;
+extern long int dragkadd;  // This is added for drag po'iu rkang 'dzin.
+extern long int dragkres;  // Result for day in question -- NEW 3/12/2009
+extern long int mar_gz, jup_gz, sat_gz, mer_gz, ven_gz; // Particular days.
+
+extern long int merdaldag[6];
+extern long int mermurdag[6];
+extern long int vendaldag[6];
+extern long int venmurdag[6];
+extern long int mardaldag[6];
+extern long int marmurdag[6];
+extern long int jupdaldag[6];
+extern long int jupmurdag[6];
+extern long int satdaldag[6];
+extern long int satmurdag[6];
+
+extern char filenam[14];
+extern FILE *fptgt;
+extern char outbuf[120];
+extern int print_on, printinprog;
+extern char printstring[120];
+
+extern long int zhallo[7];
+extern long int byedlo[6];
+extern long int byedskar[4];
+extern long int byedkyon[5];
+
+extern long int cycadd01;
+
+// Floating point data - Tibetan equivalents:
+
+extern double suntl;
+extern double montl;
+extern double mertl;
+extern double ventl;
+extern double martl;
+extern double juptl;
+extern double sattl;
+extern double rahtl;
+
+// String variables:
+
+extern char *e_str[];
+
+extern char *dayoweek[7];
+extern char *lunmanP[27];
+extern char *lunmanT[27];
+extern char *lunmont[12]; 
+extern char *lunmanS[27];
+extern int lunmanelem[27];
+extern char *fourelem[4];
+extern int dowkelem[7];
+extern char *yogaP[27];
+extern char *yogaT[27];
+extern char *yogaS[27];
+extern char *byedP[11];
+extern char *byedT[11];
+extern char *byedS[11];
+extern char *cycanim[12];
+extern char *cycanimt[12];
+extern char *cycelem[10];
+extern char *cycelem1[5];
+extern char *cycgendT[2];
+extern char *cycgendE[2];
+extern char *cycpar[8];
+extern char *cycparT[8];
+extern char *cycparE[8];
+extern char *cycstems[10];
+extern char *cycbranch[12];
+extern char *Clunman[28];
+extern char *wmonths[12];
+extern char *byungphrod[11];
+extern char *rgyalsogs[5];
+extern char *tseyang[5];
+extern char *phrochen[28];
+extern char *gzaphrod[5];
