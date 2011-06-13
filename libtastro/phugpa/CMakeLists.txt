@@ -6,6 +6,7 @@ add_executable(
 	bcd.ext
 	bcd.h
 	t3.c
+	ui.h
 	tc.def
 	tc.ext
 	tcn.c

@@ -27,6 +27,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <ctype.h>
 #include <math.h>
 #include "bcd.h"
+#include "ui.h"
 
 signed char bcda[BCDMAX];
 signed char bcdb[BCDMAX];

@@ -27,6 +27,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <ctype.h>
 #include "tcn.h"
 #include "tc.def"
+#include "ui.h"
 
 FILE *repfil;
 struct tib_ddat td;
@@ -119,7 +120,7 @@ void cal_cyc ( void ) // Main routine
 
         printf ( "\nRestart, Next, Exit\n\n" );
         
-        chr = getchar();
+        chr = getch();
         if ( chr == 'R' || chr == 'r' )
           goto restart;
         else if ( chr == 'N' || chr == 'n' )
@@ -142,7 +143,7 @@ void main (void)
     if ( fptgt == NULL )
       {
         printf ( "Error opening target file!\n" );
-        getchar();
+        getch();
       }                
     while ( finish == 0 )
       {
@@ -160,7 +161,7 @@ void main (void)
 
         do
           {
-            chr = getchar();
+            chr = getch();
             switch ( chr )
               {
                 case '1':       
@@ -186,7 +187,7 @@ void main (void)
                             num_prev_omit, num_next_omit );
                   printf ( "%s\n", outbuf );
                   fprintf ( fptgt, "%s\n", outbuf );  
-                  getchar();
+                  getch();
                   xit = 1;
                   break;
                 case '9':      // FINISH

@@ -28,6 +28,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <string.h>
 #include <stdlib.h>
 #include "tcn.h"
+#include "ui.h"
 #include "tc.ext"
 #include "bcd.h"
 #include "bcd.ext"
@@ -132,7 +133,7 @@ void set_epoch ( void )
 // jd is Julian day number, tdat is the structure for returning the data  
 void get_tpdata ( long jd, struct tib_ddat * tdat )  
   {
-    long x;
+    long x, num_sd, num_ld, num_mth;
     long ld, lm, last_tm, last_ty, last_nm_jd, last_tt_jd, last_zladag0, last_zladag1;
     long last_adj_mth, Cmonth, tib_y;
     long tt_test;
@@ -143,14 +144,23 @@ void get_tpdata ( long jd, struct tib_ddat * tdat )
     jul2date ( jd ); // this places values in wd, wm & wy globals
     sprintf ( outbuf, "\nTarget: %ld - %ld/%ld/%ld", jd, wd, wm, wy );
 //  printf ( "\n%s\n", outbuf );
-    fprintf ( fptgt, "%s\n", outbuf );    
+//    fprintf ( fptgt, "%s\n", outbuf );    
     tdat->w_d = (int) wd;
     tdat->w_m = (int) wm;
     tdat->w_y = (int) wy;      
 // Step forwards until we have found the correct month. Start by setting the Tibetan month
 // equal to the western one minus three, as an approximation.
 
-    done = 0;
+// Or, this: 11,312 lunar days equals 11,135 solar days.
+
+    num_sd = jd - spz_j;
+    l2bcd ( bcdx0, num_sd );
+    mulbcdl ( bcdx0, bcdx0, 11312L );
+    divbcdl ( bcdx1, bcdx0, 11135L );
+    num_ld = bcd2l ( bcdx1 );
+    num_mth = num_ld / 30L; - 1L; 
+// This is either the month we want (rarely) or the one before.
+
     tm = wm - 3L; // tm & ty are globals. Legacy.
     ty = wy;
     tt = 0L;  // Global, used by other routines, so must be set.
@@ -162,6 +172,36 @@ void get_tpdata ( long jd, struct tib_ddat * tdat )
     last_ty = ty;
     last_tm = tm;
     zeromthfg = 0;
+    done = 0;
+    do 
+      {    
+        if ( !zeromthfg )   // We need to use the same data, twice.
+          zla_dag (ty, tm);          
+        adj_zla ();
+        if ( zladag[0] == num_mth ) // to here
+          done = 1;
+        else
+          {
+            last_ty = ty;
+            last_tm = tm;
+            last_adj_mth = adj_mth;
+            last_zladag0 = zladag[0];
+            last_zladag1 = zladag[1];
+            last_nm_jd = juldat;
+            if ( !zeromthfg )  
+              ++tm;
+            if ( tm > 12L )
+              {
+                tm = tm - 12L;
+                ++ty;
+              }
+          } 
+      } while (!done);
+
+//  printf ( "Determined year: %ld, month: %ld (%ld), count: %ld\n", ty, tm, adj_mth, zladag[0] );
+
+    done = 0;
+    zeromthfg = 0;
     do 
       {    
         if ( !zeromthfg )   // We need to use the same data, twice.
@@ -171,7 +211,7 @@ void get_tpdata ( long jd, struct tib_ddat * tdat )
         sprintf ( outbuf, "Checking year: %ld, month: %ld (%ld), zla_dag: %ld", 
                           ty, tm, adj_mth, zladag[0] );
 //      printf ( "%s\n", outbuf );
-        fprintf ( fptgt, "%s\n", outbuf );    
+//        fprintf ( fptgt, "%s\n", outbuf );    
         
         cur_mth = zladag[0];
         gza_dru (cur_mth);  
@@ -203,7 +243,7 @@ void get_tpdata ( long jd, struct tib_ddat * tdat )
                 tm = tm - 12L;
                 ++ty;
               }
-          } // Finish. NOT YET COPING WITH INTERCALATION INDEX PROPERLY
+          } 
       } while (!done);
 // We actually need the month before:
     ty = last_ty;
@@ -217,7 +257,7 @@ void get_tpdata ( long jd, struct tib_ddat * tdat )
     zladag[1] = last_zladag1;    
    
     sprintf ( outbuf, "Final - year: %ld, month: %ld, zla_dag: %ld", tib_y, adj_mth, zladag[0] );
-//  printf ( "%s\n", outbuf );
+    printf ( "%s\n", outbuf );
     fprintf ( fptgt, "%s\n", outbuf );    
         
     tt_test = jd - last_nm_jd - 2L;
@@ -243,7 +283,7 @@ void get_tpdata ( long jd, struct tib_ddat * tdat )
       {
         sprintf ( outbuf, "Checking lunar day: %ld", tt );
 //      printf ( "%s\n", outbuf );
-        fprintf ( fptgt, "%s\n", outbuf );    
+//        fprintf ( fptgt, "%s\n", outbuf );    
         tse_dru ( tt );  
         nyi_lon ( tt );
         add_gen (tsebar, gzadru, tsedru, 7L, gza_f ); // KTC 23
@@ -277,7 +317,7 @@ void get_tpdata ( long jd, struct tib_ddat * tdat )
             if ( tt > 30L ) // Big problem!!!
               {
                 printf ( "\nGone beyond end of month!\n\n" );
-                getchar();
+                getch();
                 exit (EXIT_FAILURE);
               }   
             for ( i = 0; i < 6; ++i ) prv_gzadag[i] = gzadag[i];
@@ -317,7 +357,7 @@ void get_tpdata ( long jd, struct tib_ddat * tdat )
         if ( hld_gzadag[0] == gzadag[0] ) // This is now error code
           {
             printf ( "Stopped on lunar day: %ld\n", tt );
-            getchar();
+            getch();
           }
         for ( i = 0; i < 6; ++i ) prv_gzadag[i] = gzadag[i];
         for ( i = 0; i < 6; ++i ) prv_nyidag[i] = nyidag[i];        
@@ -383,7 +423,7 @@ void get_tpdata ( long jd, struct tib_ddat * tdat )
         fprintf ( fptgt, "%s\n", outbuf );  
         tdat->next_chad = (int)tt+1;
         ++num_next_omit;
-//      getchar();
+//      getch ();
       }
       
       if ( prv_omit_chk ) // We have data to check for previous omitted
@@ -411,7 +451,7 @@ void get_tpdata ( long jd, struct tib_ddat * tdat )
 //        sprintf ( outbuf, "Omitted found: %ld, %ld, %ld", tt+1L, tm, ty );
 //        printf ( "%s\n", outbuf );
 //        fprintf ( fptgt, "%s\n", outbuf );            
-//        getchar();
+//        getch ();
 //      }      
 
     if ( juldat - prv_juldat == 2L ) 
@@ -429,7 +469,7 @@ void get_tpdata ( long jd, struct tib_ddat * tdat )
           }
 //      printf ( "%s\n", outbuf );
         fprintf ( fptgt, "%s\n", outbuf );            
-//      getchar();
+//      getch ();
       }       
 
     sprintf ( outbuf, "Previous: %ld: %ld, %ld;%ld,%ld", tt-1L, prv_juldat, prv_gzadag[0], 
@@ -804,7 +844,8 @@ void jul2date ( long int jd )
   if ( doweek > 7L )
     {
       printf ( "ERROR IN DAY OF WEEK ROUTINE:\n" );
-      getchar();
+//      getch ();
+      getch();
     }
   if ( jd >= 2299161L )  // Gregorian calendar:
     { // This has been tested between March 1, 1600 and Jan 31, 2100
