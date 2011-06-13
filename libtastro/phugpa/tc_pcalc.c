@@ -277,7 +277,7 @@ void get_tpdata ( long jd, struct tib_ddat * tdat )
             if ( tt > 30L ) // Big problem!!!
               {
                 printf ( "\nGone beyond end of month!\n\n" );
-                getch ();
+                getchar();
                 exit (EXIT_FAILURE);
               }   
             for ( i = 0; i < 6; ++i ) prv_gzadag[i] = gzadag[i];
@@ -317,7 +317,7 @@ void get_tpdata ( long jd, struct tib_ddat * tdat )
         if ( hld_gzadag[0] == gzadag[0] ) // This is now error code
           {
             printf ( "Stopped on lunar day: %ld\n", tt );
-            getch ();
+            getchar();
           }
         for ( i = 0; i < 6; ++i ) prv_gzadag[i] = gzadag[i];
         for ( i = 0; i < 6; ++i ) prv_nyidag[i] = nyidag[i];        
@@ -383,7 +383,7 @@ void get_tpdata ( long jd, struct tib_ddat * tdat )
         fprintf ( fptgt, "%s\n", outbuf );  
         tdat->next_chad = (int)tt+1;
         ++num_next_omit;
-//      getch ();
+//      getchar();
       }
       
       if ( prv_omit_chk ) // We have data to check for previous omitted
@@ -411,7 +411,7 @@ void get_tpdata ( long jd, struct tib_ddat * tdat )
 //        sprintf ( outbuf, "Omitted found: %ld, %ld, %ld", tt+1L, tm, ty );
 //        printf ( "%s\n", outbuf );
 //        fprintf ( fptgt, "%s\n", outbuf );            
-//        getch ();
+//        getchar();
 //      }      
 
     if ( juldat - prv_juldat == 2L ) 
@@ -429,7 +429,7 @@ void get_tpdata ( long jd, struct tib_ddat * tdat )
           }
 //      printf ( "%s\n", outbuf );
         fprintf ( fptgt, "%s\n", outbuf );            
-//      getch ();
+//      getchar();
       }       
 
     sprintf ( outbuf, "Previous: %ld: %ld, %ld;%ld,%ld", tt-1L, prv_juldat, prv_gzadag[0], 
@@ -804,7 +804,7 @@ void jul2date ( long int jd )
   if ( doweek > 7L )
     {
       printf ( "ERROR IN DAY OF WEEK ROUTINE:\n" );
-      getch ();
+      getchar();
     }
   if ( jd >= 2299161L )  // Gregorian calendar:
     { // This has been tested between March 1, 1600 and Jan 31, 2100

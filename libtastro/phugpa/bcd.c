@@ -81,7 +81,7 @@ void l2bcd ( signed char * b, long int n )
         if ( i < 1 )
           {
             printf ( "OVERFLOW IN L2BCD\n" );
-            getch ();
+            getchar();
           }
       } while ( x );
   } // END - l2bcd ()
@@ -384,7 +384,7 @@ void divbcdl ( signed char * a1, signed char * b1, long int n ) // a1 = b1 / n
     if ( strtdig > BCDMAX - 1 )
       {
         printf ( "STRTDIG OVERFLOW\n");
-        getch ();
+        getchar();
       }
 
     do

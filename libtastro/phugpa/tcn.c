@@ -119,7 +119,7 @@ void cal_cyc ( void ) // Main routine
 
         printf ( "\nRestart, Next, Exit\n\n" );
         
-        chr = getch ();
+        chr = getchar();
         if ( chr == 'R' || chr == 'r' )
           goto restart;
         else if ( chr == 'N' || chr == 'n' )
@@ -142,7 +142,7 @@ void main (void)
     if ( fptgt == NULL )
       {
         printf ( "Error opening target file!\n" );
-        getch ();
+        getchar();
       }                
     while ( finish == 0 )
       {
@@ -160,7 +160,7 @@ void main (void)
 
         do
           {
-            chr = getch ();
+            chr = getchar();
             switch ( chr )
               {
                 case '1':       
@@ -186,7 +186,7 @@ void main (void)
                             num_prev_omit, num_next_omit );
                   printf ( "%s\n", outbuf );
                   fprintf ( fptgt, "%s\n", outbuf );  
-                  getch ();
+                  getchar();
                   xit = 1;
                   break;
                 case '9':      // FINISH
