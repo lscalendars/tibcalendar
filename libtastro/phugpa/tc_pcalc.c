@@ -26,6 +26,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
+#include <stdlib.h>
 #include "tcn.h"
 #include "tc.ext"
 #include "bcd.h"
@@ -277,7 +278,7 @@ void get_tpdata ( long jd, struct tib_ddat * tdat )
               {
                 printf ( "\nGone beyond end of month!\n\n" );
                 getch ();
-                exit ();
+                exit (EXIT_FAILURE);
               }   
             for ( i = 0; i < 6; ++i ) prv_gzadag[i] = gzadag[i];
             for ( i = 0; i < 6; ++i ) prv_nyidag[i] = nyidag[i];        
