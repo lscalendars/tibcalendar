@@ -1,0 +1,3 @@
+#define tibastro_VERSION_MAJOR @tibastro_VERSION_MAJOR@
+#define tibastro_VERSION_MINOR @tibastro_VERSION_MINOR@
+    
