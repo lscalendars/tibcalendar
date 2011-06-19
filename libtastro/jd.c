@@ -23,7 +23,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "jd.h"
 
-
+// takes calendar day, month, year
+// calendar means julian before 4/10/1582 and gregorian after
+// year is in astronomical year: year 0 exists
+// returns julian day
 long int
 wd_to_jd (int day, int month, int year)
 {
@@ -50,9 +53,10 @@ wd_to_jd (int day, int month, int year)
 
 }
 
-// test=0 for using long long int and 1 for bcd
+// takes julian day, and sets day, month, year and day of week accordingly
+// as above, it is in calendar date, with astronomical year
 void
-jd_to_wd (long int jd, western_date * westdate)
+jd_to_wd (long int jd, int *day, int *month, int *year, int *dow)
 {
   long int l, n, j, k, i, doweek, wy, wm, wd;
 
@@ -103,9 +107,8 @@ jd_to_wd (long int jd, western_date * westdate)
       wy = 4 * k + n + i - 4716;
     }
 
-  westdate->year = (int) wy;
-  westdate->month = (int) wm;
-  westdate->day = (int) wd;
-  westdate->dow = (int) doweek;
-
+  *year = (int) wy;
+  *month = (int) wm;
+  *day = (int) wd;
+  *dow = (int) doweek;
 }
