@@ -40,19 +40,6 @@ int check_jd_to_wd_conv ()
   return 1;
 }
 
-/* routine checking julian day to gregorian day conversion
- * by testing individual dates. */
-
-int check_jd_to_wd_individual ()
-{
-  if (check_jd_to_wd_individual_one(2299160L, 1582, 10, 4, THURSDAY) == 0) return 0; // end of julian calendar
-  if (check_jd_to_wd_individual_one(2299161L, 1582, 10, 15, FRIDAY) == 0) return 0; // beginning of gregorian calendar
-  if (check_jd_to_wd_individual_one(2455729L, 2011, 06, 16, THURSDAY) == 0) return 0; // 16 june 2011
-  if (check_jd_to_wd_individual_one(0, -4712, 1, 1, MONDAY) == 0) return 0; // JD 0
-  if (check_jd_to_wd_individual_one(588466L, -3101, 02, 18, FRIDAY) == 0) return 0; // kali yuga beginning
-  return 1;
-}
-
 /* checking one individual date by converting a julian day to western day
  * and then the other way. Also checking day of week. */
 
@@ -69,8 +56,21 @@ int check_jd_to_wd_individual_one (long int jd, int wy, int wm, int wd, int wdow
   jd2 = wd_to_jd(wd, wm, wy);
   if (jd != jd2)
         {
-          printf ( "error: %d/%d/%d gets converted to jd %ld, but should be %d.\n", wd, wm, wy, jd2, jd);
+          printf ( "error: %d/%d/%d gets converted to jd %ld, but should be %ld.\n", wd, wm, wy, jd2, jd);
           return 0;
         }
+  return 1;
+}
+
+/* routine checking julian day to gregorian day conversion
+ * by testing individual dates. */
+
+int check_jd_to_wd_individual ()
+{
+  if (check_jd_to_wd_individual_one(2299160L, 1582, 10, 4, THURSDAY) == 0) return 0; // end of julian calendar
+  if (check_jd_to_wd_individual_one(2299161L, 1582, 10, 15, FRIDAY) == 0) return 0; // beginning of gregorian calendar
+  if (check_jd_to_wd_individual_one(2455729L, 2011, 06, 16, THURSDAY) == 0) return 0; // 16 june 2011
+  if (check_jd_to_wd_individual_one(0, -4712, 1, 1, MONDAY) == 0) return 0; // JD 0
+  if (check_jd_to_wd_individual_one(588466L, -3101, 02, 18, FRIDAY) == 0) return 0; // kali yuga beginning
   return 1;
 }

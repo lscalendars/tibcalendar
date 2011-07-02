@@ -11,7 +11,7 @@ if(MSVC)
   endif()
 elseif(CMAKE_COMPILER_IS_GNUCC)
   # Update if necessary
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -std=c99 -Wno-long-long -pedantic")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ggdb3 -O0 -Wall -Wextra -std=c99 -Wno-long-long -pedantic")
 endif()
 
 
