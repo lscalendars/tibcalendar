@@ -2,15 +2,15 @@
 #include<stdio.h>
 #include<jd.h> // for MONDAY, etc.
 
-void ui_print_lst(long int l[5])
+void ui_print_lst(long int l[5], unsigned char length)
  {
    unsigned char i;
    printf("%ld;", l[0]);
-   for (i=1;i<4;i++)
+   for (i=1;i<length-1;i++)
      {
        printf("%ld,", l[i]);
      }
-   printf("%ld", l[4]);
+   printf("%ld", l[length-1]);
  }
 
 void init_ui()
@@ -56,8 +56,19 @@ void print_tib_month(tib_month *tm) {
   printf("month: %ld (%ld) - %ld;%ld\n", tm->month, tm->adjusted_month, tm->true_month[0], tm->true_month[1]); 
   printf("starting day: %ld\n", tm->start_gd);
   printf("anomaly: %ld;%ld\n", tm->rilcha[0], tm->rilcha[1]);
-  printf("mean solar longitude: "); ui_print_lst(tm->nyidru); printf("\n");
-  printf("mean weekday: "); ui_print_lst(tm->gzadru); printf("\n");
+  printf("mean solar longitude: "); ui_print_lst(tm->nyidru,5); printf("\n");
+  printf("mean weekday: "); ui_print_lst(tm->gzadru,5); printf("\n");
+  }
+
+
+void print_tib_planets(tib_day *td) {
+  
+  printf("mars longitude: "); ui_print_lst(td->marmurdag,5); printf("\n");
+  printf("jupiter longitude: "); ui_print_lst(td->jupmurdag,5); printf("\n");
+  printf("saturn longitude: "); ui_print_lst(td->satmurdag,5); printf("\n");
+  printf("mercury longitude: "); ui_print_lst(td->mermurdag,5); printf("\n");
+  printf("venus longitude: "); ui_print_lst(td->venmurdag,5); printf("\n");
+  printf("rahu longitude: "); ui_print_lst(td->rahudong,5); printf("\n");
   }
 
 void print_tib_day(tib_day *td)
@@ -90,7 +101,9 @@ void print_tib_day(tib_day *td)
         printf("\n");
         break;
     }
-  printf("mean solar longitude: "); ui_print_lst(td->nyibar); printf("\n");
-  printf("true solar longitude: "); ui_print_lst(td->nyidag); printf("\n");
-  printf("true weekday: "); ui_print_lst(td->gzadag); printf(" ("); print_weekday(td->gzadag[0]); printf(")\n");
+  printf("mean solar longitude: "); ui_print_lst(td->nyibar,5); printf("\n");
+  printf("true solar longitude: "); ui_print_lst(td->nyidag,5); printf("\n");
+  printf("true weekday: "); ui_print_lst(td->gzadag,5); printf(" ("); print_weekday(td->gzadag[0]); printf(")\n");
+  printf("    Planet data:\n");
+  print_tib_planets(td);
 }

@@ -26,23 +26,9 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <stdlib.h>
 #include <string.h>		// for memset
 #include "tbday.h"
+#include "tbplanets.h"
 #include "utils.h"
 #include "jd.h"			// for jd_to_wd
-#define __DEBUG 1
-#if __DEBUG == 1
-#include<stdio.h>		// remove after debug"
-void
-dbg_print_lst (long int l[6])
-{
-  unsigned char i;
-  printf ("%ld;", l[0]);
-  for (i = 1; i < 5; i++)
-    {
-      printf ("%ld,", l[i]);
-    }
-  printf ("%ld", l[5]);
-}
-#endif
 
 tib_day *
 new_tib_day()
@@ -125,7 +111,8 @@ phugpa_adj_zla (long int tm, long int zd[2], const epoch epch,
     {
       // for month taking the name of the following month, the convention is to
       // return -tm
-      adj_mth = -tm;
+      //adj_mth = -tm;
+      return -tm;
     }
   else
     {
@@ -155,12 +142,12 @@ phugpa_adj_zla (long int tm, long int zd[2], const epoch epch,
 	    {
 	      adj_mth = tm;
 	    }
+	}
+    }
 	  if (adj_mth == 0)
 	    {
 	      adj_mth = 12;
 	    }
-	}
-    }
   return adj_mth;
 }
 
@@ -360,15 +347,21 @@ find_day (tib_day *td, long int jd, epoch epch)
  * argument to add: epoch is not used yet but will contain the data of the epoch
  */
 void
-get_tpdata (long int jd, tib_day *td)
+get_day_data (long int jd, tib_day *td)
 {
   epoch epch = phugpa_epch;
 
-  // TODO: test if jd<epch.jd
+  if (jd <= epch.spz_j)
+    {
+      printf("error: day asked is before the epoch...\n");
+      return;
+    }
   // first we find the month and year
   find_month_and_year (jd, epch, td->month);
   // Then we find the day inside the month
   find_day (td, jd, epch);
+  // now we have our day... let's fill the planetary data
+  get_planets_data(td, epch);
 }
 
 /* Function to calculate month mean Sun, "nyi ma'i dhru ba" at new moon
@@ -457,7 +450,7 @@ nyi_dagp_and_gza_dagp (long int nyibar[6], long int tsebar[6],
   lista[3] = nyiwor[3] * nyibye[(int) tquo - 1];
   lista[4] = nyiwor[4] * nyibye[(int) tquo - 1];
 
-  div_lst_6 (lista, 135, 67, 1);
+  div_lst_6 (lista, lista, 135, 67, 1);
   add_lst (lista, zerolst, lista, 27, 67);
 
   // listc is the intermediate correction, KTC p.34
@@ -472,7 +465,7 @@ nyi_dagp_and_gza_dagp (long int nyibar[6], long int tsebar[6],
   else
     add_lst (nyidag, nyibar, listc, 27, 67);
 
-  // then the true weekday (we keep listc, it will be useful
+  // then the true weekday (we keep listc, it will be useful)
 
   clear_lst (lista);
   clear_lst (listb);

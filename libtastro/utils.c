@@ -50,32 +50,32 @@ void add_lst_6 ( long int a1[6], long int a2[6], long int a3[6], long int n0,
  * a = a % x
  * n4 and n5 can vary
  */
-void div_lst_6 ( long int a[6], long int x, long int n4, long int n5 )
+void div_lst_6 ( long int res[6], long int lst[6], long int x, long int n4, long int n5 )
   {
     long long int r;
-    long long int b;
+    long long int b; //TODO: remove, it's useless...
     
-    r = ((long long) a[0] % (long long) x) * 60;
-    a[0] = a[0] / x;
+    r = ((long long) lst[0] % (long long) x) * 60;
+    res[0] = lst[0] / x;
     
-    b = ((long long) a[1]) + r;
-    a[1] = (long) (b / x);
+    b = ((long long) lst[1]) + r;
+    res[1] = (long) (b / x);
     r = (b % (long long) x) * 60;
     
-    b = ((long long) a[2]) + r;
-    a[2] = (long) (b / x);
+    b = ((long long) lst[2]) + r;
+    res[2] = (long) (b / x);
     r = (b % (long long) x) * 6;
     
-    b = ((long long) a[3]) + r;
-    a[3] = (long) (b / x);
+    b = ((long long) lst[3]) + r;
+    res[3] = (long) (b / x);
     r = (b % (long long) x) * n4;
     
-    b = (((long long) a[4]) + r);
-    a[4] = (long) (b / x);
+    b = (((long long) lst[4]) + r);
+    res[4] = (long) (b / x);
     r = (b % (long long) x) * n5;
     
-    b = ((long long) a[5]) + r;
-    a[5] = (long) (b / x);
+    b = ((long long) lst[5]) + r;
+    res[5] = (long) (b / x);
 }
 
 /* 
@@ -120,11 +120,37 @@ void mul_lst ( long int res[5], long int lst[5], long int x, long int n0,
   }
 
 /* 
+ * function multiplying a list of 6 by an integer
+ *  - res is the resulting list
+ *  - lst is the list we want to multiply
+ *  - x is the integer
+ *  - n4 and n5 can vary
+ */
+void mul_lst_6 ( long int res[6], long int lst[6], long int x, long int n4,
+               long int n5 )
+  {
+    long long int r;
+    // we consider that it's called only with positive values of x.
+        r = (long long int) lst[5] * (long long int) x;
+        res[5] = (long) (r % (long long int)n5);
+        r = (long long int) lst[4] * (long long int) x + (r / (long long int) n5);
+        res[4] = (long) (r % (long long int)n4);
+        r = (long long int) lst[3] * (long long int) x + (r / (long long int) n4);
+        res[3] = (long) (r % 6);
+        r = (long long int) lst[2] * (long long int) x + (r / 6);
+        res[2] = (long) (r % 60);
+        r = (long long int) lst[1] * (long long int) x + (r / 60);
+        res[1] = (long) (r % 60);
+        r = (long long int) lst[0] * (long long int) x + (r / 60);
+        res[0] = (long) (r);
+  }
+
+
+/* 
  * function adding two lists of 5 integers:
  *  a1 = a2 + a3
  *  n0 and n4 can vary
  */
-
 void add_lst ( long int a1[5], long int a2[5], long int a3[5], long int n0,
                long int n4)
   {
@@ -147,11 +173,10 @@ void add_lst ( long int a1[5], long int a2[5], long int a3[5], long int n0,
   }
 
 /* 
- * function adding two lists of 5 integers:
+ * function substracting two lists of 5 integers:
  *  a1 = a2 - a3
  *  n0 and n4 can vary
  */
-
 void sub_lst ( long int a1[5], long int a2[5], long int a3[5], long int n0,
                long int n4 )
   {
@@ -188,6 +213,55 @@ void sub_lst ( long int a1[5], long int a2[5], long int a3[5], long int n0,
       a1[0] = a1[0] + n0;
   }
   
+/* 
+ * function adding two lists of 6 integers:
+ *  a1 = a2 - a3
+ *  n0, n4 and n5 can vary
+ */
+void sub_lst_6 ( long int a1[6], long int a2[6], long int a3[6], long int n0,
+               long int n4, long int n5 )
+  {
+  long int tmp[6];
+  int  i;
+    copy_lst_6(tmp, a2);
+
+    a1[5] = tmp[5] - a3[5];
+    if ( a1[5] < 0L )
+      {
+        a1[5] = a1[5] + n5;
+        tmp[4] = tmp[4] - 1;
+      }
+
+    a1[4] = tmp[4] - a3[4];
+    if ( a1[4] < 0L )
+      {
+        a1[4] = a1[4] + n4;
+        tmp[3] = tmp[3] - 1;
+      }
+
+    a1[3] = tmp[3] - a3[3];
+    if ( a1[3] < 0L )
+      {
+        a1[3] = a1[3] + 6;
+        tmp[2] = tmp[2] - 1;
+      }
+    a1[2] = tmp[2] - a3[2];
+    if ( a1[2] < 0L )
+      {
+        a1[2] = a1[2] + 60;
+        tmp[1] = tmp[1] - 1;
+      }
+    a1[1] = tmp[1] - a3[1];
+    if ( a1[1] < 0L )
+      {
+        a1[1] = a1[1] + 60;
+        tmp[0] = tmp[0] - 1;
+      }
+    a1[0] = tmp[0] - a3[0];
+    if ( a1[0] < 0L )
+      a1[0] = a1[0] + n0;
+  }
+  
 // a simple function to clear a list of 5 elements
 inline void clear_lst ( long int l[5] )
   {
@@ -196,9 +270,24 @@ inline void clear_lst ( long int l[5] )
       l[n] = 0;
   }
   
+// a simple function to clear a list of 6 elements
+inline void clear_lst_6 ( long int l[6] )
+  {
+    unsigned char n;
+    for ( n = 0; n < 6; ++n )
+      l[n] = 0;
+  }
+  
 inline void copy_lst(long int dest[5], long src[5])
   {
     unsigned char n;
     for ( n = 0; n < 5; ++n )
+      dest[n] = src[n];  
+  }
+  
+inline void copy_lst_6(long int dest[6], long src[6])
+  {
+    unsigned char n;
+    for ( n = 0; n < 6; ++n )
       dest[n] = src[n];  
   }

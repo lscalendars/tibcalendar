@@ -82,6 +82,14 @@ typedef struct tib_day
   long int nyibar[6]; // mean solar longitude
   long int nyidag[6]; // true solar longitude
   long int gzadag[6]; // true weekday
+  // should the planets be separate?
+  // the lists are 6 numbers long for intermediate calculations
+    long int marmurdag[6]; // the longitude of mars for the day
+    long int jupmurdag[6]; // jupiter
+    long int satmurdag[6]; // saturn
+    long int mermurdag[6]; // mercury
+    long int venmurdag[6]; // venus
+    long int rahudong[5]; // rahu
 } tib_day;
 
 void rilchafp (const epoch epch, long int zd0, long int rilcha[2]);
@@ -92,7 +100,7 @@ void tse_drup ( long int ld, long int tsedru[6]);
 void nyi_dagp_and_gza_dagp ( long int nyibar[6], long int tsebar[6], long int rilcha[2], long int tt, long int nyidag[6], long int gzadag[6]) ;
 long int spi_zagfp (const epoch epch, long int cur_mth, long int tt, long int sd);
 int get_tt_data(epoch epch, long int cur_mth, long int gzadru[6], long int nyidru[6], long int rilcha[6], long int tt, long int nyidag[6], long int gzadag[6], long int nyibar[6]);
-void get_tpdata(long int jd, tib_day *td);
+void get_day_data(long int jd, tib_day *td);
 tib_day * new_tib_day();
 void get_month_data (const epoch epch, long int zd0, long int rilcha[2], long int nyidru[6], long int gzadru[6]);
 void free_tib_day(tib_day *td);

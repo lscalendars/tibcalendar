@@ -6,5 +6,7 @@ add_library(
 	tbday.h
 	utils.c
 	utils.h
+	tbplanets.c
+	tbplanets.h
 	)
     
