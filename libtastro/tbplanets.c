@@ -86,7 +86,6 @@ static long int satfac[5] = {18, 0, 0, 0, 0};
 static long int satbye[6] = {15,6,6,15,22,22};
 static long int satdom[6] = {22,37,43,37,22,0};
 
-
 static unsigned char martquo1[15] = {0,0,0,0,0,0,0,0,0,0,1,1,1,1,0};
 static unsigned char martquo2[15] = {0,0,0,0,1,1,1,1,1,1,1,1,1,1,0};
 static unsigned char juptquo1[15] = {0,0,0,0,0,0,0,0,1,1,1,1,1,1,0};
@@ -98,11 +97,9 @@ static unsigned char mertquo2[15] = {0,0,0,0,0,1,1,1,1,1,1,1,1,1,0};
 static unsigned char ventquo1[15] = {0,0,0,0,0,0,0,0,0,0,1,1,1,1,0};
 static unsigned char ventquo2[15] = {0,0,0,0,1,1,1,1,1,1,1,1,1,1,0};
 
-
 static long int rkang_frac = 149209L;
 
 // Periods of the planets, solar days
-
 static long int mercyc = 8797; 
 static long int vencyc = 2247;
 static long int marcyc = 687;
@@ -110,29 +107,37 @@ static long int jupcyc = 4332;
 static long int satcyc = 10766;
 
 // least significant radix:
-
 static long int merfrac = 8797;   
 static long int venfrac = 749;    
 static long int marfrac = 229;    
 static long int jupfrac = 361;
 static long int satfrac = 5383;
 
-// ROUTINE TO CALCULATE POSITIONS OF RAHU
+// a constant for the computation of the Rahu position
+static long int rahutsa[5] = { 0, 0, 14, 0, 12 };
+
+/* Function computing the longitude of the head of Rahu for the day
+ * epch is the epoch
+ * m is the integer part of the true month
+ * tt is the lunar day
+ * rahudong is the longitude of the head of Rahu
+ * See KTC p. 96 for details
+ */
 void
-calc_rahup (epoch epch, long int m, long int tt, long int rahudong[5])	// KTC 96
+get_rahu_l (epoch epch, long int m, long int tt, long int rahudong[5])
 {
-  long int t;
-  long int rahutsa[5] = { 0, 0, 14, 0, 12 };
-  long int lista[5] = { 0, 0, 0, 0, 0 };
-  // ( m + epch.rahupart ) % 230 is the rahu month
-  t = ((m + epch.rahupart) % 230) * 30 + tt;
-  mul_lst (rahutsa, rahutsa, t, 27, 23);
+  long int lista[5] = {27,0,0,0,0}; // a full circle
+  long int listb[5] = {0,0,0,0,0};
+  // ( m + epch.rahupart ) % 230 is the Rahu month
+  // Rahu month * 30 + tt is the number of lunar days elapsed in a Rahu cycle
+  mul_lst (listb, rahutsa, ((m + epch.rahupart) % 230) * 30 + tt, 27, 23);
   lista[0] = 27;
-  sub_lst (rahudong, lista, rahutsa, 27, 23);
-  //lista[0] = 13;
-  //lista[1] = 30;
-  //add_gen ( rahujug, rahudong, listb, 27, 23 ); // not used...
-}				// END - calc_rahup ()
+  sub_lst (rahudong, lista, listb, 27, 23);
+  /* Uncomment if you want the position of the tail:
+  lista[0] = 13;
+  lista[1] = 30;
+  add_gen ( rahujug, rahudong, lista, 27, 23 ); */
+}
 
 /* Function to compute the mean slow longitude of a planet (dal pa bar pa)
  * lst is the result
@@ -202,22 +207,6 @@ get_true_slow_l (long int pdaldag[6], long int pdalbar[6], long int pfac[6],
   else
     add_lst (pdaldag, pdalbar, listc, 27, frac);
 }
-
-#define __DEBUG 1
-#if __DEBUG == 1
-#include<stdio.h>		// remove after debug"
-void
-dbg_print_lst (long int l[6])
-{
-  unsigned char i;
-  printf ("%ld;", l[0]);
-  for (i = 1; i < 5; i++)
-    {
-      printf ("%ld,", l[i]);
-    }
-  printf ("%ld", l[5]);
-}
-#endif
 
 /* Main function computing all the planet data for a tib_day
  */
@@ -305,7 +294,7 @@ get_planets_data (tib_day *td, epoch epch)
   get_geo_l(merdaldag, merkanbar, dragkang, td->mermurdag, merfrac, merbye1, merbye2, merdom1, merdom2, mertquo1, mertquo2, INNER_PLANET);
   // for venus, see KTC p. 82, checked against tables by "dbyangs can grub pa'i rdo rje", p. 645
   get_geo_l(vendaldag, venkanbar, dragkang, td->venmurdag, venfrac, venbye1, venbye2, vendom1, vendom2, ventquo1, ventquo2, INNER_PLANET);
-  calc_rahup (epch, td->month->true_month[0], td->tt, td->rahudong);
+  get_rahu_l(epch, td->month->true_month[0], td->tt, td->rahudong);
 }
 
 /*
@@ -411,7 +400,6 @@ get_geo_l(long int plandaldag[6], long int plandalbar[6], long int dragkang[6], 
 	mul_lst_6 (lista, lista, 2, planfrac, rkang_frac);
 
 // Now divide all the way through by 60:
-
       div_lst_6 (lista, lista, 60, planfrac, rkang_frac);
       listb[1] = plandom2[(int) tquo - 1];
       listb[0] = listb[1] / 60;
