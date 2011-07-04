@@ -87,6 +87,18 @@ static long int satbye[6] = {15,6,6,15,22,22};
 static long int satdom[6] = {22,37,43,37,22,0};
 
 
+static unsigned char martquo1[15] = {0,0,0,0,0,0,0,0,0,0,1,1,1,1,0};
+static unsigned char martquo2[15] = {0,0,0,0,1,1,1,1,1,1,1,1,1,1,0};
+static unsigned char juptquo1[15] = {0,0,0,0,0,0,0,0,1,1,1,1,1,1,0};
+static unsigned char juptquo2[15] = {0,0,0,0,0,0,1,1,1,1,1,1,1,1,0};
+static unsigned char sattquo1[15] = {0,0,0,0,0,0,0,0,1,1,1,1,1,1,0};
+static unsigned char sattquo2[15] = {0,0,0,0,0,0,1,1,1,1,1,1,1,1,0};
+static unsigned char mertquo1[15] = {0,0,0,0,0,0,0,0,0,1,1,1,1,1,0};
+static unsigned char mertquo2[15] = {0,0,0,0,0,1,1,1,1,1,1,1,1,1,0};
+static unsigned char ventquo1[15] = {0,0,0,0,0,0,0,0,0,0,1,1,1,1,0};
+static unsigned char ventquo2[15] = {0,0,0,0,1,1,1,1,1,1,1,1,1,1,0};
+
+
 static long int rkang_frac = 149209L;
 
 // Periods of the planets, solar days
@@ -122,14 +134,14 @@ calc_rahup (epoch epch, long int m, long int tt, long int rahudong[5])	// KTC 96
   //add_gen ( rahujug, rahudong, listb, 27, 23 ); // not used...
 }				// END - calc_rahup ()
 
-/* Function to compute the mean longitude of a planet
+/* Function to compute the mean slow longitude of a planet (dal pa bar pa)
  * lst is the result
  * dat is the particular day (KTC p. 57)
  * cyc is the period of the planet
  * frac is the lowest fractional part (KTC p.58)
  */
 void
-calc_dalbar (long int lst[5], long int dat, long int cyc, long int frac)
+get_mean_slow_l (long int lst[5], long int dat, long int cyc, long int frac)
 {
   lst[0] = dat * 27;
   lst[1] = 0;
@@ -140,8 +152,15 @@ calc_dalbar (long int lst[5], long int dat, long int cyc, long int frac)
   div_lst_6 (lst, lst, cyc, frac, 1);
 }
 
+/* Function to compute the true heliocentric position (dal dag)
+ * pdaldag is the result
+ * pdalbar is the mean slow longitude (see previous function)
+ * pfac is the birth sign of the planet (KTC p. 58)
+ * pbye and pdom are the colums of the tables (KTC p. 59 and 78)
+ * frac is the lowest fraction (KTC p. 58)
+ */
 void
-do_daldag (long int pdaldag[], long int pdalbar[], long int pfac[],
+get_true_slow_l (long int pdaldag[6], long int pdalbar[6], long int pfac[6],
 	   long int pbye[6], long int pdom[6], long int frac)
 {
   long int dortst, test, trem, tquo;
@@ -170,11 +189,9 @@ do_daldag (long int pdaldag[], long int pdalbar[], long int pfac[],
 
   mul_lst_6 (lista, lista, pbye[(int) tquo - 1], frac, 1);
   div_lst_6 (lista, lista, 135, frac, 1);
-
   listb[1] = pdom[(int) tquo - 1];
 
 // tquo is equal to actual index, except 0, replaced by 6
-
   if (tquo == 3 || tquo == 4 || tquo == 5)	// Then, subtract:
     sub_lst (listc, listb, lista, 27, frac);
   else
@@ -202,13 +219,12 @@ dbg_print_lst (long int l[6])
 }
 #endif
 
-/* Main function computing all the data for a tib_day
+/* Main function computing all the planet data for a tib_day
  */
 void
 get_planets_data (tib_day *td, epoch epch)
 {
-  int i;
-  long int sz = td->gd - epch.spz_j; //TODO: OK
+  long int sz = td->gd - epch.spz_j;
   long int mardalbar[6] = {0,0,0,0,0,0};
   long int mardaldag[6] = {0,0,0,0,0,0};
   long int jupdalbar[6] = {0,0,0,0,0,0};
@@ -221,43 +237,32 @@ get_planets_data (tib_day *td, epoch epch)
   long int vendaldag[6] = {0,0,0,0,0,0};
   long int dragkang[6] = {0,0,0,0,0,0};
   long int nyindhru[6] = {0,0,0,0,0,0};
-  long long int dragkres; // TODO: remove after debug
 
-// MARS, DAL DAG. - KTC 57
+// mars, dal dag. - KTC 57
 // Checked against tables by "dbyangs can grub pa'i rdo rje", p. 623
   // here (sz + epch.maradd) % 687 is the particular day (KTC p. 57)
-  calc_dalbar (mardalbar, (sz + epch.maradd) % marcyc, marcyc, marfrac);
-  //martl = conv2degs ( mardalbar, 229, 1 );
-  do_daldag (mardaldag, mardalbar, marfac, marbye, mardom, marfrac);
+  get_mean_slow_l(mardalbar, (sz + epch.maradd) % marcyc, marcyc, marfrac);
+  get_true_slow_l(mardaldag, mardalbar, marfac, marbye, mardom, marfrac);
 
-// JUPITER, DAL DAG. - KTC 61
+// jupiter, dal dag. - KTC 61
 // Checked against tables by "dbyangs can grub pa'i rdo rje", p. 625
-  calc_dalbar (jupdalbar, (sz + epch.jupadd) % jupcyc, jupcyc, jupfrac);
-  //juptl = conv2degs ( jupdalbar, 361, 1 );
-  do_daldag (jupdaldag, jupdalbar, jupfac, jupbye, jupdom, jupfrac);
+  get_mean_slow_l(jupdalbar, (sz + epch.jupadd) % jupcyc, jupcyc, jupfrac);
+  get_true_slow_l(jupdaldag, jupdalbar, jupfac, jupbye, jupdom, jupfrac);
 
-// SATURN, DAL DAG. - KTC 61
+// saturn, dal dag. - KTC 61
 // Checked against tables by "dbyangs can grub pa'i rdo rje", p. 633
-  calc_dalbar (satdalbar, (sz + epch.satadd) % satcyc, satcyc, satfrac);
-  //sattl = conv2degs ( satdalbar, 5383, 1 );
-  do_daldag (satdaldag, satdalbar, satfac, satbye, satdom, satfrac);
+  get_mean_slow_l(satdalbar, (sz + epch.satadd) % satcyc, satcyc, satfrac);
+  get_true_slow_l(satdaldag, satdalbar, satfac, satbye, satdom, satfrac);
 
-// MERCURY, RKANG BAR, - KTC 85
+// mercury, dal bar, - KTC 85
 // Checked against tables by "dbyangs can grub pa'i rdo rje", p. 610
+  get_mean_slow_l(merkanbar, (sz*100 + epch.meradd) % mercyc, mercyc, merfrac);
 
-  calc_dalbar (merkanbar, (sz*100 + epch.meradd) % mercyc, mercyc, merfrac);
-  //mertl = conv2degs ( merkanbar, 8797, 1 );
-
-// VENUS, RKANG BAR, - KTC 77
+// venus, dal bar, - KTC 77
 // Checked against tables by "dbyangs can grub pa'i rdo rje", p. 612
-  calc_dalbar (venkanbar, (sz*10 + epch.venadd) % vencyc, vencyc, venfrac);
-  //ventl = conv2degs ( venkanbar, 749, 1 );
+  get_mean_slow_l(venkanbar, (sz*10 + epch.venadd) % vencyc, vencyc, venfrac);
 
-// DRAG GSUM RKANG 'DZIN, ZHI GNYIS DAL BAR, KTC 63
-
-//   dragkres = ((long long) sz * 18382 + (long long) epch.dragkadd) % 6714405LL;
-
- // printf("dragkres: %lld\n", dragkres);
+// drag gsum rkang 'dzin, zhi gnyis dal bar - KTC 63
   dragkang[0] = 27 * (long) (((long long) sz * 18382 + (long long) epch.dragkadd) % 6714405LL);
   dragkang[1] = 0;
   dragkang[2] = 0;
@@ -265,9 +270,9 @@ get_planets_data (tib_day *td, epoch epch)
   dragkang[4] = 0;
   dragkang[5] = 0;
 
+  // here is something a bit different to compute inner planets dal dag
   div_lst_6 (dragkang, dragkang, 6714405L, rkang_frac, 1);
-
-  copy_lst_6(nyindhru, dragkang); // nyindhru ok
+  copy_lst_6(nyindhru, dragkang);
 
 // For Tsurphu system only:
   /* TODO: handle...
@@ -281,45 +286,62 @@ get_planets_data (tib_day *td, epoch epch)
      }
    */
 
-// MERCURY DAL DAG. KTC 85
+// mercury dal dag. KTC 85
 // Checked against tables by "dbyangs can grub pa'i rdo rje", p. 616
+  get_true_slow_l(merdaldag, nyindhru, merfac, merbye, merdom, rkang_frac);
 
-  do_daldag (merdaldag, nyindhru, merfac, merbye, merdom, rkang_frac);
-
-// VENUS DAL DAG. KTC 77/78
+// venus dal dag. KTC 77/78
 // Checked against tables by "dbyangs can grub pa'i rdo rje", p. 616
+  get_true_slow_l(vendaldag, nyindhru, venfac, venbye, vendom, rkang_frac);
 
-  do_daldag (vendaldag, nyindhru, venfac, venbye, vendom, rkang_frac);
-
-  // then the main computation, setting td->xxxmurdag
-  marsdag (mardaldag, dragkang, td->marmurdag);	// KTC 65
-  jupdag (jupdaldag, dragkang, td->jupmurdag);	// KTC 74
-  satdag (satdaldag, dragkang, td->satmurdag);	// KTC 75
-  merdag (merdaldag, merkanbar, td->mermurdag);	// KTC 86    
-  vendag (vendaldag, venkanbar, td->venmurdag);	// KTC 82
-  // month or adjusted month?
+  // then the main computation, setting the longitude (td->xxxmurdag)
+  // for mars, see KTC p. 65, checked against calculation tables in British Library tables by "dbyangs can grub pa'i rdo rje", p. 644
+  get_geo_l(mardaldag, mardalbar, dragkang, td->marmurdag, marfrac, marbye1, marbye2, mardom1, mardom2, martquo1, martquo2, OUTER_PLANET);
+    // for jupiter, see KTC p. 74, checked against tables by "dbyangs can grub pa'i rdo rje", p. 645
+  get_geo_l(jupdaldag, jupdalbar, dragkang, td->jupmurdag, jupfrac, jupbye1, jupbye2, jupdom1, jupdom2, juptquo1, juptquo2, OUTER_PLANET);
+  // for saturn, see KTC p. 75, checked against tables by "dbyangs can grub pa'i rdo rje", p. 647
+  get_geo_l(satdaldag, satdalbar, dragkang, td->satmurdag, satfrac, satbye1, satbye2, satdom1, satdom2, sattquo1, sattquo2, OUTER_PLANET);
+  // for mercury, see KTC p. 86, checked against tables by "dbyangs can grub pa'i rdo rje", p. 644
+  get_geo_l(merdaldag, merkanbar, dragkang, td->mermurdag, merfrac, merbye1, merbye2, merdom1, merdom2, mertquo1, mertquo2, INNER_PLANET);
+  // for venus, see KTC p. 82, checked against tables by "dbyangs can grub pa'i rdo rje", p. 645
+  get_geo_l(vendaldag, venkanbar, dragkang, td->venmurdag, venfrac, venbye1, venbye2, vendom1, vendom2, ventquo1, ventquo2, INNER_PLANET);
   calc_rahup (epch, td->month->true_month[0], td->tt, td->rahudong);
-}				// END - do_plans ()
+}
 
-// IIUC, mardaldag is what we have and marmurdag is what we want
-void
-marsdag (long int mardaldag[6], long int dragkang[6], long int marmurdag[6])
+/*
+ * Function to calculate geocentric longitude
+ *  - plandaldag is the true slow longitude
+ *  - plandalbar is the mean slow longitude (used only for inner planets)
+ *  - dragkang is drag gsum rkang 'dzin, zhi gnyis dal bar - KTC 63
+ *  - planmurdag is the result
+ *  - planfrac is the lowest fractional part
+ *  - planbye1, planbye2, plandom1 and plandom2 are the columns of the tables page 65, 66, 67, 83 and 84
+ *  - plantquo1 and plantquo2 are tables describing when, in these tables, we need to substract or add the longitude, in the case (plantquo1) where no substraction of half cycle is needed, or (plantquo2) in the case where it's needed
+ *  - type is INNER_PLANET or OUTER_PLANET
+ */
+void 
+get_geo_l(long int plandaldag[6], long int plandalbar[6], long int dragkang[6], long int planmurdag[6], long int planfrac, long int *planbye1, long int *planbye2, long int *plandom1, long int *plandom2, unsigned char plantquo1[15], unsigned char plantquo2[15], unsigned char type)
 {
-  long int lista[6], listc[6];
+  long int lista[6], listc[6], dald[6];
   long int listb[6] = {0,0,0,0,0,0}; // listb is the only one that has to be initialized
   long int test, tquo, trem, x;
   long long int z;
-  int dortst, conttest, i;
-  copy_lst_6(lista, dragkang);
+  int dortst, conttest;
+  
+  if (type == OUTER_PLANET)
+    copy_lst_6(dald, dragkang);
+  else
+    copy_lst_6(dald, plandaldag);
 
 // Adjust the units for later combination:
+  z = ((long long) dald[4] * (long long) planfrac);
+  dald[4] = (long) (z / (long long) rkang_frac);
+  dald[5] = (long) (z % (long long) rkang_frac);
 
-  z = ((long long) lista[4] * (long long) marfrac);
-  lista[4] = (long) (z / (long long) rkang_frac);
-  lista[5] = (long) (z % (long long) rkang_frac);
-
-  //clear_a_b ();
-  sub_lst_6 (lista, lista, mardaldag, 27, marfrac, rkang_frac);
+  if (type == OUTER_PLANET)
+    sub_lst_6 (lista, dald, plandaldag, 27, planfrac, rkang_frac);
+  else
+    sub_lst_6 (lista, plandalbar, dald, 27, planfrac, rkang_frac);
   
   test = lista[0] * 60 + lista[1];
   // 13 * 60 + 30 = half a circle
@@ -333,8 +355,6 @@ marsdag (long int mardaldag[6], long int dragkang[6], long int marmurdag[6])
 
   tquo = lista[0];
   trem = lista[1];
-// Checked against calculation tables in British Library and:
-// Checked against tables by "dbyangs can grub pa'i rdo rje", p. 644
 
   if (!dortst)			//  = ma dor, rim pa, lugs 'byung.
     {
@@ -342,31 +362,27 @@ marsdag (long int mardaldag[6], long int dragkang[6], long int marmurdag[6])
 	conttest = 1;
       else
 	conttest = 0;
-
       if (tquo == 0)
 	tquo = 14;
 
-      x = marbye1[(int) tquo - 1];	// Multiplier, looking down
+      x = planbye1[(int) tquo - 1];	// Multiplier, looking down
       lista[0] = 0;
-      mul_lst_6 (lista, lista, x, marfrac, rkang_frac);
+      mul_lst_6 (lista, lista, x, planfrac, rkang_frac);
       if (conttest)
-	mul_lst_6 (lista, lista, 2, marfrac, rkang_frac);
+	mul_lst_6 (lista, lista, 2, planfrac, rkang_frac);
 
 // Now divide all the way through by 60:
-
-      div_lst_6 (lista, lista, 60, marfrac, rkang_frac);
-      listb[1] = mardom1[(int) tquo - 1];	// Totals, left hand list.
+      div_lst_6 (lista, lista, 60, planfrac, rkang_frac);
+      listb[1] = plandom1[(int) tquo - 1];	// Totals, left hand list.
       listb[0] = listb[1] / 60;
       listb[1] = listb[1] % 60;
-      //listb[5] = 0; TODO: should be useless
 
       // tquo is equal to actual index, except 0, replaced by 14
-
-      if (tquo == 10 || tquo == 11 || tquo == 12 || tquo == 13)
+      if (plantquo1[(int) tquo] == 1)
 	// Then, subtract:
-	sub_lst_6 (listc, listb, lista, 27, marfrac, rkang_frac);
+	sub_lst_6 (listc, listb, lista, 27, planfrac, rkang_frac);
       else
-	add_lst_6 (listc, listb, lista, 27, marfrac, rkang_frac);
+	add_lst_6 (listc, listb, lista, 27, planfrac, rkang_frac);
     }
   else				// IF DORTST, rim min, lugs ldog.
     {
@@ -387,452 +403,35 @@ marsdag (long int mardaldag[6], long int dragkang[6], long int marmurdag[6])
       if (tquo == 0)
 	tquo = 14;
 
-      x = (long int) marbye2[(int) tquo - 1];
+      x = planbye2[(int) tquo - 1];
       lista[0] = 0;
       lista[1] = trem;
-      mul_lst_6 (lista, lista, x, marfrac, rkang_frac);
+      mul_lst_6 (lista, lista, x, planfrac, rkang_frac);
       if (conttest)
-	mul_lst_6 (lista, lista, 2, marfrac, rkang_frac);
+	mul_lst_6 (lista, lista, 2, planfrac, rkang_frac);
 
 // Now divide all the way through by 60:
 
-      div_lst_6 (lista, lista, 60, marfrac, rkang_frac);
-      listb[1] = mardom2[(int) tquo - 1];
+      div_lst_6 (lista, lista, 60, planfrac, rkang_frac);
+      listb[1] = plandom2[(int) tquo - 1];
       listb[0] = listb[1] / 60;
       listb[1] = listb[1] % 60;
 
       // tquo is equal to actual index, except 0, replaced by 14
-
-      if (tquo == 4 || tquo == 5 || tquo == 6 || tquo == 7 || tquo == 8 || tquo == 9 || tquo == 10 || tquo == 11 || tquo == 12 || tquo == 13 /** || tquo == 14 */ )	// Then, subtract:
-	sub_lst_6 (listc, listb, lista, 27, marfrac, rkang_frac);
+      if (plantquo2[(int) tquo] == 1)
+	sub_lst_6 (listc, listb, lista, 27, planfrac, rkang_frac);
       else
-	add_lst_6 (listc, listb, lista, 27, marfrac, rkang_frac);
+	add_lst_6 (listc, listb, lista, 27, planfrac, rkang_frac);
     }
   if (dortst == 1)
-    sub_lst_6 (marmurdag, mardaldag, listc, 27, marfrac, rkang_frac);
+    if (type == OUTER_PLANET)
+      sub_lst_6 (planmurdag, plandaldag, listc, 27, planfrac, rkang_frac);
+    else
+      sub_lst_6 (planmurdag, dald, listc, 27, planfrac, rkang_frac);
   else
-    add_lst_6 (marmurdag, mardaldag, listc, 27, marfrac, rkang_frac);
-}				// END - marsdag ()
+    if (type == OUTER_PLANET)
+      add_lst_6 (planmurdag, plandaldag, listc, 27, planfrac, rkang_frac);
+    else
+      add_lst_6 (planmurdag, dald, listc, 27, planfrac, rkang_frac);
+}
 
-void
-jupdag (long int jupdaldag[6], long int dragkang[6], long int jupmurdag[6])
-{
-  long int lista[6], listc[6];
-  long int listb[6] = {0,0,0,0,0,0};
-  long int test, tquo, trem, x;
-  long long int z;
-  int dortst, conttest, i;
-  copy_lst_6(lista, dragkang);
-
-// Adjust the units for later combination: 
-
-  z = ((long long) lista[4] * (long long) jupfrac);
-  lista[4] = (long) (z / (long long) rkang_frac);
-  lista[5] = (long) (z % (long long) rkang_frac);
-
-  sub_lst_6 (lista, lista, jupdaldag, 27, jupfrac, rkang_frac);
-
-  test = lista[0] * 60 + lista[1];
-  if (test >= 13L * 60 + 30)
-    {
-      dortst = 1;
-      sub_lst (lista, lista, plahaf, 27, rkang_frac);
-    }
-  else
-    dortst = 0;
-
-  tquo = lista[0];
-  trem = lista[1];
-
-// Checked against tables by "dbyangs can grub pa'i rdo rje", p. 645
-  if (!dortst)			//  = ma dor, rim pa, lugs 'byung.
-    {
-      if (tquo == 13)
-	conttest = 1;
-      else
-	conttest = 0;
-      if (tquo == 0)
-	tquo = 14;
-      x = jupbye1[(int) tquo - 1];
-      lista[0] = 0;
-      mul_lst_6 (lista, lista, x, jupfrac, rkang_frac);
-      if (conttest)
-	mul_lst_6 (lista, lista, 2, jupfrac, rkang_frac);
-
-// Now divide all the way through by 60:
-
-      div_lst_6 (lista, lista, 60, jupfrac, rkang_frac);
-
-      listb[1] = jupdom1[(int) tquo - 1];
-      listb[0] = listb[1] / 60;
-      listb[1] = listb[1] % 60;
-      listb[5] = 0;
-
-// tquo is equal to actual index, except 0, replaced by 14
-
-      if (tquo == 8 || tquo == 9 || tquo == 10 || tquo == 11 || tquo == 12 || tquo == 13)	// Then, subtract:
-	sub_lst_6 (listc, listb, lista, 27, jupfrac, rkang_frac);
-      else
-	add_lst_6 (listc, listb, lista, 27, jupfrac, rkang_frac);
-    }
-  else				// If DORTST, rim min, lugs ldog.
-    {
-      conttest = 0;
-      if (lista[0] == 0)
-	{
-	  if (lista[1] < 30)
-	    conttest = 1;
-	}
-      if (lista[1] >= 30)
-	{
-	  ++tquo;
-	  trem = lista[1] - 30;
-	}
-      else if (lista[0] != 0)
-	trem = lista[1] + 30;
-      if (tquo == 0)
-	tquo = 14;
-
-      x = jupbye2[(int) tquo - 1];
-      lista[0] = 0;
-      lista[1] = trem;
-      mul_lst_6 (lista, lista, x, jupfrac, rkang_frac);
-      if (conttest)
-	mul_lst_6 (lista, lista, 2, jupfrac, rkang_frac);
-
-// Now divide all the way through by 60:
-
-      div_lst_6 (lista, lista, 60, jupfrac, rkang_frac);
-      listb[1] = jupdom2[(int) tquo - 1];
-      listb[0] = listb[1] / 60;
-      listb[1] = listb[1] % 60;
-
-// tquo is equal to actual index, except 0, replaced by 14
-
-      if (tquo == 6 || tquo == 7 || tquo == 8 || tquo == 9 || tquo == 10 || tquo == 11 || tquo == 12 || tquo == 13)	// Then, subtract:
-	sub_lst_6 (listc, listb, lista, 27, jupfrac, rkang_frac);
-      else
-	add_lst_6 (listc, listb, lista, 27, jupfrac, rkang_frac);
-
-    }
-  if (dortst == 1)
-    sub_lst_6 (jupmurdag, jupdaldag, listc, 27, jupfrac, rkang_frac);
-  else
-    add_lst_6 (jupmurdag, jupdaldag, listc, 27, jupfrac, rkang_frac);
-}				// END - jupdag ()
-
-void
-satdag (long int satdaldag[6], long int dragkang[6], long int satmurdag[6])
-{
-  long int lista[6], listc[6];
-  long int listb[6] = {0,0,0,0,0,0};
-  long int test, tquo, trem, x;
-  long long int z;
-  int dortst, conttest, i;
-  copy_lst_6(lista, dragkang);
-
-// Adjust the units for later combination: 
-
-  z = ((long long) lista[4] * (long long) satfrac);
-  lista[4] = (long) (z / (long long) rkang_frac);
-  lista[5] = (long) (z % (long long) rkang_frac);
-
-  sub_lst_6 (lista, lista, satdaldag, 27, satfrac, rkang_frac);
-
-  test = lista[0] * 60 + lista[1];
-  if (test >= 13 * 60 + 30)
-    {
-      dortst = 1;
-      sub_lst (lista, lista, plahaf, 27, rkang_frac);
-    }
-  else
-    dortst = 0;
-
-  tquo = lista[0];
-  trem = lista[1];
-
-// Checked against tables by "dbyangs can grub pa'i rdo rje", p. 647
-  if (!dortst)			//  = ma dor, rim pa, lugs 'byung.
-    {
-      if (tquo == 13)
-	conttest = 1;
-      else
-	conttest = 0;
-      if (tquo == 0)
-	tquo = 14;
-      x = satbye1[(int) tquo - 1];
-      lista[0] = 0;
-      mul_lst_6 (lista, lista, x, satfrac, rkang_frac);
-      if (conttest)
-	mul_lst_6 (lista, lista, 2, satfrac, rkang_frac);
-
-// Now divide all the way through by 60:
-
-      div_lst_6 (lista, lista, 60, satfrac, rkang_frac);
-
-      listb[1] = satdom1[(int) tquo - 1];
-      listb[0] = listb[1] / 60;
-      listb[1] = listb[1] % 60;
-      listb[5] = 0;
-
-      // tquo is equal to actual index, except 0, replaced by 14
-
-      if (tquo == 8 || tquo == 9 || tquo == 10 || tquo == 11 || tquo == 12 || tquo == 13)	// Then, subtract:
-
-	sub_lst_6 (listc, listb, lista, 27, satfrac, rkang_frac);
-      else
-	add_lst_6 (listc, listb, lista, 27, satfrac, rkang_frac);
-    }
-  else				// If DORTST, rim min, lugs ldog.
-    {
-      conttest = 0;
-      if (lista[0] == 0)
-	{
-	  if (lista[1] < 30)
-	    conttest = 1;
-	}
-      if (lista[1] >= 30)
-	{
-	  ++tquo;
-	  trem = lista[1] - 30;
-	}
-      else if (lista[0] != 0)
-	trem = lista[1] + 30;
-      if (tquo == 0)
-	tquo = 14;
-
-      x = satbye2[(int) tquo - 1];
-      lista[0] = 0;
-      lista[1] = trem;
-      mul_lst_6 (lista, lista, x, satfrac, rkang_frac);
-      if (conttest)
-	mul_lst_6 (lista, lista, 2, satfrac, rkang_frac);
-
-// Now divide all the way through by 60:
-      div_lst_6 (lista, lista, 60, satfrac, rkang_frac);
-
-      listb[1] = satdom2[(int) tquo - 1];
-      listb[0] = listb[1] / 60;
-      listb[1] = listb[1] % 60;
-// tquo is equal to actual index, except 0, replaced by 14
-      if (tquo == 6 || tquo == 7 || tquo == 8 || tquo == 9 || tquo == 10 || tquo == 11 || tquo == 12 || tquo == 13)	// Then, subtract:
-	sub_lst_6 (listc, listb, lista, 27, satfrac, rkang_frac);
-      else
-	add_lst_6 (listc, listb, lista, 27, satfrac, rkang_frac);
-    }
-  if (dortst == 1)
-    sub_lst_6 (satmurdag, satdaldag, listc, 27, satfrac, rkang_frac);
-  else
-    add_lst_6 (satmurdag, satdaldag, listc, 27, satfrac, rkang_frac);
-}				// END - satdag ()
-
-void
-merdag (long int merdaldag[6], long int merkanbar[6], long int mermurdag[6])	// Mercury myur dag
-{
-  long int lista[6], listc[6], dald[6];
-  long int listb[6] = {0,0,0,0,0,0};
-  long int test, tquo, trem, x;
-  long long int z;
-  int dortst, conttest, i;
-
-  copy_lst_6(dald, merdaldag);
-
-// Adjust the units for later combination: 
-
-  z = ((long long) dald[4] * (long long) merfrac);
-  dald[4] = (long) (z / (long long) rkang_frac);
-  dald[5] = (long) (z % (long long) rkang_frac);
-
-  //clear_a_b ();
-  sub_lst_6 (lista, merkanbar, dald, 27, merfrac, rkang_frac);
-
-  test = lista[0] * 60 + lista[1];
-  if (test >= 13 * 60 + 30)
-    {
-      dortst = 1;
-      sub_lst (lista, lista, plahaf, 27, rkang_frac);
-    }
-  else
-    dortst = 0;
-  tquo = lista[0];
-  trem = lista[1];
-
-// Checked against tables by "dbyangs can grub pa'i rdo rje", p. 644
-  if (!dortst)			//  = ma dor, rim pa, lugs 'byung.
-    {
-      if (tquo == 13)
-	conttest = 1;
-      else
-	conttest = 0;
-      if (tquo == 0)
-	tquo = 14;
-      x = merbye1[(int) tquo - 1];
-      lista[0] = 0;
-      mul_lst_6 (lista, lista, x, merfrac, rkang_frac);
-      if (conttest)
-	mul_lst_6 (lista, lista, 2, merfrac, rkang_frac);
-
-// Now divide all the way through by 60:
-
-      div_lst_6 (lista, lista, 60, merfrac, rkang_frac);
-      listb[1] = merdom1[(int) tquo - 1];
-      listb[0] = listb[1] / 60;
-      listb[1] = listb[1] % 60;
-      listb[5] = 0;
-
-      // tquo is equal to actual index, except 0, replaced by 14
-
-      if (tquo == 9 || tquo == 10 || tquo == 11 || tquo == 12 || tquo == 13)	// Then, subtract:
-	sub_lst_6 (listc, listb, lista, 27, merfrac, rkang_frac);
-      else
-	add_lst_6 (listc, listb, lista, 27, merfrac, rkang_frac);
-    }
-  else				// If DORTST, rim min, lugs ldog.
-    {
-      conttest = 0;
-      if (lista[0] == 0)
-	{
-	  if (lista[1] < 30)
-	    conttest = 1;
-	}
-      if (lista[1] >= 30)
-	{
-	  ++tquo;
-	  trem = lista[1] - 30;
-	}
-      else if (lista[0] != 0)
-	trem = lista[1] + 30;
-
-      if (tquo == 0)
-	tquo = 14;
-
-      x = merbye2[(int) tquo - 1];
-      //clear_lst_6 (lista);
-      lista[0] = 0;
-      lista[1] = trem;
-      mul_lst_6 (lista, lista, x, merfrac, rkang_frac);
-      if (conttest)
-	mul_lst_6 (lista, lista, 2, merfrac, rkang_frac);
-// Now divide all the way through by 60:
-      div_lst_6 (lista, lista, 60, merfrac, rkang_frac);
-      listb[1] = merdom2[(int) tquo - 1];
-      listb[0] = listb[1] / 60;
-      listb[1] = listb[1] % 60;
-
-      // tquo is equal to actual index, except 0, replaced by 14
-
-      if (tquo == 5 || tquo == 6 || tquo == 7 || tquo == 8 || tquo == 9 || tquo == 10 || tquo == 11 || tquo == 12 || tquo == 13)	// Then, subtract:
-	sub_lst_6 (listc, listb, lista, 27, merfrac, rkang_frac);
-      else
-	add_lst_6 (listc, listb, lista, 27, merfrac, rkang_frac);
-    }
-
-  if (dortst == 1)
-    sub_lst_6 (mermurdag, dald, listc, 27, merfrac, rkang_frac);
-  else
-    add_lst_6 (mermurdag, dald, listc, 27, merfrac, rkang_frac);
-}				// END - merdag ()
-
-void
-vendag (long int vendaldag[6], long int venkanbar[6], long int venmurdag[6])	// Venus myur dag
-{
-  long int lista[6], listc[6], dald[6];
-  long int listb[6] = {0,0,0,0,0,0};
-  long int test, tquo, trem, x;
-  long long int z;
-  int dortst, conttest, i;
-
-  copy_lst_6(dald, vendaldag);
-
-// Adjust the units for later combination: 
-
-  z = ((long long) dald[4] * (long long) venfrac);
-  dald[4] = (long) (z / (long long) rkang_frac);
-  dald[5] = (long) (z % (long long) rkang_frac);
-
-  //clear_a_b ();
-  sub_lst_6 (lista, venkanbar, dald, 27, venfrac, rkang_frac);
-
-  test = lista[0] * 60 + lista[1];
-  if (test >= 13 * 60 + 30)
-    {
-      dortst = 1;
-      sub_lst (lista, lista, plahaf, 27, rkang_frac);
-    }
-  else
-    dortst = 0;
-  tquo = lista[0];
-  trem = lista[1];
-
-// Checked against tables by "dbyangs can grub pa'i rdo rje", p. 645
-  if (!dortst)			//  = ma dor, rim pa, lugs 'byung.
-    {
-      if (tquo == 13)
-	conttest = 1;
-      else
-	conttest = 0;
-
-      if (tquo == 0)
-	tquo = 14;
-
-      x = venbye1[(int) tquo - 1];
-      lista[0] = 0;
-      mul_lst_6 (lista, lista, x, venfrac, rkang_frac);
-      if (conttest)
-	mul_lst_6 (lista, lista, 2, venfrac, rkang_frac);
-
-      // Now divide all the way through by 60:
-
-      div_lst_6 (lista, lista, 60, venfrac, rkang_frac);
-
-      listb[1] = vendom1[(int) tquo - 1];
-      listb[0] = listb[1] / 60;
-      listb[1] = listb[1] % 60;
-      listb[5] = 0;
-      // tquo is equal to actual index, except 0, replaced by 14
-      if (tquo == 10 || tquo == 11 || tquo == 12 || tquo == 13)
-	// Then, subtract:
-	sub_lst_6 (listc, listb, lista, 27, venfrac, rkang_frac);
-      else
-	add_lst_6 (listc, listb, lista, 27, venfrac, rkang_frac);
-    }
-  else				// If DORTST, rim min, lugs ldog.
-    {
-      conttest = 0;
-      if (lista[0] == 0)
-	{
-	  if (lista[1] < 30)
-	    conttest = 1;
-	}
-      if (lista[1] >= 30)
-	{
-	  ++tquo;
-	  trem = lista[1] - 30;
-	}
-      else if (lista[0] != 0)
-	trem = lista[1] + 30;
-      if (tquo == 0)
-	tquo = 14;
-      x = venbye2[(int) tquo - 1];
-      //clear_lst_6 (lista);
-      lista[0] = 0;
-      lista[1] = trem;
-      mul_lst_6 (lista, lista, x, venfrac, rkang_frac);
-      if (conttest)
-	mul_lst_6 (lista, lista, 2, venfrac, rkang_frac);
-// Now divide all the way through by 60:
-      div_lst_6 (lista, lista, 60, venfrac, rkang_frac);
-      listb[1] = vendom2[(int) tquo - 1];
-      listb[0] = listb[1] / 60;
-      listb[1] = listb[1] % 60;
-// tquo is equal to actual index, except 0, replaced by 14
-      if (tquo == 4 || tquo == 5 || tquo == 6 || tquo == 7 || tquo == 8 || tquo == 9 || tquo == 10 || tquo == 11 || tquo == 12 || tquo == 13)	// Then, subtract:
-	sub_lst_6 (listc, listb, lista, 27, venfrac, rkang_frac);
-      else
-	add_lst_6 (listc, listb, lista, 27, venfrac, rkang_frac);
-    }
-  if (dortst == 1)
-    sub_lst_6 (venmurdag, dald, listc, 27, venfrac, rkang_frac);
-  else
-    add_lst_6 (venmurdag, dald, listc, 27, venfrac, rkang_frac);
-}				// END - vendag ()
