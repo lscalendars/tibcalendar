@@ -62,6 +62,11 @@ static epoch phugpa_epch= // we take -1000 as a reference
 typedef struct tib_month
 {
     long int year; // the western calendar year
+    int rabjung; // the indian cycle the year is in (number 1 is the one starting in 1027)
+    unsigned char yor; // the year inside the rabjung
+    unsigned char year_animal; // animal, element and gender (ex: 2011 is female iron rabbit)
+    unsigned char year_element;
+    unsigned char year_gender;
     long int month; // the non-adjusted month
     long int adjusted_month; // the adjusted month as appearing in the almanach
     long int true_month[2]; // the true month

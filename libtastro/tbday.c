@@ -24,6 +24,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ************************************************************************************/
 
 #include <stdlib.h>
+#include <stdio.h> // for printf, currently used for errors, but should be changed...
 #include <string.h>		// for memset
 #include "tbday.h"
 #include "tbplanets.h"
@@ -231,6 +232,7 @@ find_month_and_year (long int jd, epoch epch, tib_month *month)
     month->year = month->year - 1;
   // we need to get the rilcha, nyidru and gzadru for the month
   get_month_data (epch, month->true_month[0], month->rilcha, month->nyidru, month->gzadru);
+  get_year_astro(month);
 }
 
 /* Function looping through a month and finding the tt and its caracteristics

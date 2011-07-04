@@ -8,5 +8,7 @@ add_library(
 	utils.h
 	tbplanets.c
 	tbplanets.h
+	astrology.c
+	astrology.h
 	)
     

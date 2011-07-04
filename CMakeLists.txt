@@ -1,6 +1,13 @@
 cmake_minimum_required(VERSION 2.8)
 project (tibastro)
 
+# no, gettext executables are not required when NLS is deactivated
+find_package(Gettext)
+# yes, libintl is *required* even when NLS is deactivated (this is to compile
+# src/gettext.cpp since it includes libintl.h)
+find_package(Libintl REQUIRED)
+
+
 # this is to have a lot of warnings
 if(MSVC)
   # Force to always compile with W4
@@ -30,4 +37,5 @@ include_directories ("${PROJECT_BINARY_DIR}")
 include_directories ("${PROJECT_SOURCE_DIR}/libtastro")
 add_subdirectory (libtastro)
 add_subdirectory (cli)
+
 
