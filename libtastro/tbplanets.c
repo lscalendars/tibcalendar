@@ -253,11 +253,6 @@ get_planets_data (tib_day *td, epoch epch)
 
 // drag gsum rkang 'dzin, zhi gnyis dal bar - KTC 63
   dragkang[0] = 27 * (long) (((long long) sz * 18382 + (long long) epch.dragkadd) % 6714405LL);
-  dragkang[1] = 0;
-  dragkang[2] = 0;
-  dragkang[3] = 0;
-  dragkang[4] = 0;
-  dragkang[5] = 0;
 
   // here is something a bit different to compute inner planets dal dag
   div_lst_6 (dragkang, dragkang, 6714405L, rkang_frac, 1);
