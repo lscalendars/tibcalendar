@@ -30,10 +30,18 @@ void print_tib_month(tib_month *tm) {
   printf("royal year %ld, ", tm->year+127);
   printf("year %d of rabjung %d: ", tm->yor, tm->rabjung);
   printf("%s %s %s\n", get_gender(tm->year_gender), get_element_5(tm->year_element), get_animal(tm->year_animal));
-  if (tm->adjusted_month >0)
-     printf("month: %ld - true month: %ld;%ld\n", tm->adjusted_month, tm->true_month[0], tm->true_month[1]); 
-  else
-     printf("month: %ld (first of a double month) - true month: %ld;%ld\n", -tm->adjusted_month, tm->true_month[0], tm->true_month[1]); 
+  switch(tm->month_type)
+    {
+      case NORMAL:
+        printf("month: %ld - true month: %ld;%ld\n", tm->month, tm->true_month[0], tm->true_month[1]);
+        break;
+      case FIRST_OF_DOUBLE:
+        printf("month: %ld (first of a double month) - true month: %ld;%ld\n", -tm->month, tm->true_month[0], tm->true_month[1]); 
+        break;
+      default:
+        printf("month: %ld (second of a double month) - true month: %ld;%ld\n", -tm->month, tm->true_month[0], tm->true_month[1]); 
+        break;
+    }
   //printf("starting day: %ld\n", tm->start_gd);
   printf("anomaly: %ld;%ld\n", tm->rilcha[0], tm->rilcha[1]);
   printf("mean solar longitude: "); ui_print_lst(tm->nyidru,5); printf("\n");

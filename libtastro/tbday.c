@@ -30,6 +30,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "tbplanets.h"
 #include "utils.h"
 #include "jd.h"			// for jd_to_wd
+#include "astrology.h"
 
 tib_day *
 new_tib_day()
@@ -173,7 +174,7 @@ phugpa_adj_zla (long int tm, long int zd[2], const epoch epch,
 void
 find_month_and_year (long int jd, epoch epch, tib_month *month)
 {
-  long int tm, ty, adj_mth, gd; 
+  long int tm, ty, adj_mth, gd, hld_tm; 
   int wd, wm, wy, wdow; 
   // a flag to take the zeroth month into account twice
   unsigned char zeromthfg = 0;
@@ -212,8 +213,8 @@ find_month_and_year (long int jd, epoch epch, tib_month *month)
       else
 	{
 	  month->year = ty;
-    month->month = tm;
-	  month->adjusted_month = adj_mth;
+    hld_tm = tm;
+	  month->month = adj_mth;
 	  month->true_month[0] = zd[0];
 	  month->true_month[1] = zd[1];
 	  month->start_gd = gd;
@@ -228,8 +229,15 @@ find_month_and_year (long int jd, epoch epch, tib_month *month)
     }
   // month->year,month, etc. contains data about the month before
   // adjusting the year so that it is really the tibetan year
-  if (month->adjusted_month == 12 && month->month == 1)
+  if (month->month == 12 && hld_tm == 1)
     month->year = month->year - 1;
+  if ( month->month < 0L ) // Intercalary
+    {
+      month->month_type = FIRST_OF_DOUBLE;
+      month->month = -month->month;
+    }
+  else if ( month->true_month[1] == epch.zlasho+2 || month->true_month[1] == epch.zlasho+3 )
+    month->month_type = SECOND_OF_DOUBLE;
   // we need to get the rilcha, nyidru and gzadru for the month
   get_month_data (epch, month->true_month[0], month->rilcha, month->nyidru, month->gzadru);
   get_year_astro(month);

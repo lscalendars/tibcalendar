@@ -58,6 +58,9 @@ static epoch phugpa_epch= // we take -1000 as a reference
 // other types of day (duplicated part)
 #define FIRST_OF_DUPLICATED 4 // first of a duplicated day
 #define SECOND_OF_DUPLICATED 5 // second of a duplicated day
+// types for the month:
+#define FIRST_OF_DOUBLE 1
+#define SECOND_OF_DOUBLE 2
 
 typedef struct tib_month
 {
@@ -67,8 +70,8 @@ typedef struct tib_month
     unsigned char year_animal; // animal, element and gender (ex: 2011 is female iron rabbit)
     unsigned char year_element;
     unsigned char year_gender;
-    long int month; // the non-adjusted month
-    long int adjusted_month; // the adjusted month as appearing in the almanach
+    long int month; // the adjusted month as appearing in the almanach
+    unsigned char month_type;
     long int true_month[2]; // the true month
     unsigned char zero_month_flag; // 0 if it is the second time we are on the 0th or 1st month, 1 if it's the first or if we are in another month
     long int start_gd; // the general day for tt=0 in the month
