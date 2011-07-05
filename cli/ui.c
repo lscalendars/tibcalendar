@@ -26,7 +26,7 @@ void end_ui()
 
 
 void print_tib_month(tib_month *tm) {
-  printf("year: %ld\n", tm->year);
+  //printf("year: %ld\n", tm->year);
   printf("royal year %ld, ", tm->year+127);
   printf("year %d of rabjung %d: ", tm->yor, tm->rabjung);
   printf("%s %s %s\n", get_gender(tm->year_gender), get_element_5(tm->year_element), get_animal(tm->year_animal));
