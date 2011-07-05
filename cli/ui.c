@@ -29,7 +29,7 @@ void print_tib_month(tib_month *tm) {
   //printf("year: %ld\n", tm->year);
   printf("royal year %ld, ", tm->year+127);
   printf("year %d of rabjung %d: ", tm->yor, tm->rabjung);
-  printf("%s %s %s\n", get_gender(tm->year_gender), get_element_5(tm->year_element), get_animal(tm->year_animal));
+  printf("%s %s %s\n", get_gender_str(tm->year_gender), get_element_5_str(tm->year_element), get_animal_str(tm->year_animal));
   switch(tm->month_type)
     {
       case NORMAL:
@@ -91,7 +91,9 @@ void print_tib_day(tib_day *td)
     }
   printf("mean solar longitude: "); ui_print_lst(td->nyibar,5); printf("\n");
   printf("true solar longitude: "); ui_print_lst(td->nyidag,5); printf("\n");
-  printf("true weekday: "); ui_print_lst(td->gzadag,5); printf(" (%s)\n", get_weekday(td->gzadag[0]));
+  printf("true weekday: "); ui_print_lst(td->gzadag,5); printf(" (%s)\n", get_weekday_str(td->gzadag[0]));
+  printf("lunar mansion at daybreak: %d ", td->lm_db);
+  printf("yoga: %s, karana: %s\n", get_yoga_str(td->yoga), get_karana_str(td->karana));
   printf("    Planet data:\n");
   print_tib_planets(td);
 }

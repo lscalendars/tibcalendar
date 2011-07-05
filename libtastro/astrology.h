@@ -3,6 +3,7 @@
 
 #include "tbday.h"
 void get_year_astro(tib_month *month);
+void get_day_infos(tib_day *td);
 
 // The four elements
 #define FOUR_EARTH 0

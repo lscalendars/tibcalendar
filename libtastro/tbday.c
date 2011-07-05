@@ -372,6 +372,8 @@ get_day_data (long int jd, tib_day *td)
   find_day (td, jd, epch);
   // now we have our day... let's fill the planetary data
   get_planets_data(td, epch);
+  // now yoga, karana, etc.
+  get_day_infos(td);
 }
 
 /* Function to calculate month mean Sun, "nyi ma'i dhru ba" at new moon

@@ -2,7 +2,7 @@
 #include<jd.h> // for MONDAY, etc.
 #include<astrology.h> // for the definitions of elements, etc.
 
-char * get_weekday(long int weekday)
+char * get_weekday_str(long int weekday)
 {
   switch(weekday)
     {
@@ -31,7 +31,7 @@ char * get_weekday(long int weekday)
 }
 
 char *
-get_gender(unsigned char gender)
+get_gender_str(unsigned char gender)
 {
   switch (gender)
     {
@@ -44,8 +44,29 @@ get_gender(unsigned char gender)
     }
 }
 
+char *yogas[27] = { "Vishkambha", "Prîti", "Ayushmat", "Saubhâgya", "Shobhana",
+                  "Atiganda", "Sukarman", "Dhriti", "Shûla", "Ganda",
+                  "Vriddhi", "Dhruva", "Vyâghâta", "Harshana", "Vajra",
+                  "Siddhi", "Vyatipâta", "Varîyas", "Parigha", "Shiva",
+                  "Siddha", "Sâdhya", "Shubha", "Shukla", "Brahman",
+                  "Indra", "Vaidhriti" };
+
 char *
-get_element_5(unsigned char element)
+get_yoga_str(unsigned char yoga)
+{
+  return yogas[yoga];
+}                  
+
+static char *karanas[11] = { "Vava", "Vâlava", "Kaulava", "Taitila", "Gara", "Vanija",
+                  "Vishti", "Kintughna", "Shakuni", "Catushpada", "Nâga" };
+char *
+get_karana_str(unsigned char karana)
+{
+  return karanas[karana];
+}
+
+char *
+get_element_5_str(unsigned char element)
 {
   switch (element)
     {
@@ -68,7 +89,7 @@ get_element_5(unsigned char element)
 }
 
 char *
-get_animal(unsigned char animal)
+get_animal_str(unsigned char animal)
 {
   switch (animal)
     {
