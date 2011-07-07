@@ -29,17 +29,17 @@ void print_tib_month(tib_month *tm) {
   //printf("year: %ld\n", tm->year);
   printf("royal year %ld, ", tm->year+127);
   printf("year %d of rabjung %d: ", tm->yor, tm->rabjung);
-  printf("%s %s %s\n", get_gender_str(tm->year_gender), get_element_5_str(tm->year_element), get_animal_str(tm->year_animal));
+  printf("%s %s %s, %d\n", get_gender_str(tm->year_gender), get_element_5_str(tm->year_element), get_animal_str(tm->year_animal), tm->year_sme_ba);
   switch(tm->month_type)
     {
       case NORMAL:
         printf("month: %ld - true month: %ld;%ld\n", tm->month, tm->true_month[0], tm->true_month[1]);
         break;
       case FIRST_OF_DOUBLE:
-        printf("month: %ld (first of a double month) - true month: %ld;%ld\n", -tm->month, tm->true_month[0], tm->true_month[1]); 
+        printf("month: %ld (first of a double month) - true month: %ld;%ld\n", tm->month, tm->true_month[0], tm->true_month[1]); 
         break;
       default:
-        printf("month: %ld (second of a double month) - true month: %ld;%ld\n", -tm->month, tm->true_month[0], tm->true_month[1]); 
+        printf("month: %ld (second of a double month) - true month: %ld;%ld\n", tm->month, tm->true_month[0], tm->true_month[1]); 
         break;
     }
   //printf("starting day: %ld\n", tm->start_gd);
@@ -50,7 +50,6 @@ void print_tib_month(tib_month *tm) {
 
 
 void print_tib_planets(tib_day *td) {
-  
   printf("mars longitude: "); ui_print_lst(td->marmurdag,5); printf("\n");
   printf("jupiter longitude: "); ui_print_lst(td->jupmurdag,5); printf("\n");
   printf("saturn longitude: "); ui_print_lst(td->satmurdag,5); printf("\n");

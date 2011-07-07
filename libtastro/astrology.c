@@ -23,7 +23,9 @@ void get_year_astro(tib_month *month)
     month->year_animal = (unsigned char) ( month->year + 1200 - 7 ) % 12;
     month->year_element = (unsigned char) (( month->year + 1200 ) / 2 - 3 ) % 5;
     month->year_gender = (unsigned char) (month->year % 2); // 1 = female, odd; 0
-    //month->year_sme_ba = 1 + ( 3007 - month->year ) % 9;
+    month->year_sme_ba = (unsigned char) (1 + ( 3007 - month->year ) % 9); // the nine numbers
+    // WARNING: do not compute years superior to 3007 with this function!
+    
 }
 
 /* Function to calculate daily informations. Currently it fills the lm_db, yoga

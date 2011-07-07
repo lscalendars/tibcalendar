@@ -66,10 +66,11 @@ typedef struct tib_month
 {
     long int year; // the western calendar year
     int rabjung; // the indian cycle the year is in (number 1 is the one starting in 1027)
-    unsigned char yor; // the year inside the rabjung
+    unsigned char yor; // the year inside the rabjung, starting with yor 0 for the first
     unsigned char year_animal; // animal, element and gender (ex: 2011 is female iron rabbit)
     unsigned char year_element;
     unsigned char year_gender;
+    unsigned char year_sme_ba;
     long int month; // the adjusted month as appearing in the almanach
     unsigned char month_type;
     long int true_month[2]; // the true month
@@ -90,6 +91,10 @@ typedef struct tib_day
   long int nyibar[6]; // mean solar longitude
   long int nyidag[6]; // true solar longitude
   long int gzadag[6]; // true weekday
+  unsigned char lm_db; // lunar mansion at daybreak
+  unsigned char yoga; // yoga, see KTC p.42
+  unsigned char karana; // Karanas are numbered from 0 to 7 for the changing karanas, and from 7 to
+  // 10 for the fixed ones, see KTC p.43
   // should the planets be separate?
   // the lists are 6 numbers long for intermediate calculations
     long int marmurdag[6]; // the longitude of mars for the day
