@@ -2,6 +2,8 @@
 #include"tbday.h"
 #include"../ui.h"
 #include"utils.h"
+#include"system.h"
+#include <stdlib.h>
 
 /* global julian day test routine */
 
@@ -21,14 +23,15 @@ check_tibday_phugpa_individuals ()
   int res;
   tib_day *td1 = new_tib_day ();
   tib_day *td2 = new_tib_day ();
-  res = check_tibday_phugpa_individual (1, 2000487L, td1, td2);
+  astro_system *sys = get_astro_system(PHUGPA);
+  res = check_tibday_phugpa_individual (1, 2000487L, td1, td2, sys);
   if (!res)
     {
       free_tib_day (td1);
       free_tib_day (td2);
       return 0;
     }
-  res = check_tibday_phugpa_individual (2, 2455738L, td1, td2);
+  res = check_tibday_phugpa_individual (2, 2455738L, td1, td2, sys);
   if (!res)
     {
       free_tib_day (td1);
@@ -37,6 +40,7 @@ check_tibday_phugpa_individuals ()
     }
   free_tib_day (td1);
   free_tib_day (td2);
+  free(sys);
   return 1;
 }
 
@@ -45,10 +49,10 @@ check_tibday_phugpa_individuals ()
 // td1 and td2: two tibetan days to play with
 int
 check_tibday_phugpa_individual (int i, long int jd, tib_day * td1,
-				tib_day * td2)
+				tib_day * td2, astro_system *sys)
 {
   get_tibday_const (i, td1);
-  get_day_data (jd, td2);
+  get_day_data (jd, td2, sys);
   return (compare_tib_day (td2, td1));
 }
 

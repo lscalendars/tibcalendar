@@ -124,13 +124,13 @@ static long int rahutsa[5] = { 0, 0, 14, 0, 12 };
  * See KTC p. 96 for details
  */
 void
-get_rahu_l (epoch epch, long int m, long int tt, long int rahudong[5])
+get_rahu_l (epoch *epch, long int m, long int tt, long int rahudong[5])
 {
   long int lista[5] = {27,0,0,0,0}; // a full circle
   long int listb[5] = {0,0,0,0,0};
   // ( m + epch.rahupart ) % 230 is the Rahu month
   // Rahu month * 30 + tt is the number of lunar days elapsed in a Rahu cycle
-  mul_lst (listb, rahutsa, ((m + epch.rahupart) % 230) * 30 + tt, 27, 23);
+  mul_lst (listb, rahutsa, ((m + epch->rahupart) % 230) * 30 + tt, 27, 23);
   lista[0] = 27;
   sub_lst (rahudong, lista, listb, 27, 23);
   /* Uncomment if you want the position of the tail:
@@ -211,9 +211,9 @@ get_true_slow_l (long int pdaldag[6], long int pdalbar[6], long int pfac[6],
 /* Main function computing all the planet data for a tib_day
  */
 void
-get_planets_data (tib_day *td, epoch epch)
+get_planets_data (tib_day *td, astro_system *sys)
 {
-  long int sz = td->gd - epch.spz_j;
+  long int sz = td->gd - sys->epoch->spz_j;
   long int mardalbar[6] = {0,0,0,0,0,0};
   long int mardaldag[6] = {0,0,0,0,0,0};
   long int jupdalbar[6] = {0,0,0,0,0,0};
@@ -230,29 +230,29 @@ get_planets_data (tib_day *td, epoch epch)
 // mars, dal dag. - KTC 57
 // Checked against tables by "dbyangs can grub pa'i rdo rje", p. 623
   // here (sz + epch.maradd) % 687 is the particular day (KTC p. 57)
-  get_mean_slow_l(mardalbar, (sz + epch.maradd) % marcyc, marcyc, marfrac);
+  get_mean_slow_l(mardalbar, (sz + sys->epoch->maradd) % marcyc, marcyc, marfrac);
   get_true_slow_l(mardaldag, mardalbar, marfac, marbye, mardom, marfrac);
 
 // jupiter, dal dag. - KTC 61
 // Checked against tables by "dbyangs can grub pa'i rdo rje", p. 625
-  get_mean_slow_l(jupdalbar, (sz + epch.jupadd) % jupcyc, jupcyc, jupfrac);
+  get_mean_slow_l(jupdalbar, (sz + sys->epoch->jupadd) % jupcyc, jupcyc, jupfrac);
   get_true_slow_l(jupdaldag, jupdalbar, jupfac, jupbye, jupdom, jupfrac);
 
 // saturn, dal dag. - KTC 61
 // Checked against tables by "dbyangs can grub pa'i rdo rje", p. 633
-  get_mean_slow_l(satdalbar, (sz + epch.satadd) % satcyc, satcyc, satfrac);
+  get_mean_slow_l(satdalbar, (sz + sys->epoch->satadd) % satcyc, satcyc, satfrac);
   get_true_slow_l(satdaldag, satdalbar, satfac, satbye, satdom, satfrac);
 
 // mercury, dal bar, - KTC 85
 // Checked against tables by "dbyangs can grub pa'i rdo rje", p. 610
-  get_mean_slow_l(merkanbar, (sz*100 + epch.meradd) % mercyc, mercyc, merfrac);
+  get_mean_slow_l(merkanbar, (sz*100 + sys->epoch->meradd) % mercyc, mercyc, merfrac);
 
 // venus, dal bar, - KTC 77
 // Checked against tables by "dbyangs can grub pa'i rdo rje", p. 612
-  get_mean_slow_l(venkanbar, (sz*10 + epch.venadd) % vencyc, vencyc, venfrac);
+  get_mean_slow_l(venkanbar, (sz*10 + sys->epoch->venadd) % vencyc, vencyc, venfrac);
 
 // drag gsum rkang 'dzin, zhi gnyis dal bar - KTC 63
-  dragkang[0] = 27 * (long) (((long long) sz * 18382 + (long long) epch.dragkadd) % 6714405LL);
+  dragkang[0] = 27 * (long) (((long long) sz * 18382 + (long long) sys->epoch->dragkadd) % 6714405LL);
 
   // here is something a bit different to compute inner planets dal dag
   div_lst_6 (dragkang, dragkang, 6714405L, rkang_frac, 1);
@@ -289,7 +289,7 @@ get_planets_data (tib_day *td, epoch epch)
   get_geo_l(merdaldag, merkanbar, dragkang, td->mermurdag, merfrac, merbye1, merbye2, merdom1, merdom2, mertquo1, mertquo2, INNER_PLANET);
   // for venus, see KTC p. 82, checked against tables by "dbyangs can grub pa'i rdo rje", p. 645
   get_geo_l(vendaldag, venkanbar, dragkang, td->venmurdag, venfrac, venbye1, venbye2, vendom1, vendom2, ventquo1, ventquo2, INNER_PLANET);
-  get_rahu_l(epch, td->month->true_month[0], td->tt, td->rahudong);
+  get_rahu_l(sys->epoch, td->month->true_month[0], td->tt, td->rahudong);
 }
 
 /*

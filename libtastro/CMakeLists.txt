@@ -10,5 +10,8 @@ add_library(
 	tbplanets.h
 	astrology.c
 	astrology.h
+	system.c
+	system.h
+	system-priv.h
 	)
     

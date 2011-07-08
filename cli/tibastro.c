@@ -29,6 +29,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include"tests/tests-tbday.h"
 #include"ui.h"
 #include"tibastro.h"
+#include "system.h"
 #include<jd.h>
 #include<tbday.h>
 
@@ -38,15 +39,18 @@ main ()
 {
   // TODO: command-line analysis
   tib_day *td;
+  astro_system *sys;
   td = new_tib_day();
   init_ui();
   //run_tests();
   //get_tpdata(2449719L); // 1/1/1995
   //get_tpdata(2449719L, td);
   //print_tib_day(td);
-  get_day_data(2449749L, td);
+  sys = get_astro_system(PHUGPA);
+  get_day_data(2449749L, td, sys);
   print_tib_day(td);
   free(td);
+  free(sys);
   //main_menu();
   end_ui();
   return 0;
@@ -108,6 +112,8 @@ void run_tests()
 
 void get_tibdata_for_date()
 {
+  astro_system *sys;
+  sys = get_astro_system(PHUGPA);
   long int day, month, year;
   long int jd;
   tib_day *td;
@@ -117,9 +123,10 @@ void get_tibdata_for_date()
   jd = wd_to_jd(day, month, year);
   ui_print("jd: %ld\n", jd);
   td = new_tib_day();
-  get_day_data(jd, td);
+  get_day_data(jd, td, sys);
   print_tib_day(td);
   free(td);
+  free(sys);
   main_menu();
   return;
 }

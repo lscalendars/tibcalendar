@@ -31,13 +31,14 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "utils.h"
 #include "jd.h"			// for jd_to_wd
 #include "astrology.h"
+#include "system.h" // for epoch
 
 tib_day *
 new_tib_day()
 {
   tib_day *td = malloc (sizeof (tib_day));
-  memset (td, 0, sizeof (tib_day));
   tib_month *tm = malloc (sizeof (tib_month));
+  memset (td, 0, sizeof (tib_day));
   memset (tm, 0, sizeof (tib_month));
   td->month = tm;
   return td;
@@ -63,12 +64,12 @@ free_tib_day(tib_day *td)
  * operation is first getting M, then M*1;2 + 0;55 (65)
  */
 void
-phugpa_zla_dag (const epoch epch, long int y, long int m, long int zd[2])
+phugpa_zla_dag (const epoch *epch, long int y, long int m, long int zd[2])
 {
   long int yr, a, b;
-  yr = y - epch.year;
+  yr = y - epch->year;
   a = 12 * yr + m - 3;		// intermediate value (M)
-  b = 2 * a + epch.eyr_a;
+  b = 2 * a + epch->eyr_a;
   zd[1] = b % 65;
   zd[0] = a + b / 65;
 }
@@ -105,11 +106,11 @@ phugpa_zla_dag (const epoch epch, long int y, long int m, long int zd[2])
  */
 
 long int
-phugpa_adj_zla (long int tm, long int zd[2], const epoch epch,
+phugpa_adj_zla (long int tm, long int zd[2], epoch *epch,
 		unsigned char *zeromthfg)
 {
   long int adj_mth;
-  if (zd[1] == epch.zlasho || zd[1] == epch.zlasho + 1)
+  if (zd[1] == epch->zlasho || zd[1] == epch->zlasho + 1)
     {
       // for month taking the name of the following month, the convention is to
       // return -tm
@@ -118,7 +119,7 @@ phugpa_adj_zla (long int tm, long int zd[2], const epoch epch,
     }
   else
     {
-      if (zd[1] > epch.zlasho + 1)
+      if (zd[1] > epch->zlasho + 1)
 	{
 	  adj_mth = tm - 1;
 	}
@@ -172,7 +173,7 @@ phugpa_adj_zla (long int tm, long int zd[2], const epoch epch,
  *  - it fills the month fields with everything needed
  */
 void
-find_month_and_year (long int jd, epoch epch, tib_month *month)
+find_month_and_year (long int jd, epoch *epch, tib_month *month)
 {
   long int tm, ty, adj_mth, gd, hld_tm; 
   int wd, wm, wy, wdow; 
@@ -236,7 +237,7 @@ find_month_and_year (long int jd, epoch epch, tib_month *month)
       month->month_type = FIRST_OF_DOUBLE;
       month->month = -month->month;
     }
-  else if ( month->true_month[1] == epch.zlasho+2 || month->true_month[1] == epch.zlasho+3 )
+  else if ( month->true_month[1] == epch->zlasho+2 || month->true_month[1] == epch->zlasho+3 )
     month->month_type = SECOND_OF_DOUBLE;
   // we need to get the rilcha, nyidru and gzadru for the month
   get_month_data (epch, month->true_month[0], month->rilcha, month->nyidru, month->gzadru);
@@ -249,7 +250,7 @@ find_month_and_year (long int jd, epoch epch, tib_month *month)
  * only the true_month[0] part).
  */
 void
-find_day (tib_day *td, long int jd, epoch epch)
+find_day (tib_day *td, long int jd, epoch *epch)
 {
   // month values
   long int rilcha[2];	// anomaly
@@ -357,23 +358,22 @@ find_day (tib_day *td, long int jd, epoch epch)
  * argument to add: epoch is not used yet but will contain the data of the epoch
  */
 void
-get_day_data (long int jd, tib_day *td)
+get_day_data (long int jd, tib_day *td, astro_system *sys)
 {
-  epoch epch = phugpa_epch;
-
-  if (jd <= epch.spz_j)
+  if (jd <= sys->epoch->spz_j)
     {
       printf("error: day asked is before the epoch...\n");
       return;
     }
   // first we find the month and year
-  find_month_and_year (jd, epch, td->month);
+  find_month_and_year (jd, sys->epoch, td->month);
   // Then we find the day inside the month
-  find_day (td, jd, epch);
+  find_day (td, jd, sys->epoch);
   // now we have our day... let's fill the planetary data
-  get_planets_data(td, epch);
+  get_planets_data(td, sys);
   // now yoga, karana, etc.
   get_day_infos(td);
+  
 }
 
 /* Function to calculate month mean Sun, "nyi ma'i dhru ba" at new moon
@@ -382,23 +382,23 @@ get_day_data (long int jd, tib_day *td)
  * See KTC p. 21 for details
  */
 void
-get_month_data (epoch epch, long int zd0, long int rilcha[2], long int nyidru[6], long int gzadru[6])
+get_month_data (epoch *epch, long int zd0, long int rilcha[2], long int nyidru[6], long int gzadru[6])
 {
   long int a, b;
   static long int nyi_drup_const[5] = { 2, 10, 58, 1, 17 };
   static long int gza_drup_const[5] = { 1, 31, 50, 0, 480 } ;
   // first we compute rilcha
-  b = zd0 + epch.ril_b;
-  a = 2 * zd0 + epch.ril_a + b / 126;
+  b = zd0 + epch->ril_b;
+  a = 2 * zd0 + epch->ril_a + b / 126;
   rilcha[1] = b % 126;
   rilcha[0] = a % 28;
   //printf("getmonthdatarilcha0 : %ld\nrilcha1 : %ld\n", rilcha[0], rilcha[1]);
   // then nyidru
   mul_lst (nyidru, nyi_drup_const, zd0, 27, 67);
-  add_lst (nyidru, nyidru, epch.nyid, 27, 67);
+  add_lst (nyidru, nyidru, epch->nyid, 27, 67);
   // then gzadru
   mul_lst (gzadru, gza_drup_const, zd0, 7, 707);
-  add_lst (gzadru, gzadru, epch.gzad, 7, 707);
+  add_lst (gzadru, gzadru, epch->gzad, 7, 707);
 }
 
 
@@ -541,10 +541,10 @@ nyi_dagp_and_gza_dagp (long int nyibar[6], long int tsebar[6],
  *  - gzadag
  *  - nyibar
  * returns:
- *  - spi zagfp
+ *  - spi zagf
  */
 int
-get_tt_data (epoch epch, long int cur_mth, long int gzadru[6],
+get_tt_data (epoch *epch, long int cur_mth, long int gzadru[6],
 	     long int nyidru[6], long int rilcha[2], long int tt,
 	     long int nyidag[6], long int gzadag[6], long int nyibar[6])
 {
@@ -587,16 +587,16 @@ get_tt_data (epoch epch, long int cur_mth, long int gzadru[6],
  * See KTC 46 for details.
  */
 long int
-spi_zagfp (const epoch epch, long int cur_mth, long int tt, long int sd)
+spi_zagfp (epoch *epch, long int cur_mth, long int tt, long int sd)
 {
   long int spizag;		// the result
   long int b, c;		// intermediate values
   spizag = cur_mth * 30 + tt;
-  c = spizag + epch.spz_c;
-  b = spizag + epch.spz_b;
+  c = spizag + epch->spz_c;
+  b = spizag + epch->spz_b;
   b = b + c / 707;
   spizag = spizag - b / 64;
-  c = (spizag + epch.spz_f) % 7;
+  c = (spizag + epch->spz_f) % 7;
   b = sd;
   if (c != b)
     {
@@ -608,5 +608,5 @@ spi_zagfp (const epoch epch, long int cur_mth, long int tt, long int sd)
     }
   //if ( b - c > 2 )
   //  printf ( "\nerror in general day routine: %ld\n", b - c );
-  return spizag + epch.spz_j;
+  return spizag + epch->spz_j;
 }

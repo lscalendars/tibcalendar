@@ -28,10 +28,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define INNER_PLANET 1
 #define OUTER_PLANET 0
 
-void get_planets_data(tib_day *td, epoch epch);
+void get_planets_data(tib_day *td, astro_system *sys);
 void get_geo_l(long int plandaldag[6], long int plandalbar[6], long int dragkang[6], long int planmurdag[6], long int planfrac, long int *planbye1, long int *planbye2, long int *plandom1, long int *plandom2, unsigned char plantquo1[15], unsigned char plantquo2[15], unsigned char type);
 void get_true_slow_l (long int pdaldag[6], long int pdalbar[6], long int pfac[6], long int pbye[6], long int pdom[6], long int frac);
 void get_mean_slow_l (long int lst[5], long int dat, long int cyc, long int frac);
-void get_rahu_l (epoch epch, long int m, long int tt, long int rahudong[5]);
+void get_rahu_l (epoch *epch, long int m, long int tt, long int rahudong[5]);
 
 #endif
