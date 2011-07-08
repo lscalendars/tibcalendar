@@ -222,7 +222,6 @@ void sub_lst_6 ( long int a1[6], long int a2[6], long int a3[6], long int n0,
                long int n4, long int n5 )
   {
   long int tmp[6];
-  int  i;
     copy_lst_6(tmp, a2);
 
     a1[5] = tmp[5] - a3[5];
