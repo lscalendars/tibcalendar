@@ -64,7 +64,7 @@ free_tib_day(tib_day *td)
  * operation is first getting M, then M*1;2 + 0;55 (65)
  */
 void
-phugpa_zla_dag (const epoch *epch, long int y, long int m, long int zd[2])
+zla_dag (const epoch *epch, long int y, long int m, long int zd[2])
 {
   long int yr, a, b;
   yr = y - epch->year;
@@ -104,7 +104,6 @@ phugpa_zla_dag (const epoch *epch, long int y, long int m, long int zd[2])
  * returns adj_mth, as explained above, and also modifies zd[0] and zeromthfg
  * if necessary.
  */
-
 long int
 phugpa_adj_zla (long int tm, long int zd[2], epoch *epch,
 		unsigned char *zeromthfg)
@@ -154,6 +153,34 @@ phugpa_adj_zla (long int tm, long int zd[2], epoch *epch,
   return adj_mth;
 }
 
+/* Idem for Tsurphu system.
+ */
+long int
+tsurphu_adj_zla (long int tm, long int zd[2],
+		unsigned char *zeromthfg)
+{
+  long int adj_mth;
+      if ( zd[1] == 0 || zd[1] == 1 )
+      {
+        if ( !*zeromthfg )
+          {
+            *zeromthfg = 1;
+            adj_mth = -tm;
+            zd[0] = zd[0] - 1;
+          }
+        else
+          {
+            *zeromthfg = 0;
+            adj_mth = tm;
+            zd[0] = zd[0] + 1;
+          }
+      }
+    else
+      {
+        adj_mth = tm;
+      }
+  return adj_mth;
+}
 
 /*
  * Function taking the julian day and returning the true year and month. To
@@ -173,7 +200,7 @@ phugpa_adj_zla (long int tm, long int zd[2], epoch *epch,
  *  - it fills the month fields with everything needed
  */
 void
-find_month_and_year (long int jd, epoch *epch, tib_month *month)
+find_month_and_year (long int jd, astro_system *sys, tib_month *month)
 {
   long int tm, ty, adj_mth, gd, hld_tm; 
   int wd, wm, wy, wdow; 
@@ -198,13 +225,16 @@ find_month_and_year (long int jd, epoch *epch, tib_month *month)
     {
       if (!zeromthfg)		// We need to use the same data, twice.
 	{
-	  phugpa_zla_dag (epch, ty, tm, zd);
+	  zla_dag (sys->epoch, ty, tm, zd);
 	}
-      adj_mth = phugpa_adj_zla (tm, zd, epch, &zeromthfg);	// do not forget this can modify zd[0]
+	    if (sys->type == PHUGPA)
+        adj_mth = phugpa_adj_zla (tm, zd, sys->epoch, &zeromthfg);	// do not forget this can modify zd[0]
+      else if (sys->type == TSURPHU)
+        adj_mth = tsurphu_adj_zla (tm, zd, &zeromthfg);	// do not forget this can modify zd[0]
       // here the lunar day is 0 thus we don't need the corrections that
       // apply to other lunar days (KTC 23).
-      get_month_data (epch, zd[0], month->rilcha, month->nyidru, month->gzadru);
-      gd = get_tt_data (epch, zd[0], month->gzadru, month->nyidru, month->rilcha, 0, nyidag, gzadag, nyibar);
+      get_month_data (sys->epoch, zd[0], month->rilcha, month->nyidru, month->gzadru);
+      gd = get_tt_data (sys->epoch, zd[0], month->gzadru, month->nyidru, month->rilcha, 0, nyidag, gzadag, nyibar);
 
       // Now, have we gone far enough? We first find the true new Moon date 
       // immediately after or equal to our target date (only for coming back
@@ -237,10 +267,11 @@ find_month_and_year (long int jd, epoch *epch, tib_month *month)
       month->month_type = FIRST_OF_DOUBLE;
       month->month = -month->month;
     }
-  else if ( month->true_month[1] == epch->zlasho+2 || month->true_month[1] == epch->zlasho+3 )
+  // for the Phugpa system, delayed month are month with zd[1] equal to 50 or 51, for tsurphu it's 0 or 1
+  else if ((sys->type == PHUGPA && (month->true_month[1] == sys->epoch->zlasho+2 || month->true_month[1] == sys->epoch->zlasho+3 ) ) || (sys->type == TSURPHU && (month->true_month[1] == 0 || month->true_month[1] == 1 ) ))
     month->month_type = SECOND_OF_DOUBLE;
   // we need to get the rilcha, nyidru and gzadru for the month
-  get_month_data (epch, month->true_month[0], month->rilcha, month->nyidru, month->gzadru);
+  get_month_data (sys->epoch, month->true_month[0], month->rilcha, month->nyidru, month->gzadru);
   get_year_astro(month);
 }
 
@@ -366,7 +397,7 @@ get_day_data (long int jd, tib_day *td, astro_system *sys)
       return;
     }
   // first we find the month and year
-  find_month_and_year (jd, sys->epoch, td->month);
+  find_month_and_year (jd, sys, td->month);
   // Then we find the day inside the month
   find_day (td, jd, sys->epoch);
   // now we have our day... let's fill the planetary data
@@ -414,7 +445,7 @@ unsigned int gza_short_flag = 0;	// TODO: let the user choose if he wants it or 
  * See KTC p. 24 and following for details
  */
 void
-nyi_dagp_and_gza_dagp (long int nyibar[6], long int tsebar[6],
+nyi_dag_and_gza_dag (long int nyibar[6], long int tsebar[6],
 		       long int rilcha[2], long int tt, long int nyidag[6],
 		       long int gzadag[6])
 {
@@ -565,13 +596,13 @@ get_tt_data (epoch *epch, long int cur_mth, long int gzadru[6],
       mul_lst (nyilon, nyi_long_const, tt, 27, 67);
       add_lst (tsebar, gzadru, tsedru, 7, 707);
       add_lst (nyibar, nyidru, nyilon, 27, 67);
-      nyi_dagp_and_gza_dagp (nyibar, tsebar, rilcha, tt, nyidag, gzadag);
+      nyi_dag_and_gza_dag (nyibar, tsebar, rilcha, tt, nyidag, gzadag);
     }
   else
     {
-      nyi_dagp_and_gza_dagp (nyidru, gzadru, rilcha, 0, nyidag, gzadag);
+      nyi_dag_and_gza_dag (nyidru, gzadru, rilcha, 0, nyidag, gzadag);
     }
-  return spi_zagfp (epch, cur_mth, tt, gzadag[0]);
+  return spi_zag (epch, cur_mth, tt, gzadag[0]);
 }
 
 /* Function computing the general day (spyi zhag)
@@ -587,7 +618,7 @@ get_tt_data (epoch *epch, long int cur_mth, long int gzadru[6],
  * See KTC 46 for details.
  */
 long int
-spi_zagfp (epoch *epch, long int cur_mth, long int tt, long int sd)
+spi_zag (epoch *epch, long int cur_mth, long int tt, long int sd)
 {
   long int spizag;		// the result
   long int b, c;		// intermediate values

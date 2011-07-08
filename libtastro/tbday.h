@@ -58,13 +58,8 @@ typedef struct tib_day
     long int rahudong[5]; // rahu
 } tib_day;
 
-void rilchafp (epoch *epch, long int zd0, long int rilcha[2]);
-void nyi_drup (epoch *epch, long int zd0, long int nyidru[6] );
-void gza_drup (epoch *epch, long int zd0, long int gzadru[6]);
-void nyi_lonp ( long int ld, long int nyilon[6]);
-void tse_drup ( long int ld, long int tsedru[6]);
-void nyi_dagp_and_gza_dagp ( long int nyibar[6], long int tsebar[6], long int rilcha[2], long int tt, long int nyidag[6], long int gzadag[6]) ;
-long int spi_zagfp (epoch *epch, long int cur_mth, long int tt, long int sd);
+void nyi_dag_and_gza_dag ( long int nyibar[6], long int tsebar[6], long int rilcha[2], long int tt, long int nyidag[6], long int gzadag[6]) ;
+long int spi_zag (epoch *epch, long int cur_mth, long int tt, long int sd);
 int get_tt_data(epoch *epch, long int cur_mth, long int gzadru[6], long int nyidru[6], long int rilcha[6], long int tt, long int nyidag[6], long int gzadag[6], long int nyibar[6]);
 void get_day_data(long int jd, tib_day *td, astro_system *sys);
 tib_day * new_tib_day();
