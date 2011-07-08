@@ -97,8 +97,6 @@ static unsigned char mertquo2[15] = {0,0,0,0,0,1,1,1,1,1,1,1,1,1,0};
 static unsigned char ventquo1[15] = {0,0,0,0,0,0,0,0,0,0,1,1,1,1,0};
 static unsigned char ventquo2[15] = {0,0,0,0,1,1,1,1,1,1,1,1,1,1,0};
 
-static long int rkang_frac = 149209L;
-
 // Periods of the planets, solar days
 static long int mercyc = 8797; 
 static long int vencyc = 2247;
@@ -226,6 +224,7 @@ get_planets_data (tib_day *td, astro_system *sys)
   long int vendaldag[6] = {0,0,0,0,0,0};
   long int dragkang[6] = {0,0,0,0,0,0};
   long int nyindhru[6] = {0,0,0,0,0,0};
+  long int rkang_frac;
 
 // mars, dal dag. - KTC 57
 // Checked against tables by "dbyangs can grub pa'i rdo rje", p. 623
@@ -251,24 +250,23 @@ get_planets_data (tib_day *td, astro_system *sys)
 // Checked against tables by "dbyangs can grub pa'i rdo rje", p. 612
   get_mean_slow_l(venkanbar, (sz*10 + sys->epoch->venadd) % vencyc, vencyc, venfrac);
 
+// for Phugpa, we use the dragkang method:
+  if (sys->type == PHUGPA)
+    {
+  rkang_frac = 149209L;
 // drag gsum rkang 'dzin, zhi gnyis dal bar - KTC 63
-  dragkang[0] = 27 * (long) (((long long) sz * 18382 + (long long) sys->epoch->dragkadd) % 6714405LL);
-
+  // here we call the dragkang list nyindhru
+  nyindhru[0] = 27 * (long) (((long long) sz * 18382 + (long long) sys->epoch->dragkadd) % 6714405LL);
   // here is something a bit different to compute inner planets dal dag
-  div_lst_6 (dragkang, dragkang, 6714405L, rkang_frac, 1);
-  copy_lst_6(nyindhru, dragkang);
-
-// For Tsurphu system only:
-  /* TODO: handle...
-     if ( epch == TSURPHU )  // For Tsurphu, use normal mean Sun
-     {
+  div_lst_6 (nyindhru, nyindhru, 6714405L, rkang_frac, 1);
+    }
+  else // tsurphu
+    {
      rkang_frac = 13;       
-     for ( i = 0; i < 5; ++i )
-     nyindhru[i] = nyibar[i];
+     copy_lst(nyindhru, td->nyibar);
      nyindhru[5] = 0;  
      nyindhru[4] = (long) (( (long long)nyindhru[4] * 149209L ) / 67);         
      }
-   */
 
 // mercury dal dag. KTC 85
 // Checked against tables by "dbyangs can grub pa'i rdo rje", p. 616
@@ -280,15 +278,15 @@ get_planets_data (tib_day *td, astro_system *sys)
 
   // then the main computation, setting the longitude (td->xxxmurdag)
   // for mars, see KTC p. 65, checked against calculation tables in British Library tables by "dbyangs can grub pa'i rdo rje", p. 644
-  get_geo_l(mardaldag, mardalbar, dragkang, td->marmurdag, marfrac, marbye1, marbye2, mardom1, mardom2, martquo1, martquo2, OUTER_PLANET);
+  get_geo_l(mardaldag, mardalbar, dragkang, td->marmurdag, marfrac, marbye1, marbye2, mardom1, mardom2, martquo1, martquo2, OUTER_PLANET, rkang_frac);
     // for jupiter, see KTC p. 74, checked against tables by "dbyangs can grub pa'i rdo rje", p. 645
-  get_geo_l(jupdaldag, jupdalbar, dragkang, td->jupmurdag, jupfrac, jupbye1, jupbye2, jupdom1, jupdom2, juptquo1, juptquo2, OUTER_PLANET);
+  get_geo_l(jupdaldag, jupdalbar, dragkang, td->jupmurdag, jupfrac, jupbye1, jupbye2, jupdom1, jupdom2, juptquo1, juptquo2, OUTER_PLANET, rkang_frac);
   // for saturn, see KTC p. 75, checked against tables by "dbyangs can grub pa'i rdo rje", p. 647
-  get_geo_l(satdaldag, satdalbar, dragkang, td->satmurdag, satfrac, satbye1, satbye2, satdom1, satdom2, sattquo1, sattquo2, OUTER_PLANET);
+  get_geo_l(satdaldag, satdalbar, dragkang, td->satmurdag, satfrac, satbye1, satbye2, satdom1, satdom2, sattquo1, sattquo2, OUTER_PLANET, rkang_frac);
   // for mercury, see KTC p. 86, checked against tables by "dbyangs can grub pa'i rdo rje", p. 644
-  get_geo_l(merdaldag, merkanbar, dragkang, td->mermurdag, merfrac, merbye1, merbye2, merdom1, merdom2, mertquo1, mertquo2, INNER_PLANET);
+  get_geo_l(merdaldag, merkanbar, dragkang, td->mermurdag, merfrac, merbye1, merbye2, merdom1, merdom2, mertquo1, mertquo2, INNER_PLANET, rkang_frac);
   // for venus, see KTC p. 82, checked against tables by "dbyangs can grub pa'i rdo rje", p. 645
-  get_geo_l(vendaldag, venkanbar, dragkang, td->venmurdag, venfrac, venbye1, venbye2, vendom1, vendom2, ventquo1, ventquo2, INNER_PLANET);
+  get_geo_l(vendaldag, venkanbar, dragkang, td->venmurdag, venfrac, venbye1, venbye2, vendom1, vendom2, ventquo1, ventquo2, INNER_PLANET, rkang_frac);
   get_rahu_l(sys->epoch, td->month->true_month[0], td->tt, td->rahudong);
 }
 
@@ -302,9 +300,10 @@ get_planets_data (tib_day *td, astro_system *sys)
  *  - planbye1, planbye2, plandom1 and plandom2 are the columns of the tables page 65, 66, 67, 83 and 84
  *  - plantquo1 and plantquo2 are tables describing when, in these tables, we need to substract or add the longitude, in the case (plantquo1) where no substraction of half cycle is needed, or (plantquo2) in the case where it's needed
  *  - type is INNER_PLANET or OUTER_PLANET
+ *  - rkang_frac is 13 for tsurphu, 149209 for phugpa
  */
 void 
-get_geo_l(long int plandaldag[6], long int plandalbar[6], long int dragkang[6], long int planmurdag[6], long int planfrac, long int *planbye1, long int *planbye2, long int *plandom1, long int *plandom2, unsigned char plantquo1[15], unsigned char plantquo2[15], unsigned char type)
+get_geo_l(long int plandaldag[6], long int plandalbar[6], long int dragkang[6], long int planmurdag[6], long int planfrac, long int *planbye1, long int *planbye2, long int *plandom1, long int *plandom2, unsigned char plantquo1[15], unsigned char plantquo2[15], unsigned char type, long int rkang_frac)
 {
   long int lista[6], listc[6], dald[6];
   long int listb[6] = {0,0,0,0,0,0}; // listb is the only one that has to be initialized
