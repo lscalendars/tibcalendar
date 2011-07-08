@@ -91,7 +91,8 @@ void print_tib_day(tib_day *td)
   printf("mean solar longitude: "); ui_print_lst(td->nyibar,5); printf("\n");
   printf("true solar longitude: "); ui_print_lst(td->nyidag,5); printf("\n");
   printf("true weekday: "); ui_print_lst(td->gzadag,5); printf(" (%s)\n", get_weekday_str(td->gzadag[0]));
-  printf("lunar mansion at daybreak: %d ", td->lm_db);
+  printf("sideral day: %d;%d,%d (%s: %s)\n", td->sideral_day[0], td->sideral_day[1], td->sideral_day[2], get_zodiac_str(td->sideral_day[0]), get_zodiac_western_str(td->sideral_day[0]));
+  printf("lunar mansion at daybreak: %d, ", td->lm_db);
   printf("yoga: %s, karana: %s\n", get_yoga_str(td->yoga), get_karana_str(td->karana));
   printf("    Planet data:\n");
   print_tib_planets(td);

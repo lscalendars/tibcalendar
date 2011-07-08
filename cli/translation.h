@@ -7,5 +7,7 @@ char * get_element_5_str(unsigned char element);
 char * get_animal_str(unsigned char animal);
 char * get_yoga_str(unsigned char yoga);
 char * get_karana_str(unsigned char karana);
+char * get_zodiac_str(unsigned char zodiac_sign);
+char * get_zodiac_western_str(unsigned char zodiac_sign);
 
 #endif

@@ -36,6 +36,7 @@ void get_day_infos(tib_day *td)
 {
   long int moonlong[5] = {0,0,0,0,0}; // moon longitude at daybreak
   long int lista[5], listb[5];
+  long int tmp;
   // Calculate lunar mansion at daybreak:
   // The idea here is that we computed the solar longitude at a time where the
   // sun and the moon are apart from tt*12° (54 nadis), so we can compute the
@@ -87,4 +88,15 @@ void get_day_infos(tib_day *td)
       td->karana = 10;
     else
       td->karana = ( td->karana - 1 ) % 7;
+    
+    // now computing the sideral day data corresponding to the mean solar longitude
+    tmp = ( ( td->nyibar[0] * 60 + td->nyibar[1] ) * 60 + td->nyibar[2] ) * 6 + td->nyibar[3];
+    // tmp is now the number of shvasa (1/583200th of circle) of the solar longitude
+    // we want to divide it in 12*30*60th (21600th) of a circle:
+    tmp = tmp / 27; // 21600/583200 = 1/27
+    // now the number of nadis:
+    td->sideral_day[2] = (unsigned char) (tmp % 60);
+    tmp = tmp/60; // tmp is the number of days:
+    td->sideral_day[1] = (unsigned char) (tmp % 30);
+    td->sideral_day[0] = (unsigned char) (tmp / 30);
 }

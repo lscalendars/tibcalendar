@@ -30,6 +30,94 @@ char * get_weekday_str(long int weekday)
     }
 }
 
+char * get_zodiac_western_str(unsigned char zodiac_sign)
+{
+  switch(zodiac_sign)
+    {
+      case 0:
+        return "Aries";
+        break;
+      case 1:
+        return "Taurus";
+        break;
+      case 2:
+        return "Gemini";
+        break;
+      case 3:
+        return "Cancer";
+        break;
+      case 4:
+        return "Leo";
+        break;
+      case 5:
+        return "Virgo";
+        break;
+      case 6:
+        return "Libra";
+        break;
+      case 7:
+        return "Scorpio";
+        break;
+      case 8:
+        return "Sagittarius";
+        break;
+      case 9:
+        return "Capricorn";
+        break;
+      case 10:
+        return "Aquarius";
+        break;
+      default:
+        return "Pisces";
+        break;
+}
+    }
+
+
+
+char * get_zodiac_str(unsigned char zodiac_sign)
+{
+  switch(zodiac_sign)
+    {
+      case 0:
+        return "Caitra";
+        break;
+      case 1:
+        return "Vaishâkha";
+        break;
+      case 2:
+        return "Jyeshtha";
+        break;
+      case 3:
+        return "Âshâdha";
+        break;
+      case 4:
+        return "Shrâvana";
+        break;
+      case 5:
+        return "Bhâdrapada";
+        break;
+      case 6:
+        return "Âshvina";
+        break;
+      case 7:
+        return "Kârtikka";
+        break;
+      case 8:
+        return "Mârghashîrsha";
+        break;
+      case 9:
+        return "Pausha";
+        break;
+      case 10:
+        return "Mâgha";
+        break;
+      default:
+        return "Phâlguna";
+        break;
+    }
+}
+
 char *
 get_gender_str(unsigned char gender)
 {
