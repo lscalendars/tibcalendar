@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 project (tibastro)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 # no, gettext executables are not required when NLS is deactivated
 find_package(Gettext)
 # yes, libintl is *required* even when NLS is deactivated (this is to compile
