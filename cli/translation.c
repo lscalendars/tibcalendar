@@ -7,25 +7,25 @@ char * get_weekday_str(long int weekday)
   switch(weekday)
     {
       case MONDAY:
-        return "monday";
+        return _("monday");
         break;
       case TUESDAY:
-        return "tuesday";
+        return  _("tuesday");
         break;
       case WEDNESDAY:
-        return "wednesday";
+        return  _("wednesday");
         break;
       case THURSDAY:
-        return "thursday";
+        return  _("thursday");
         break;
       case FRIDAY:
-        return "friday";
+        return  _("friday");
         break;
       case SATURDAY:
-        return "saturday";
+        return  _("saturday");
         break;
       default:
-        return "sunday";
+        return  _("sunday");
         break;
     }
 }
@@ -35,40 +35,40 @@ char * get_zodiac_western_str(unsigned char zodiac_sign)
   switch(zodiac_sign)
     {
       case 0:
-        return "Aries";
+        return  _("Aries");
         break;
       case 1:
-        return "Taurus";
+        return  _("Taurus");
         break;
       case 2:
-        return "Gemini";
+        return  _("Gemini");
         break;
       case 3:
-        return "Cancer";
+        return  _("Cancer");
         break;
       case 4:
-        return "Leo";
+        return  _("Leo");
         break;
       case 5:
-        return "Virgo";
+        return  _("Virgo");
         break;
       case 6:
-        return "Libra";
+        return  _("Libra");
         break;
       case 7:
-        return "Scorpio";
+        return  _("Scorpio");
         break;
       case 8:
-        return "Sagittarius";
+        return  _("Sagittarius");
         break;
       case 9:
-        return "Capricorn";
+        return  _("Capricorn");
         break;
       case 10:
-        return "Aquarius";
+        return  _("Aquarius");
         break;
       default:
-        return "Pisces";
+        return  _("Pisces");
         break;
 }
     }
@@ -80,40 +80,40 @@ char * get_zodiac_str(unsigned char zodiac_sign)
   switch(zodiac_sign)
     {
       case 0:
-        return "Caitra";
+        return  _("Caitra");
         break;
       case 1:
-        return "Vaishâkha";
+        return  _("Vaishâkha");
         break;
       case 2:
-        return "Jyeshtha";
+        return  _("Jyeshtha");
         break;
       case 3:
-        return "Âshâdha";
+        return  _("Âshâdha");
         break;
       case 4:
-        return "Shrâvana";
+        return  _("Shrâvana");
         break;
       case 5:
-        return "Bhâdrapada";
+        return  _("Bhâdrapada");
         break;
       case 6:
-        return "Âshvina";
+        return  _("Âshvina");
         break;
       case 7:
-        return "Kârtikka";
+        return  _("Kârtikka");
         break;
       case 8:
-        return "Mârghashîrsha";
+        return  _("Mârghashîrsha");
         break;
       case 9:
-        return "Pausha";
+        return  _("Pausha");
         break;
       case 10:
-        return "Mâgha";
+        return  _("Mâgha");
         break;
       default:
-        return "Phâlguna";
+        return  _("Phâlguna");
         break;
     }
 }
@@ -124,10 +124,10 @@ get_gender_str(unsigned char gender)
   switch (gender)
     {
       case FEMALE:
-        return "female";
+        return  _("female");
         break;
       default:
-        return "male";
+        return  _("male");
         break;
     }
 }
@@ -159,19 +159,19 @@ get_element_5_str(unsigned char element)
   switch (element)
     {
       case FIRE:
-        return "fire";
+        return  _("fire");
         break;
       case EARTH:
-        return "earth";
+        return  _("earth");
         break;
       case IRON:
-        return "iron";
+        return  _("iron");
         break;
       case WATER:
-        return "water";
+        return  _("water");
         break;
       default:
-        return "wood";
+        return  _("wood");
         break;
     }
 }
@@ -182,40 +182,40 @@ get_animal_str(unsigned char animal)
   switch (animal)
     {
       case RABBIT:
-        return "rabbit";
+        return  _("rabbit");
         break;
       case DRAGON:
-        return "dragon";
+        return  _("dragon");
         break;
       case SNAKE:
-        return "snake";
+        return  _("snake");
         break;
       case HORSE:
-        return "horse";
+        return  _("horse");
         break;
       case SHEEP:
-        return "sheep";
+        return  _("sheep");
         break;
       case MONKEY:
-        return "monkey";
+        return  _("monkey");
         break;
       case BIRD:
-        return "bird";
+        return  _("bird");
         break;
       case DOG:
-        return "dog";
+        return  _("dog");
         break;
       case PIG:
-        return "pig";
+        return  _("pig");
         break;
       case MOUSE:
-        return "mouse";
+        return  _("mouse");
         break;
       case OX:
-        return "ox";
+        return  _("ox");
         break;
       default:
-        return "tiger";
+        return  _("tiger");
         break;
     }
 }
