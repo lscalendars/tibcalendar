@@ -1,6 +1,20 @@
 #ifndef TRANSLATION_H
 #define TRANSLATION_H
 
+#ifndef ENABLE_NLS
+#define ENABLE_NLS 0
+#endif
+#if ENABLE_NLS == 1
+    #include "gettext.h"
+    #define _(str) gettext(str)
+    #define N_(str) str
+    #define ngt_(str, strtwo, count) ngettext(str, strtwo, count)
+#else
+    #define _(str) str
+    #define N_(str) str
+    #define ngt_(str, strtwo, count) str
+#endif
+
 char * get_weekday_str(long int weekday);
 char * get_gender_str(unsigned char gender);
 char * get_element_5_str(unsigned char element);
