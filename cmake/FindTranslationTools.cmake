@@ -15,9 +15,8 @@ if(NOT GETTEXT_XGETTEXT_EXECUTABLE)
 endif(NOT GETTEXT_XGETTEXT_EXECUTABLE)
 set(GETTEXT_XGETTEXT_OPTIONS
 	--force-po
-	--add-comments=TRANSLATORS 
-	--copyright-holder=\"Wesnoth development team\"
-	--msgid-bugs-address=\"http://bugs.wesnoth.org/\"
+	--copyright-holder=\"Tibastro development team\"
+	--msgid-bugs-address=\"https://github.com/eroux/tibastro/issues/\"
 	--from-code=UTF-8
 	--sort-by-file
 	--keyword=_
@@ -41,18 +40,6 @@ if(NOT GETTEXT_MSGATTRIB_EXECUTABLE)
 	message("msgattrib not found")
 	set(TRANSLATION_TOOLS_FOUND false)
 endif(NOT GETTEXT_MSGATTRIB_EXECUTABLE)
-
-find_program(ASCIIDOC_EXECUTABLE asciidoc)
-set(ASCIIDOC_OPTIONS
-	-b docbook
-	-d book
-	-n
-	-a toc
-)
-if(NOT ASCIIDOC_EXECUTABLE)
-	message("asciidoc not found")
-	set(TRANSLATION_TOOLS_FOUND false)
-endif(NOT ASCIIDOC_EXECUTABLE)
 
 find_program(DOS2UNIX_EXECUTABLE dos2unix)
 if(NOT DOS2UNIX_EXECUTABLE)
