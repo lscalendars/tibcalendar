@@ -7,6 +7,7 @@ add_executable(
 	ui.h
 	translation.c
 	translation.h
+	gettext.h
 	tests/tests-jd.c
 	tests/tests-jd.h
 	tests/tests-tbday.c
