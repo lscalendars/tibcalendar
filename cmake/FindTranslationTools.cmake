@@ -63,44 +63,45 @@ if(NOT GETTEXT_MSGATTRIB_EXECUTABLE)
 	set(TRANSLATION_TOOLS_FOUND false)
 endif(NOT GETTEXT_MSGATTRIB_EXECUTABLE)
 
-find_program(DOS2UNIX_EXECUTABLE dos2unix)
-if(NOT DOS2UNIX_EXECUTABLE)
-	message("dos2unix not found")
-	set(TRANSLATION_TOOLS_FOUND false)
-endif(NOT DOS2UNIX_EXECUTABLE)
-
-find_program(PO4A-TRANSLATE_EXECUTABLE po4a-translate)
-set(PO4A-TRANSLATE_OPTIONS
-	-f docbook
-	-k 80
-	-M utf-8
-	-L utf-8
-)
-if(NOT PO4A-TRANSLATE_EXECUTABLE)
-	message("po4a-translate not found")
-	set(TRANSLATION_TOOLS_FOUND false)
-endif(NOT PO4A-TRANSLATE_EXECUTABLE)
-
-find_program(PO4A-UPDATEPO_EXECUTABLE po4a-updatepo)
-set(PO4A-UPDATEPO_OPTIONS
-	-M utf-8
-)
-if(NOT PO4A-UPDATEPO_EXECUTABLE)
-	message("po4a-updatepo not found")
-	set(TRANSLATION_TOOLS_FOUND false)
-endif(NOT PO4A-UPDATEPO_EXECUTABLE)
-
-find_program(PO4A-GETTEXTIZE_EXECUTABLE po4a-gettextize)
-set(PO4A-GETTEXTIZE_OPTIONS
-	--copyright-holder "Wesnoth Development Team"
-	-f docbook
-	-M utf-8
-	-L utf-8
-)
-if(NOT PO4A-GETTEXTIZE_EXECUTABLE)
-	message("po4a-gettextize not found")
-	set(TRANSLATION_TOOLS_FOUND false)
-endif(NOT PO4A-GETTEXTIZE_EXECUTABLE)
+# all of these should not be useful right now...
+# find_program(DOS2UNIX_EXECUTABLE dos2unix)
+# if(NOT DOS2UNIX_EXECUTABLE)
+# 	message("dos2unix not found")
+# 	set(TRANSLATION_TOOLS_FOUND false)
+# endif(NOT DOS2UNIX_EXECUTABLE)
+# 
+# find_program(PO4A-TRANSLATE_EXECUTABLE po4a-translate)
+# set(PO4A-TRANSLATE_OPTIONS
+# 	-f docbook
+# 	-k 80
+# 	-M utf-8
+# 	-L utf-8
+# )
+# if(NOT PO4A-TRANSLATE_EXECUTABLE)
+# 	message("po4a-translate not found")
+# 	set(TRANSLATION_TOOLS_FOUND false)
+# endif(NOT PO4A-TRANSLATE_EXECUTABLE)
+# 
+# find_program(PO4A-UPDATEPO_EXECUTABLE po4a-updatepo)
+# set(PO4A-UPDATEPO_OPTIONS
+# 	-M utf-8
+# )
+# if(NOT PO4A-UPDATEPO_EXECUTABLE)
+# 	message("po4a-updatepo not found")
+# 	set(TRANSLATION_TOOLS_FOUND false)
+# endif(NOT PO4A-UPDATEPO_EXECUTABLE)
+# 
+# find_program(PO4A-GETTEXTIZE_EXECUTABLE po4a-gettextize)
+# set(PO4A-GETTEXTIZE_OPTIONS
+# 	--copyright-holder "Wesnoth Development Team"
+# 	-f docbook
+# 	-M utf-8
+# 	-L utf-8
+# )
+# if(NOT PO4A-GETTEXTIZE_EXECUTABLE)
+# 	message("po4a-gettextize not found")
+# 	set(TRANSLATION_TOOLS_FOUND false)
+# endif(NOT PO4A-GETTEXTIZE_EXECUTABLE)
 
 find_program(XSLTPROC_EXECUTABLE xsltproc)
 set(XSLTPROC_OPTIONS
