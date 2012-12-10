@@ -1,3 +1,4 @@
 #define tibastro_VERSION_MAJOR @tibastro_VERSION_MAJOR@
 #define tibastro_VERSION_MINOR @tibastro_VERSION_MINOR@
-    
+
+#define ENABLE_NLS @ENABLE_NLS@

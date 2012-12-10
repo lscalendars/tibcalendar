@@ -36,13 +36,19 @@ if(NOT MSVC)
 # Pot updates don't work at Windows so no reason to even try
 option(ENABLE_POT_UPDATE_TARGET "Enables the tools to update the pot files and manuals. This target has extra dependencies." OFF)
 endif(NOT MSVC)
-option(ENABLE_NLS "Enable building of translations" 1)
+option(ENABLENLS "Enable building of translations" ON)
+if (ENABLENLS)
+  set(ENABLE_NLS 1)
+else (ENABLENLS)
+  set(ENABLE_NLS 0)
+endif (ENABLENLS)
+
 
 find_package( Gettext )
 
-#if (GETTEXT_FOUND AND ENABLE_NLS)
+#if (GETTEXT_FOUND AND ENABLENLS)
 # 	add_subdirectory(po)
-#endif (GETTEXT_FOUND AND ENABLE_NLS)
+#endif (GETTEXT_FOUND AND ENABLENLS)
 
 # configure a header file to pass some of the CMake settings
 # to the source code
