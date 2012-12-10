@@ -46,9 +46,18 @@ endif (ENABLENLS)
 
 find_package( Gettext )
 
-#if (GETTEXT_FOUND AND ENABLENLS)
-# 	add_subdirectory(po)
-#endif (GETTEXT_FOUND AND ENABLENLS)
+# get languages
+file(READ po/LINGUAS LINGUAS)
+string(REPLACE "\n" "" LINGUAS ${LINGUAS})
+separate_arguments(LINGUAS)
+
+if(ENABLE_POT_UPDATE_TARGET)
+	find_package(TranslationTools REQUIRED)
+endif(ENABLE_POT_UPDATE_TARGET)
+
+if (GETTEXT_FOUND AND ENABLENLS)
+ 	add_subdirectory(po)
+endif (GETTEXT_FOUND AND ENABLENLS)
 
 # configure a header file to pass some of the CMake settings
 # to the source code
