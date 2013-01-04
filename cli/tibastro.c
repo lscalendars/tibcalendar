@@ -32,6 +32,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "system.h"
 #include<jd.h>
 #include<tbday.h>
+#include<tbcal.h>
+
 
 
 int
@@ -50,6 +52,7 @@ main ()
   get_day_data(2449749L, td, sys);
   print_tib_day(td);
   free(td);
+  print_tib_cal(stdout, 2013, sys);
   free(sys);
   //main_menu();
   end_ui();

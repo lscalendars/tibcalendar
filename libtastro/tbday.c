@@ -33,6 +33,14 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "astrology.h"
 #include "system.h" // for epoch
 
+tib_month *
+new_tib_month()
+{
+  tib_month *tm = malloc (sizeof (tib_month));
+  memset (tm, 0, sizeof (tib_month));
+  return tm;
+}
+
 tib_day *
 new_tib_day()
 {
@@ -182,6 +190,20 @@ tsurphu_adj_zla (long int tm, long int zd[2],
   return adj_mth;
 }
 
+/* Chapeau function to call the above two (TODO: should be moved elsewhere later maybe) */
+// do not forget this can modify zd[0]
+long int adj_zla (long int tm, long int zd[2],
+		unsigned char *zeromthfg, astro_system *sys)
+{
+	    if (sys->type == PHUGPA)
+        return phugpa_adj_zla (tm, zd, sys->epoch, zeromthfg);
+      else if (sys->type == TSURPHU)
+        return tsurphu_adj_zla (tm, zd, zeromthfg);
+      else
+        printf ("error: function adj_sla called with unknown system.");
+        return 0;
+}
+
 /*
  * Function taking the julian day and returning the true year and month. To
  * do so it computes the julian day for the new moon of the consecutive month
@@ -227,10 +249,9 @@ find_month_and_year (long int jd, astro_system *sys, tib_month *month)
 	{
 	  zla_dag (sys->epoch, ty, tm, zd);
 	}
-	    if (sys->type == PHUGPA)
-        adj_mth = phugpa_adj_zla (tm, zd, sys->epoch, &zeromthfg);	// do not forget this can modify zd[0]
-      else if (sys->type == TSURPHU)
-        adj_mth = tsurphu_adj_zla (tm, zd, &zeromthfg);	// do not forget this can modify zd[0]
+
+      adj_mth = adj_zla (tm, zd, &zeromthfg, sys);	// do not forget this can modify zd[0]
+
       // here the lunar day is 0 thus we don't need the corrections that
       // apply to other lunar days (KTC 23).
       get_month_data (sys->epoch, zd[0], month->rilcha, month->nyidru, month->gzadru);
@@ -273,6 +294,13 @@ find_month_and_year (long int jd, astro_system *sys, tib_month *month)
   // we need to get the rilcha, nyidru and gzadru for the month
   get_month_data (sys->epoch, month->true_month[0], month->rilcha, month->nyidru, month->gzadru);
   get_year_astro(month);
+}
+
+/* Function giving informations on the next month of a given tib_month */
+tib_month*
+next_month(tib_month* month)
+{
+  
 }
 
 /* Function looping through a month and finding the tt and its caracteristics
@@ -572,7 +600,7 @@ nyi_dag_and_gza_dag (long int nyibar[6], long int tsebar[6],
  *  - gzadag
  *  - nyibar
  * returns:
- *  - spi zagf
+ *  - spi zag
  */
 int
 get_tt_data (epoch *epch, long int cur_mth, long int gzadru[6],
