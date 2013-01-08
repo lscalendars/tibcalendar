@@ -49,10 +49,10 @@ main ()
   //get_tpdata(2449719L, td);
   //print_tib_day(td);
   sys = get_astro_system(PHUGPA);
-  get_day_data(2449749L, td, sys);
-  print_tib_day(td);
+  //get_day_data(2449749L, td, sys);
+  //print_tib_day(td);
   free(td);
-  print_tib_cal(stdout, 2013, sys);
+  print_tib_cal(stdout, 1935, sys);
   free(sys);
   //main_menu();
   end_ui();
@@ -126,7 +126,7 @@ void get_tibdata_for_date()
   jd = wd_to_jd(day, month, year);
   ui_print("jd: %ld\n", jd);
   td = new_tib_day();
-  get_day_data(jd, td, sys);
+  get_td_from_jd(jd, td, sys);
   print_tib_day(td);
   free(td);
   free(sys);

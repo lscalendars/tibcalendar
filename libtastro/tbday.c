@@ -38,24 +38,87 @@ new_tib_month()
 {
   tib_month *tm = malloc (sizeof (tib_month));
   memset (tm, 0, sizeof (tib_month));
+  tm->year = new_tib_year();
   return tm;
+}
+
+tib_year *
+new_tib_year()
+{
+  tib_year *ty = malloc (sizeof (tib_year));
+  memset (ty, 0, sizeof (tib_year));
+  return ty;
+}
+
+tib_year_astro *
+new_tib_year_astro()
+{
+  tib_year_astro *tya = malloc (sizeof (tib_year_astro));
+  memset (tya, 0, sizeof (tib_year_astro));
+  return tya;
+}
+
+tib_month_astro *
+new_tib_month_astro()
+{
+  tib_month_astro *tma = malloc (sizeof (tib_month_astro));
+  memset (tma, 0, sizeof (tib_month_astro));
+  return tma;
+}
+
+tib_day_astro *
+new_tib_day_astro()
+{
+  tib_day_astro *tda = malloc (sizeof (tib_day_astro));
+  memset (tda, 0, sizeof (tib_day_astro));
+  return tda;
 }
 
 tib_day *
 new_tib_day()
 {
   tib_day *td = malloc (sizeof (tib_day));
-  tib_month *tm = malloc (sizeof (tib_month));
   memset (td, 0, sizeof (tib_day));
-  memset (tm, 0, sizeof (tib_month));
-  td->month = tm;
+  td->month = new_tib_month();
   return td;
 }
 
+tib_planet_data *
+new_tib_planet_data()
+{
+  tib_planet_data *pd = malloc (sizeof (tib_planet_data));
+  memset (pd, 0, sizeof (tib_planet_data));
+  return pd;
+}
+
+// frees the entire tib_year
+void
+free_tib_year(tib_year *ty)
+{
+  if (ty->astro_data)
+    free(ty->astro_data);
+  free(ty);
+}
+
+// frees the entire tib_month (with year)
+void
+free_tib_month(tib_month *tm)
+{
+  free_tib_year(tm->year);
+  if (tm->astro_data)
+    free(tm->astro_data);
+  free(tm);
+}
+
+// frees the entire tib_day (with month and year)
 void
 free_tib_day(tib_day *td)
 {
-  free(td->month);
+  free_tib_month(td->month);
+  if (td->astro_data)
+    free(td->astro_data);
+  if (td->planet_data)
+    free(td->planet_data);
   free(td);
 }
 
@@ -80,6 +143,16 @@ zla_dag (const epoch *epch, long int y, long int m, long int zd[2])
   b = 2 * a + epch->eyr_a;
   zd[1] = b % 65;
   zd[0] = a + b / 65;
+}
+
+//TODO: test
+inline void
+next_zla_dag (long int zd[2])
+{
+  //add_lst_2(zd[2], {1,2}, 65); // is it faster than just taking the zla_dag ? or maybe we should hardcode the add_lst function for this?
+  long int r = zd[1] + 2;
+  zd[1] = r % 65;
+  zd[0] = zd[0] + 1 + r/65;
 }
 
 /* In the following functions, some variable represent always the same things:
@@ -109,8 +182,8 @@ zla_dag (const epoch *epch, long int y, long int m, long int zd[2])
  * inputs:
  *  - epch: the epoch, especially the two remainders for the intercalary month (cf. KTC p. 51)
  *  - zd, tm, zeromthfg: explained above
- * returns adj_mth, as explained above, and also modifies zd[0] and zeromthfg
- * if necessary.
+ * returns adj_mth, as explained above
+ * it also modifies zd[0] and zeromthfg so that it is well set for next use (might pose problems sometimes)
  */
 long int
 phugpa_adj_zla (long int tm, long int zd[2], epoch *epch,
@@ -121,7 +194,6 @@ phugpa_adj_zla (long int tm, long int zd[2], epoch *epch,
     {
       // for month taking the name of the following month, the convention is to
       // return -tm
-      //adj_mth = -tm;
       return -tm;
     }
   else
@@ -264,7 +336,7 @@ find_month_and_year (long int jd, astro_system *sys, tib_month *month)
 	done = 1;
       else
 	{
-	  month->year = ty;
+	  month->year->year = ty;
     hld_tm = tm;
 	  month->month = adj_mth;
 	  month->true_month[0] = zd[0];
@@ -282,7 +354,7 @@ find_month_and_year (long int jd, astro_system *sys, tib_month *month)
   // month->year,month, etc. contains data about the month before
   // adjusting the year so that it is really the tibetan year
   if (month->month == 12 && hld_tm == 1)
-    month->year = month->year - 1;
+    month->year->year = month->year->year - 1;
   if ( month->month < 0L ) // Intercalary
     {
       month->month_type = FIRST_OF_DOUBLE;
@@ -293,14 +365,13 @@ find_month_and_year (long int jd, astro_system *sys, tib_month *month)
     month->month_type = SECOND_OF_DOUBLE;
   // we need to get the rilcha, nyidru and gzadru for the month
   get_month_data (sys->epoch, month->true_month[0], month->rilcha, month->nyidru, month->gzadru);
-  get_year_astro(month);
 }
 
 /* Function giving informations on the next month of a given tib_month */
 tib_month*
 next_month(tib_month* month)
 {
-  
+  return NULL;
 }
 
 /* Function looping through a month and finding the tt and its caracteristics
@@ -363,7 +434,7 @@ find_day (tib_day *td, long int jd, epoch *epch)
   // First, a check. Is it possible that current lunar day and previous both
   // calculate to same solar day? This would be if current lunar day is omitted
   // and entirely contained within the solar day. Maybe if lunar day 1 is omitted?
-  // This has not been found in testing, and should not happen
+  // This has not been found in testing, and should not happen. TODO: test with 1/1 1977
   // The way we should find an omitted is when the following lunar day and
   // current calculate to same solar day.
   if (td->gzadag[0] == gzadag[0])	// This is now error code
@@ -372,6 +443,7 @@ find_day (tib_day *td, long int jd, epoch *epch)
 	("strange error (2): please report to the tibastro developpers.");
       return;
     }
+  // TODO: does it work with tt=1?
   // Check for possible omitted lunar date, prior to current
   if (gzadag[1] >= 54)		// 54?? This should get all of them, in Phugpa
     {
@@ -389,6 +461,7 @@ find_day (tib_day *td, long int jd, epoch *epch)
   td->duplicated = NORMAL;
 // We now have data for the current lunar day and both the one before and following.    
 // we can set the type of day
+// TODO: what about the case prv_gd == td-> gd?
   if (nxt_gd == td->gd)		// Few tested, all working properly
     {
       td->ommited = NEXT_OMMITED;
@@ -411,13 +484,13 @@ find_day (tib_day *td, long int jd, epoch *epch)
     }
 }
 
-/* Main routine to return Tibetan data for a solar day
- * jd is Julian day number, tdat is the structure for returning the data  
+/* Main routine to return Tibetan day for a solar day
+ * jd is Julian day number
+ * td is the structure for returning the data  
  * tibetan years are numbered like western calendar years
- * argument to add: epoch is not used yet but will contain the data of the epoch
  */
 void
-get_day_data (long int jd, tib_day *td, astro_system *sys)
+get_td_from_jd (long int jd, tib_day *td, astro_system *sys)
 {
   if (jd <= sys->epoch->spz_j)
     {
@@ -428,16 +501,11 @@ get_day_data (long int jd, tib_day *td, astro_system *sys)
   find_month_and_year (jd, sys, td->month);
   // Then we find the day inside the month
   find_day (td, jd, sys->epoch);
-  // now we have our day... let's fill the planetary data
-  get_planets_data(td, sys);
-  // now yoga, karana, etc.
-  get_day_infos(td);
-  
 }
 
 /* Function to calculate month mean Sun, "nyi ma'i dhru ba" at new moon
- *  - zd0 is the same as in rilchafp
- *  - nyidru[] is the result
+ *  - zd0 is the true month main part
+ *  - nyidru, rilcha and gzadru are the result
  * See KTC p. 21 for details
  */
 void

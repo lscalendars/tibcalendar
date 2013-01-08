@@ -173,6 +173,24 @@ void add_lst ( long int a1[5], long int a2[5], long int a3[5], long int n0,
   }
 
 /* 
+ * function adding two lists of 2 integers: TODO: really useful?
+ *  a1 = a2 + a3
+ *  n1 can vary
+ */
+void add_lst_2 ( long int a1[2], long int a2[2], long int a3[2], long int n1)
+  {
+    long int r;
+    r = a2[1] + a3[1];
+    if ( r < 0 )
+      {
+        // error
+        return;
+      }
+    a1[1] = r % n1;
+    a1[0] = r = a2[0] + a3[0] + r / n1;
+  }
+
+/* 
  * function substracting two lists of 5 integers:
  *  a1 = a2 - a3
  *  n0 and n4 can vary

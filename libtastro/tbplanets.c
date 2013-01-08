@@ -206,12 +206,15 @@ get_true_slow_l (long int pdaldag[6], long int pdalbar[6], long int pfac[6],
     add_lst (pdaldag, pdalbar, listc, 27, frac);
 }
 
-/* Main function computing all the planet data for a tib_day
+/* Main function computing and returning all the planet data for a day
+ * the needed inputs are the julian day, the lunar day, the main part of the true month, the mean solar longitude and the astro system
+ * ouput is the planetary data
  */
-void
-get_planets_data (tib_day *td, astro_system *sys)
+tib_planet_data *
+get_planets_data (long int jd, long int tt, long int zd0, long int nyibar[6], astro_system *sys)
 {
-  long int sz = td->gd - sys->epoch->spz_j;
+  tib_planet_data *pd; // we put the result here;
+  long int sz = jd - sys->epoch->spz_j;
   long int mardalbar[6] = {0,0,0,0,0,0};
   long int mardaldag[6] = {0,0,0,0,0,0};
   long int jupdalbar[6] = {0,0,0,0,0,0};
@@ -226,6 +229,7 @@ get_planets_data (tib_day *td, astro_system *sys)
   long int nyindhru[6] = {0,0,0,0,0,0};
   long int rkang_frac;
 
+  pd = new_tib_planet_data();
 // mars, dal dag. - KTC 57
 // Checked against tables by "dbyangs can grub pa'i rdo rje", p. 623
   // here (sz + epch.maradd) % 687 is the particular day (KTC p. 57)
@@ -263,7 +267,7 @@ get_planets_data (tib_day *td, astro_system *sys)
   else // tsurphu
     {
      rkang_frac = 13;       
-     copy_lst(nyindhru, td->nyibar);
+     copy_lst(nyindhru, nyibar);
      nyindhru[5] = 0;  
      nyindhru[4] = (long) (( (long long)nyindhru[4] * 149209L ) / 67);         
      }
@@ -276,18 +280,19 @@ get_planets_data (tib_day *td, astro_system *sys)
 // Checked against tables by "dbyangs can grub pa'i rdo rje", p. 616
   get_true_slow_l(vendaldag, nyindhru, venfac, venbye, vendom, rkang_frac);
 
-  // then the main computation, setting the longitude (td->xxxmurdag)
+  // then the main computation, setting the longitude (pd->xxxmurdag)
   // for mars, see KTC p. 65, checked against calculation tables in British Library tables by "dbyangs can grub pa'i rdo rje", p. 644
-  get_geo_l(mardaldag, mardalbar, dragkang, td->marmurdag, marfrac, marbye1, marbye2, mardom1, mardom2, martquo1, martquo2, OUTER_PLANET, rkang_frac);
+  get_geo_l(mardaldag, mardalbar, dragkang, pd->marmurdag, marfrac, marbye1, marbye2, mardom1, mardom2, martquo1, martquo2, OUTER_PLANET, rkang_frac);
     // for jupiter, see KTC p. 74, checked against tables by "dbyangs can grub pa'i rdo rje", p. 645
-  get_geo_l(jupdaldag, jupdalbar, dragkang, td->jupmurdag, jupfrac, jupbye1, jupbye2, jupdom1, jupdom2, juptquo1, juptquo2, OUTER_PLANET, rkang_frac);
+  get_geo_l(jupdaldag, jupdalbar, dragkang, pd->jupmurdag, jupfrac, jupbye1, jupbye2, jupdom1, jupdom2, juptquo1, juptquo2, OUTER_PLANET, rkang_frac);
   // for saturn, see KTC p. 75, checked against tables by "dbyangs can grub pa'i rdo rje", p. 647
-  get_geo_l(satdaldag, satdalbar, dragkang, td->satmurdag, satfrac, satbye1, satbye2, satdom1, satdom2, sattquo1, sattquo2, OUTER_PLANET, rkang_frac);
+  get_geo_l(satdaldag, satdalbar, dragkang, pd->satmurdag, satfrac, satbye1, satbye2, satdom1, satdom2, sattquo1, sattquo2, OUTER_PLANET, rkang_frac);
   // for mercury, see KTC p. 86, checked against tables by "dbyangs can grub pa'i rdo rje", p. 644
-  get_geo_l(merdaldag, merkanbar, dragkang, td->mermurdag, merfrac, merbye1, merbye2, merdom1, merdom2, mertquo1, mertquo2, INNER_PLANET, rkang_frac);
+  get_geo_l(merdaldag, merkanbar, dragkang, pd->mermurdag, merfrac, merbye1, merbye2, merdom1, merdom2, mertquo1, mertquo2, INNER_PLANET, rkang_frac);
   // for venus, see KTC p. 82, checked against tables by "dbyangs can grub pa'i rdo rje", p. 645
-  get_geo_l(vendaldag, venkanbar, dragkang, td->venmurdag, venfrac, venbye1, venbye2, vendom1, vendom2, ventquo1, ventquo2, INNER_PLANET, rkang_frac);
-  get_rahu_l(sys->epoch, td->month->true_month[0], td->tt, td->rahudong);
+  get_geo_l(vendaldag, venkanbar, dragkang, pd->venmurdag, venfrac, venbye1, venbye2, vendom1, vendom2, ventquo1, ventquo2, INNER_PLANET, rkang_frac);
+  get_rahu_l(sys->epoch, zd0, tt, pd->rahudong);
+  return pd;
 }
 
 /*

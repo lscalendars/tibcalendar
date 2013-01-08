@@ -1,6 +1,7 @@
 #include"ui.h"
 #include<stdio.h>
 #include "translation.h"
+#include "jd.h"
 
 void ui_print_lst(long int l[5], unsigned char length)
  {
@@ -24,12 +25,21 @@ void end_ui()
  }
 
 
+void print_tib_year(tib_year *ty) {
+  printf("royal year %ld, ", ty->year+127);
+  if (ty->astro_data)
+  {
+  printf("year %d of rabjung %d: ", ty->astro_data->yor, ty->astro_data->rabjung);
+  printf("%s %s %s, %d\n", get_gender_str(ty->astro_data->gender), get_element_5_str(ty->astro_data->element), get_animal_str(ty->astro_data->animal), ty->astro_data->sme_ba);
+  }
+}
+
+void print_tib_month_astro_data(tib_month_astro *tma) {
+  printf("%s %s %s\n", get_gender_str(tma->gender), get_element_5_str(tma->element), get_animal_str(tma->animal));
+  }
 
 void print_tib_month(tib_month *tm) {
-  //printf("year: %ld\n", tm->year);
-  printf("royal year %ld, ", tm->year+127);
-  printf("year %d of rabjung %d: ", tm->yor, tm->rabjung);
-  printf("%s %s %s, %d\n", get_gender_str(tm->year_gender), get_element_5_str(tm->year_element), get_animal_str(tm->year_animal), tm->year_sme_ba);
+  printf("    Month data:\n");
   switch(tm->month_type)
     {
       case NORMAL:
@@ -38,40 +48,50 @@ void print_tib_month(tib_month *tm) {
       case FIRST_OF_DOUBLE:
         printf("month: %ld (first of a double month) - true month: %ld;%ld\n", tm->month, tm->true_month[0], tm->true_month[1]); 
         break;
-      default:
+      default: // second of double
         printf("month: %ld (second of a double month) - true month: %ld;%ld\n", tm->month, tm->true_month[0], tm->true_month[1]); 
         break;
     }
-  //printf("starting day: %ld\n", tm->start_gd);
+  printf("starting (julian) day: %ld\n", tm->start_gd);
   printf("anomaly: %ld;%ld\n", tm->rilcha[0], tm->rilcha[1]);
   printf("mean solar longitude: "); ui_print_lst(tm->nyidru,5); printf("\n");
   printf("mean weekday: "); ui_print_lst(tm->gzadru,5); printf("\n");
+  if (tm->astro_data)
+     print_tib_month_astro_data(tm->astro_data);
   }
 
 
-void print_tib_planets(tib_day *td) {
-  printf("mars longitude: "); ui_print_lst(td->marmurdag,5); printf("\n");
-  printf("jupiter longitude: "); ui_print_lst(td->jupmurdag,5); printf("\n");
-  printf("saturn longitude: "); ui_print_lst(td->satmurdag,5); printf("\n");
-  printf("mercury longitude: "); ui_print_lst(td->mermurdag,5); printf("\n");
-  printf("venus longitude: "); ui_print_lst(td->venmurdag,5); printf("\n");
-  printf("rahu longitude: "); ui_print_lst(td->rahudong,5); printf("\n");
+void print_tib_planet_data(tib_planet_data *pd) {
+  printf("    Planeteray data for the day:\n");
+  printf("mars longitude: "); ui_print_lst(pd->marmurdag,5); printf("\n");
+  printf("jupiter longitude: "); ui_print_lst(pd->jupmurdag,5); printf("\n");
+  printf("saturn longitude: "); ui_print_lst(pd->satmurdag,5); printf("\n");
+  printf("mercury longitude: "); ui_print_lst(pd->mermurdag,5); printf("\n");
+  printf("venus longitude: "); ui_print_lst(pd->venmurdag,5); printf("\n");
+  printf("rahu longitude: "); ui_print_lst(pd->rahudong,5); printf("\n");
+  }
+
+void print_tib_day_astro_data(tib_day_astro *tda) {
+  printf("sideral day: %d;%d,%d (%s: %s)\n", tda->sideral_day[0], tda->sideral_day[1], tda->sideral_day[2], get_zodiac_str(tda->sideral_day[0]), get_zodiac_western_str(tda->sideral_day[0]));
+  printf("lunar mansion at daybreak: %d, ", tda->lm_db);
+  printf("yoga: %s, karana: %s\n", get_yoga_str(tda->yoga), get_karana_str(tda->karana));
   }
 
 void print_tib_day(tib_day *td)
 {
-  printf("    Month data:\n");
-  print_tib_month(td->month);
+  int gday, gmonth, gyear, gdow;
   printf("    Day data:\n");
-  printf("general day: %ld\n", td->gd);
+  printf("general day: %ld ", td->gd);
+  jd_to_wd(td->gd, &gday, &gmonth, &gyear, &gdow);
+  printf("(western %.02d/%.02d/%d)\n", gday, gmonth, gyear);
   printf("lunar day: %ld", td->tt);
   switch(td->ommited)
     {
       case PREVIOUS_OMMITED:
-        printf(" - previous day is ommited\n");
+        printf(" - previous lunar day is ommited");
         break;
       case NEXT_OMMITED:
-        printf(" - next day is ommited\n");
+        printf(" - next lunar day is ommited");
         break;
       default:
         break;
@@ -79,21 +99,20 @@ void print_tib_day(tib_day *td)
   switch(td->duplicated)
     {
       case FIRST_OF_DUPLICATED:
-        printf(" - first of a duplicated day\n");
+        printf(" - first of a duplicated lunar day");
         break;
       case SECOND_OF_DUPLICATED:
-        printf(" - second of a duplicated day\n");
+        printf(" - second of a duplicated lunar day");
         break;
       default:
-        printf("\n");
         break;
     }
+  printf("\n");
   printf("mean solar longitude: "); ui_print_lst(td->nyibar,5); printf("\n");
   printf("true solar longitude: "); ui_print_lst(td->nyidag,5); printf("\n");
   printf("true weekday: "); ui_print_lst(td->gzadag,5); printf(" (%s)\n", get_weekday_str(td->gzadag[0]));
-  printf("sideral day: %d;%d,%d (%s: %s)\n", td->sideral_day[0], td->sideral_day[1], td->sideral_day[2], get_zodiac_str(td->sideral_day[0]), get_zodiac_western_str(td->sideral_day[0]));
-  printf("lunar mansion at daybreak: %d, ", td->lm_db);
-  printf("yoga: %s, karana: %s\n", get_yoga_str(td->yoga), get_karana_str(td->karana));
-  printf("    Planet data:\n");
-  print_tib_planets(td);
+  if (td->astro_data)
+    print_tib_day_astro_data(td->astro_data);
+  if (td->planet_data)
+    print_tib_planet_data(td->planet_data);
 }

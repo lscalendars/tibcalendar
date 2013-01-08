@@ -52,7 +52,7 @@ check_tibday_phugpa_individual (int i, long int jd, tib_day * td1,
 				tib_day * td2, astro_system *sys)
 {
   get_tibday_const (i, td1);
-  get_day_data (jd, td2, sys);
+  get_td_from_jd (jd, td2, sys);
   return (compare_tib_day (td2, td1));
 }
 
@@ -87,7 +87,7 @@ compare_tib_day (tib_day * td1, tib_day * td2)
 int
 compare_tib_month (tib_month * tm1, tib_month * tm2)
 {
-  if (tm1->year != tm2->year || tm1->month != tm2->month
+  if (tm1->year->year != tm2->year->year || tm1->month != tm2->month
       || tm1->month_type != tm2->month_type
       || tm1->start_gd != tm2->start_gd)
     return 0;
@@ -122,7 +122,7 @@ get_tibday_const (int i, tib_day * td)
     {
     case 1:
       // 13 january 765: duplicated day followed by ommited day  
-      td->month->year = 765;
+      td->month->year->year = 765; // TODO: fix it!
       td->month->month = 1;
       td->month->month_type = FIRST_OF_DOUBLE;
       aux_set_lst_2 (td->month->true_month, 21829, 48);
@@ -140,8 +140,8 @@ get_tibday_const (int i, tib_day * td)
       aux_set_lst_5 (td->gzadag, 2, 0, 23, 1, 232);
       break;
     case 2:
-      // 2455738: second of an duplicated day
-      td->month->year = 2011;
+      // 2455738: second of a duplicated day
+      td->month->year->year = 2011; // TODO: fix it!
       td->month->month = 4;
       aux_set_lst_2 (td->month->true_month, 37245, 60);
       td->month->zero_month_flag = 0;

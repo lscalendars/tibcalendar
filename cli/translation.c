@@ -219,3 +219,14 @@ get_animal_str(unsigned char animal)
         break;
     }
 }
+
+// chinese lunar mansion
+char *c_lunar_mansion[28] = { "Jiao", "Kang", "Di", "Fang", "Xin", "Wei", "Ji", "Dou",
+                    "Niu", "Nu", "Xu", "Wei", "Shi", "Bi", "Kui", "Lou",
+                    "Wei", "Mao", "Bi", "Zui", "Can", "Jing", "Gui", "Liu",
+                    "Xing", "Zhang", "Yi", "Zhen" };
+
+// western month
+char *western_month[12] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug",
+                      "Sep", "Oct", "Nov", "Dec" };
+
