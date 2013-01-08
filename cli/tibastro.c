@@ -54,7 +54,7 @@ main ()
   //print_tib_day(td);
   free(td);
   td = get_new_year(1935, sys);
-  get_day_astro_data(td);
+  get_day_astro_data(td, sys);
   print_tib_day_r(td);
   free(sys);
   //main_menu();

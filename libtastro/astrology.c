@@ -28,7 +28,6 @@ void get_year_astro_data(tib_year *year)
     year->astro_data->gender = (unsigned char) (year->year % 2); // 1 = female, odd; 0 // TODO: test with negative years
     year->astro_data->sme_ba = (unsigned char) (1 + ( 3007 - year->year ) % 9); // the nine numbers
     // WARNING: do not compute years superior to 3007 with this function!
-    
 }
 
 void get_month_astro_data(tib_month *month)
@@ -47,7 +46,7 @@ void get_month_astro_data(tib_month *month)
  * and karana fields of a tib_day.
  * See KTC p.42 for the details.
  */
-void get_day_astro_data(tib_day *td)
+void get_day_astro_data(tib_day *td, astro_system *asys)
 {
     if (!td->astro_data)
     td->astro_data = new_tib_day_astro_data();
@@ -128,6 +127,7 @@ void get_day_astro_data(tib_day *td)
    if (!td->month)
       return;
    check_sadag((unsigned char) td->month->month, (unsigned char) td->tt, td->astro_data);
+   check_anniversary ((unsigned char) td->month->month, (unsigned char) td->tt, td->astro_data, asys );
 }
 
 /*
@@ -213,3 +213,61 @@ void check_sadag (unsigned char m, unsigned char t, tib_day_astro_data *tda)
     ( m == 12 && t == 30 ))
     tda->nn=1;
   } 
+  
+// Routine to check for special anniversaries linked with the life of the Buddha.
+// At the end, some commentaries show more anniversaries.
+// It simply fills the tda->anniversary field
+// Month numbers would currently be wrong for Error Correction system. (?)
+void check_anniversary (unsigned char m, unsigned char t, tib_day_astro_data *tda, astro_system *asys )
+  {
+    switch ( m )
+      {
+        case 1:
+          if ( t == 1 )
+            tda->anniversary = ANN_DEM_MIR;
+        break;
+        case 3:
+          if ( t == 15 )
+           tda->anniversary = ANN_REV_KALACAKRA;
+        break;
+        case 4:
+          // 7 for Phugpa, 8 for Tsurphu
+          if ( t == 7 && asys->type != TSURPHU )
+             tda->anniversary = ANN_BIRTH;
+          else if ( t == 8 && asys->type == TSURPHU)
+            tda->anniversary = ANN_BIRTH;
+          else if ( t == 15 )
+             tda->anniversary = ANN_ENL_PARI;
+        break;
+        case 6:
+          if ( t == 4 )
+             tda->anniversary = ANN_TURN_WHEEL;
+          else if ( t == 15 )
+             tda->anniversary = ANN_ENTRY_WOMB;
+        break;
+        case 9:
+          if ( t == 22 )
+             tda->anniversary = ANN_DESCENT_REALM;
+        break;
+        default:
+        break;
+      }
+// 1-14 : Anniversary of Milarepa.
+// 1-15 : Anniversary of Marpa.
+// 2-26 : Anniversary of Taranatha.
+// 3-3 : Anniversary of Karma Pakshi.
+// 4-29 : Anniversary of Mipham.
+// 5-10 : Birth of Guru Rinpoche.
+// 5-15 : World Local Deities Day.
+// 8-19 : Anniversary of Dilgo Khyentse Rinpoche.
+// 8-23 : Anniversary of Karmapa Mikyo Dorje.
+// 9-16 : Anniversary of 16th Karmapa.
+// 10-10 : White Tara day.
+// 10-25 : Anniversary of Tshongkhapa.
+// 11-3 : Anniversary of First Karmapa.
+// 11-6 : Nine bad omens.
+// 11-7 : Ten auspicious omens.
+// 11-26 : Anniversary of Jamgon Kongtrul.
+// 12-18 : Anniversary of Longchen Rabjampa.
+// 12-29 : Mahakala Rituals.
+  }

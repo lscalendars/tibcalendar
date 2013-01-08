@@ -56,6 +56,7 @@ typedef struct tib_day_astro_data
   unsigned char yoga; // yoga, see KTC p.42
   unsigned char karana; // Karanas are numbered from 0 to 7 for the changing karanas, and from 7 to
   unsigned char sideral_day[3]; // the zodiacal sign (month), day and nadi for the mean solar longitude
+  unsigned char anniversary; // could be better or even thrown out of libtastro, but we'll see... currently it's just one of the values listed below.
   // 10 for the fixed ones, see KTC p.43
   // now the Earth-lords:
   unsigned char yk; // 1 if  "yan kwong" is present, 0 otherwise
@@ -113,5 +114,14 @@ void free_tib_day(tib_day *td);
 tib_month_astro_data *new_tib_month_astro_data();
 tib_year_astro_data *new_tib_year_astro_data();
 tib_day_astro_data *new_tib_day_astro_data();
+
+// the anniversaries
+#define ANN_DEM_MIR 1 // demonstration of miracles
+#define ANN_REV_KALACAKRA 2 // revelation of the Kalacakra Tantra
+#define ANN_BIRTH 3 // Birth of the Buddha
+#define ANN_ENL_PARI 4 // Enlightenment and Parinirvana of the Buddha
+#define ANN_TURN_WHEEL 5 // Turning the Wheel of the Dharma
+#define ANN_ENTRY_WOMB 6 // Entering the Womb of his mother
+#define ANN_DESCENT_REALM 7 // Descent from the Realm of Gods
 
 #endif
