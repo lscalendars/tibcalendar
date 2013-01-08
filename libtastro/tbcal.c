@@ -131,7 +131,7 @@ if ( adj_mth == 12L ) // TODO: test for 1935, 2000 (Phugpa)
    {
    // we take the first one:
    td->duplicated=FIRST_OF_DUPLICATED;
-   //TODO: useful?
+   //TODO: useful? should be moved to the printing function?
    td->gzadag[0] = (td->gzadag[0]+6)%7;
    td->gzadag[1] = 60L; td->gzadag[2] = 0L; td->gzadag[3] = 0L; td->gzadag[4] = 0L; td->gzadag[5] = 0L;
    // if we took the second one:

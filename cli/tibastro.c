@@ -52,7 +52,9 @@ main ()
   //get_day_data(2449749L, td, sys);
   //print_tib_day(td);
   free(td);
-  print_tib_cal(stdout, 1935, sys);
+  tib_day *td = get_new_year(year, asys);
+  get_day_astro(td);
+  print_tib_day(td);
   free(sys);
   //main_menu();
   end_ui();
