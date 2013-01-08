@@ -30,6 +30,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include"ui.h"
 #include"tibastro.h"
 #include "system.h"
+#include "astrology.h"
 #include<jd.h>
 #include<tbday.h>
 #include<tbcal.h>
@@ -52,9 +53,9 @@ main ()
   //get_day_data(2449749L, td, sys);
   //print_tib_day(td);
   free(td);
-  tib_day *td = get_new_year(year, asys);
+  td = get_new_year(1935, sys);
   get_day_astro(td);
-  print_tib_day(td);
+  print_tib_day_r(td);
   free(sys);
   //main_menu();
   end_ui();
@@ -129,7 +130,7 @@ void get_tibdata_for_date()
   ui_print("jd: %ld\n", jd);
   td = new_tib_day();
   get_td_from_jd(jd, td, sys);
-  print_tib_day(td);
+  print_tib_day_r(td);
   free(td);
   free(sys);
   main_menu();

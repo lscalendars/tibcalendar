@@ -27,7 +27,7 @@ void end_ui()
 
 
 void print_tib_year(tib_year *ty) {
-  printf("royal year %ld, ", ty->year+127);
+  printf("Royal year %ld\n", ty->year+127);
   if (ty->astro_data)
   {
   printf("year %d of rabjung %d: ", ty->astro_data->yor, ty->astro_data->rabjung);
@@ -116,4 +116,13 @@ void print_tib_day(tib_day *td)
     print_tib_day_astro_data(td->astro_data);
   if (td->planet_data)
     print_tib_planet_data(td->planet_data);
+}
+
+void print_tib_day_r(tib_day *td)
+{
+if (td->month && td->month->year)
+  print_tib_year(td->month->year);
+if (td->month)
+  print_tib_month(td->month);
+print_tib_day(td);
 }
