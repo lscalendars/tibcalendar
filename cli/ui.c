@@ -1,6 +1,7 @@
 #include"ui.h"
 #include<stdio.h>
 #include "translation.h"
+#include "tbstructures.h"
 #include "jd.h"
 
 void ui_print_lst(long int l[5], unsigned char length)

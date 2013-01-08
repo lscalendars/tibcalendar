@@ -23,10 +23,9 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE S
 OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ************************************************************************************/
 
-#include <stdio.h>
 #include "tbplanets.h"
 #include "utils.h"
-#include "tbday.h"
+#include "tbstructures.h"
 
 static long int merbye1[14] =
               {16, 15, 14, 13, 11, 7, 5, 0, 4, 11, 20, 28, 34, 16};

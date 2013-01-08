@@ -1,5 +1,6 @@
 #include"tests-tbday.h"
 #include"tbday.h"
+#include "tbstructures.h"
 #include"../ui.h"
 #include"utils.h"
 #include"system.h"

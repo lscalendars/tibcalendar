@@ -15,5 +15,7 @@ add_library(
 	system-priv.h
 	tbcal.c
 	tbcal.h
+	tbstructures.c
+	tbstructures.h
 	)
     

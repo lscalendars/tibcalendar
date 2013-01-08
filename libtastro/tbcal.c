@@ -6,6 +6,7 @@
 #include "../cli/ui.h" // TODO: horrible... all this needs reorganization
 #include "jd.h" // ?
 #include "astrology.h"
+#include "tbstructures.h"
 
 void print_year_info(FILE *f, tib_year *year, astro_system *asys)
  {
