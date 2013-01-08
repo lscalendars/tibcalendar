@@ -19,27 +19,27 @@ new_tib_year()
   return ty;
 }
 
-tib_year_astro *
-new_tib_year_astro()
+tib_year_astro_data *
+new_tib_year_astro_data()
 {
-  tib_year_astro *tya = malloc (sizeof (tib_year_astro));
-  memset (tya, 0, sizeof (tib_year_astro));
+  tib_year_astro_data *tya = malloc (sizeof (tib_year_astro_data));
+  memset (tya, 0, sizeof (tib_year_astro_data));
   return tya;
 }
 
-tib_month_astro *
-new_tib_month_astro()
+tib_month_astro_data *
+new_tib_month_astro_data()
 {
-  tib_month_astro *tma = malloc (sizeof (tib_month_astro));
-  memset (tma, 0, sizeof (tib_month_astro));
+  tib_month_astro_data *tma = malloc (sizeof (tib_month_astro_data));
+  memset (tma, 0, sizeof (tib_month_astro_data));
   return tma;
 }
 
-tib_day_astro *
-new_tib_day_astro()
+tib_day_astro_data *
+new_tib_day_astro_data()
 {
-  tib_day_astro *tda = malloc (sizeof (tib_day_astro));
-  memset (tda, 0, sizeof (tib_day_astro));
+  tib_day_astro_data *tda = malloc (sizeof (tib_day_astro_data));
+  memset (tda, 0, sizeof (tib_day_astro_data));
   return tda;
 }
 

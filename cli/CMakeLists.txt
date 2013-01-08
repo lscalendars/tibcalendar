@@ -8,6 +8,8 @@ add_executable(
 	translation.c
 	translation.h
 	gettext.h
+	printcalendar.h
+	printcalendar.c
 	tests/tests-jd.c
 	tests/tests-jd.h
 	tests/tests-tbday.c

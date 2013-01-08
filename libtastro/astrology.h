@@ -2,12 +2,12 @@
 #define ASTRO_H
 
 #include "tbday.h"
+#include "tbstructures.h"
 
-
-
-void get_year_astro(tib_year *ty);
-void get_month_astro(tib_month *tm);
-void get_day_astro(tib_day *td);
+void get_year_astro_data(tib_year *ty);
+void get_month_astro_data(tib_month *tm);
+void get_day_astro_data(tib_day *td);
+void check_sadag (unsigned char m, unsigned char t, tib_day_astro_data *tda);
 
 // The four elements
 #define FOUR_EARTH 0

@@ -1,5 +1,6 @@
 #include "tbstructures.h"
 #include "utils.h"
+#include "astrology.h"
 
 /*
  * Very simple function to calculate yearly informations in indian and chinese
@@ -8,10 +9,10 @@
  * and year_gender fields.
  */
 
-void get_year_astro(tib_year *year)
+void get_year_astro_data(tib_year *year)
 {
   if (!year->astro_data)
-    year->astro_data = new_tib_year_astro();
+    year->astro_data = new_tib_year_astro_data();
   if ( year->year < 1027 )
       {
         year->astro_data->rabjung = 0;
@@ -30,15 +31,15 @@ void get_year_astro(tib_year *year)
     
 }
 
-void get_month_astro(tib_month *month)
+void get_month_astro_data(tib_month *month)
 {
   if (!month->year)
     printf("error: you should call get_month_astro with a month with valid year field");
   if (!month->astro_data)
-    month->astro_data = new_tib_month_astro();
+    month->astro_data = new_tib_month_astro_data();
   // we need year astrological data to get the month astrological data:
   if (!month->year->astro_data)
-    get_year_astro(month->year);
+    get_year_astro_data(month->year);
   }
     
     
@@ -46,10 +47,10 @@ void get_month_astro(tib_month *month)
  * and karana fields of a tib_day.
  * See KTC p.42 for the details.
  */
-void get_day_astro(tib_day *td)
+void get_day_astro_data(tib_day *td)
 {
     if (!td->astro_data)
-    td->astro_data = new_tib_day_astro();
+    td->astro_data = new_tib_day_astro_data();
   long int moonlong[5] = {0,0,0,0,0}; // moon longitude at daybreak
   long int lista[5], listb[5];
   long int tmp;
@@ -122,5 +123,93 @@ void get_day_astro(tib_day *td)
    td->astro_data->c_lunar_mansion = (unsigned char) ((td->gd - 17L ) % 28L);
    td->astro_data->s_sme_ba = (unsigned char) ((td->gd - 2L ) % 9L + 1L);
    //td->ld_sme_ba = 
-   
+   // now checking for Earth-lords:
+   // we need the month number
+   if (!td->month)
+      return;
+   check_sadag((unsigned char) td->month->month, (unsigned char) td->tt, td->astro_data);
 }
+
+/*
+ *
+ * Earth Lords
+ *
+ */
+
+// Check for main Earth-lords, "sa bdag"  
+// m is the month and t is the day in the month
+// they are casted as unsigned char instead of long int in order to reduce the cost
+void check_sadag (unsigned char m, unsigned char t, tib_day_astro_data *tda)
+  {
+// First, "yan kwong": // Data from Kongleg.
+    if ( ( m == 1 && t == 13 ) || 
+    ( m == 2 && t == 11 ) || 
+    ( m == 3 && t == 9 ) || 
+    ( m == 4 && t == 7 ) || 
+    ( m == 5 && t == 5 ) || 
+    ( m == 6 && t == 3 ) || 
+    ( m == 7 && t == 1 ) || 
+    ( m == 7 && t == 29 ) || 
+    ( m == 8 && t == 27 ) || 
+    ( m == 9 && t == 25 ) || 
+    ( m == 10 && t == 23 ) || 
+    ( m == 11 && t == 21 ) || 
+    ( m == 12 && t == 19 ) 
+    )
+    tda->yk = 1;
+
+// Now, "zin phung": These data are taken from Mongolian data in VKP2.DOC TODO: ?
+    if (
+    (( m == 1 || m == 2 || m == 3 ) && ( t == 1 || t == 7 || t == 13 || t == 19 || t == 25 )) ||
+    (( m == 4 || m == 5 || m == 6 ) && ( t == 6 || t == 12 || t == 18 || t == 24 || t == 30 )) ||
+    (( m == 7 || m == 8 || m == 9 ) && ( t == 3 || t == 9 || t == 15 || t == 21 || t == 27 )) ||
+    (( m == 10 || m == 11 || m == 12 ) && ( t == 4 || t == 10 || t == 16 || t == 22 || t == 28 ))
+    )
+    tda->zph = 1;
+
+// Now, "klu bzlog":
+    if (
+    (( m == 1 ) && ( t == 5 || t == 10 || t == 15 )) ||
+    (( m == 2 ) && ( t == 8 || t == 18 || t == 20 || t == 22 || t == 28 )) ||
+    (( m == 4 ) &&  ( t == 20 || t == 25 )) ||
+    (( m == 5 ) && ( t == 8 || t == 15 )) ||
+    (( m == 6 ) && ( t == 11 || t == 13 || t == 15 || t == 23 )) ||
+    (( m == 7 ) && ( t == 5 || t == 6 )) ||
+    (( m == 8 ) && ( t == 3 || t == 6 || t == 9 || t == 13 || t == 16 )) ||
+    (( m == 9 ) && ( t == 9 || t == 10 || t == 19 )) ||
+    (( m == 10 ) && ( t == 9 || t == 10 || t == 19 || t == 26 )) ||
+    (( m == 11 ) && ( t == 2 || t == 6 || t == 16 || t == 20 || t == 26 ))
+    )
+    tda->kbz = 1;
+
+// Now, "klu thebs":
+    if (
+       ( ( m == 1 ) && ( t == 14 )) ||
+       (( m == 2 ) && ( t == 10 )) ||
+       (( m == 3 ) && ( t == 25 )) ||
+       (( m == 4 ) && ( t == 8 || t == 15 )) ||
+       (( m == 5 ) && ( t == 20 || t == 22 )) ||
+       (( m == 6 ) && ( t == 5 || t == 20 || t == 25 )) ||
+       (( m == 7 ) && ( t == 9 || t == 19 )) ||
+       (( m == 8 ) && ( t == 5 || t == 15 )) ||
+       (( m == 9 ) && ( t == 1 || t == 11 || t == 21 || t == 22 || t == 23 )) ||
+       (( m == 10 ) && ( t == 8 || t == 15 || t == 18 )) ||
+       (( m == 11 ) && ( t == 7 || t == 15 || t == 21 ))
+       )
+       tda->kth=1;
+
+// Now, "nyi nag": // Data from Vaidurya dkar po.
+    if (( m == 1 && t == 7 ) ||
+    ( m == 2 && t == 14 ) ||
+    ( m == 3 && t == 21 ) ||
+    ( m == 4 && t == 8 ) ||
+    ( m == 5 && t == 16 ) ||
+    ( m == 6 && t == 24 ) ||
+    ( m == 7 && t == 9 ) ||
+    ( m == 8 && t == 18 ) ||
+    ( m == 9 && t == 27 ) ||
+    ( m == 10 && t == 10 ) ||
+    ( m == 11 && t == 20 ) ||
+    ( m == 12 && t == 30 ))
+    tda->nn=1;
+  } 

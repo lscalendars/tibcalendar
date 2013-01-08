@@ -35,7 +35,7 @@ void print_tib_year(tib_year *ty) {
   }
 }
 
-void print_tib_month_astro_data(tib_month_astro *tma) {
+void print_tib_month_astro_data(tib_month_astro_data *tma) {
   printf("%s %s %s\n", get_gender_str(tma->gender), get_element_5_str(tma->element), get_animal_str(tma->animal));
   }
 
@@ -72,7 +72,7 @@ void print_tib_planet_data(tib_planet_data *pd) {
   printf("rahu longitude: "); ui_print_lst(pd->rahudong,5); printf("\n");
   }
 
-void print_tib_day_astro_data(tib_day_astro *tda) {
+void print_tib_day_astro_data(tib_day_astro_data *tda) {
   printf("sideral day: %d;%d,%d (%s: %s)\n", tda->sideral_day[0], tda->sideral_day[1], tda->sideral_day[2], get_zodiac_str(tda->sideral_day[0]), get_zodiac_western_str(tda->sideral_day[0]));
   printf("lunar mansion at daybreak: %d, ", tda->lm_db);
   printf("yoga: %s, karana: %s\n", get_yoga_str(tda->yoga), get_karana_str(tda->karana));

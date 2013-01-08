@@ -33,7 +33,7 @@ typedef struct tib_year_astro_data
     unsigned char element;
     unsigned char gender;
     unsigned char sme_ba;
-} tib_year_astro;
+} tib_year_astro_data;
 
 typedef struct tib_month_astro_data
 {
@@ -41,7 +41,7 @@ typedef struct tib_month_astro_data
     unsigned char element;
     unsigned char gender;
     unsigned char animal;
-} tib_month_astro;
+} tib_month_astro_data;
 
 typedef struct tib_day_astro_data
 {
@@ -57,12 +57,18 @@ typedef struct tib_day_astro_data
   unsigned char karana; // Karanas are numbered from 0 to 7 for the changing karanas, and from 7 to
   unsigned char sideral_day[3]; // the zodiacal sign (month), day and nadi for the mean solar longitude
   // 10 for the fixed ones, see KTC p.43
-} tib_day_astro;
+  // now the Earth-lords:
+  unsigned char yk; // 1 if  "yan kwong" is present, 0 otherwise
+  unsigned char zph; // "zin phung"
+  unsigned char kbz; // "klu bzlog"
+  unsigned char kth; //  "klu thebs"
+  unsigned char nn; // "nyi nag"
+} tib_day_astro_data;
 
 typedef struct tib_year
 {
     long int year; // the western calendar year
-    tib_year_astro *astro_data;
+    tib_year_astro_data *astro_data;
 } tib_year;
 
 typedef struct tib_month
@@ -77,7 +83,7 @@ typedef struct tib_month
     long int gzadru[6]; // month mean weekday
     long int nyidru[6]; // month mean solar longitude
     //astrological data
-    tib_month_astro *astro_data;
+    tib_month_astro_data *astro_data;
 } tib_month;
 
 // structure for a lunar date
@@ -91,7 +97,7 @@ typedef struct tib_day
   long int nyibar[6]; // mean solar longitude
   long int nyidag[6]; // true solar longitude
   long int gzadag[6]; // true weekday
-  tib_day_astro *astro_data;
+  tib_day_astro_data *astro_data;
   tib_planet_data *planet_data;
 } tib_day;
 
@@ -104,8 +110,8 @@ void free_tib_year(tib_year *ty);
 void free_tib_month(tib_month *tm);
 void free_tib_day(tib_day *td);
 
-tib_month_astro *new_tib_month_astro();
-tib_year_astro *new_tib_year_astro();
-tib_day_astro *new_tib_day_astro();
+tib_month_astro_data *new_tib_month_astro_data();
+tib_year_astro_data *new_tib_year_astro_data();
+tib_day_astro_data *new_tib_day_astro_data();
 
 #endif
