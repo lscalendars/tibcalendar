@@ -199,8 +199,10 @@ void check_sadag (unsigned char m, unsigned char t, tib_day_astro_data *tda)
        tda->kth=1;
 
 // Now, "nyi nag": // Data from Vaidurya dkar po.
-    if (( m == 1 && t == 7 ) ||
-    ( m == 2 && t == 14 ) ||
+// value is 2 if month is 1 (the string to print is different (?)
+    if ( m == 1 && t == 7 )
+      tda->nn = 2;
+    else if (( m == 2 && t == 14 ) ||
     ( m == 3 && t == 21 ) ||
     ( m == 4 && t == 8 ) ||
     ( m == 5 && t == 16 ) ||
@@ -218,6 +220,7 @@ void check_sadag (unsigned char m, unsigned char t, tib_day_astro_data *tda)
 // At the end, some commentaries show more anniversaries.
 // It simply fills the tda->anniversary field
 // Month numbers would currently be wrong for Error Correction system. (?)
+// Warning: this functions does not check, but the month must not be the second of a duplicated month! The anniversaries are celebrated only once
 void check_anniversary (unsigned char m, unsigned char t, tib_day_astro_data *tda, astro_system *asys )
   {
     switch ( m )

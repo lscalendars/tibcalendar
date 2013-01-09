@@ -72,7 +72,7 @@ if ( adj_mth == 12L ) // TODO: test for 1935, 2000 (Phugpa)
       {
         zd[0] = zd0rec;
         zeromthfg = 0;
-        month->month_type = FIRST_OF_DOUBLE;
+        month-> type = FIRST_OF_DOUBLE;
       }
           }
         else
@@ -84,7 +84,7 @@ if ( adj_mth == 12L ) // TODO: test for 1935, 2000 (Phugpa)
       {
         zd[0] = zd0rec;
         zeromthfg = 0;
-        month->month_type = FIRST_OF_DOUBLE;
+        month->type = FIRST_OF_DOUBLE;
       }
       // now we can fill a few more fields
      month->true_month[0] = zd[0];
@@ -374,12 +374,12 @@ find_month_and_year (long int jd, astro_system *sys, tib_month *month)
     month->year->year = month->year->year - 1;
   if ( month->month < 0L ) // Intercalary
     {
-      month->month_type = FIRST_OF_DOUBLE;
+      month->type = FIRST_OF_DOUBLE;
       month->month = -month->month;
     }
   // for the Phugpa system, delayed month are month with zd[1] equal to 50 or 51, for tsurphu it's 0 or 1
   else if ((sys->type == PHUGPA && (month->true_month[1] == sys->epoch->zlasho+2 || month->true_month[1] == sys->epoch->zlasho+3 ) ) || (sys->type == TSURPHU && (month->true_month[1] == 0 || month->true_month[1] == 1 ) ))
-    month->month_type = SECOND_OF_DOUBLE;
+    month->type = SECOND_OF_DOUBLE;
   // we need to get the rilcha, nyidru and gzadru for the month
   get_month_data (sys->epoch, month->true_month[0], month->rilcha, month->nyidru, month->gzadru);
 }

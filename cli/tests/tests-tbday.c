@@ -89,7 +89,7 @@ int
 compare_tib_month (tib_month * tm1, tib_month * tm2)
 {
   if (tm1->year->year != tm2->year->year || tm1->month != tm2->month
-      || tm1->month_type != tm2->month_type
+      || tm1->type != tm2->type
       || tm1->start_gd != tm2->start_gd)
     return 0;
   if (!compare_lst (tm1->rilcha, tm2->rilcha, 2)
@@ -125,7 +125,7 @@ get_tibday_const (int i, tib_day * td)
       // 13 january 765: duplicated day followed by ommited day  
       td->month->year->year = 765; // TODO: fix it!
       td->month->month = 1;
-      td->month->month_type = FIRST_OF_DOUBLE;
+      td->month->type = FIRST_OF_DOUBLE;
       aux_set_lst_2 (td->month->true_month, 21829, 48);
       td->month->zero_month_flag = 0;
       td->month->start_gd = 2000471;

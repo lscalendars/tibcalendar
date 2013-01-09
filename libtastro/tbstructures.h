@@ -63,7 +63,7 @@ typedef struct tib_day_astro_data
   unsigned char zph; // "zin phung"
   unsigned char kbz; // "klu bzlog"
   unsigned char kth; //  "klu thebs"
-  unsigned char nn; // "nyi nag"
+  unsigned char nn; // "nyi nag", value is 2 if month is 1
 } tib_day_astro_data;
 
 typedef struct tib_year
@@ -76,7 +76,7 @@ typedef struct tib_month
 {
     tib_year *year;
     long int month; // the adjusted month as appearing in the almanach
-    unsigned char month_type;
+    unsigned char type;
     long int true_month[2]; // the true month
     unsigned char zero_month_flag; // 0 if it is the second time we are on the 0th or 1st month, 1 if it's the first or if we are in another month // TODO: is it useful? redundant with month_type?
     long int start_gd; // the general day for tt=0 in the month

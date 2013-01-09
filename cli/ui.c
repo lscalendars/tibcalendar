@@ -41,7 +41,7 @@ void print_tib_month_astro_data(tib_month_astro_data *tma) {
 
 void print_tib_month(tib_month *tm) {
   printf("    Month data:\n");
-  switch(tm->month_type)
+  switch(tm->type)
     {
       case NORMAL:
         printf("month: %ld - true month: %ld;%ld\n", tm->month, tm->true_month[0], tm->true_month[1]);
@@ -72,10 +72,82 @@ void print_tib_planet_data(tib_planet_data *pd) {
   printf("rahu longitude: "); ui_print_lst(pd->rahudong,5); printf("\n");
   }
 
-void print_tib_day_astro_data(tib_day_astro_data *tda) {
+// month_type is month->type
+void print_tib_day_astro_data(tib_day_astro_data *tda, unsigned char month_type) {
+  unsigned char tmp=0;
   printf("sideral day: %d;%d,%d (%s: %s)\n", tda->sideral_day[0], tda->sideral_day[1], tda->sideral_day[2], get_zodiac_str(tda->sideral_day[0]), get_zodiac_western_str(tda->sideral_day[0]));
   printf("lunar mansion at daybreak: %d, ", tda->lm_db);
   printf("yoga: %s, karana: %s\n", get_yoga_str(tda->yoga), get_karana_str(tda->karana));
+  // now anniversaries:
+  if (month_type != SECOND_OF_DOUBLE)
+  switch (tda->anniversary)
+   {
+     case ANN_DEM_MIR:
+       printf("From 1st to 15th, Demonstration of Miracles.\n");
+       break;
+     case ANN_REV_KALACAKRA:
+       printf("Revelation of the Kalacakra Tantra.\n");
+       break;
+     case ANN_BIRTH:
+       printf("Birth of the Buddha.\n");
+       break;
+     case ANN_ENL_PARI:
+       printf("Enlightenment and Parinirvana of the Buddha.\n");
+       break;
+     case ANN_TURN_WHEEL:
+       printf("Turning of the Wheel of the Dharma.\n");
+       break;
+     case ANN_ENTRY_WOMB:
+       printf("The Buddha's entry into the womb of his mother.\n");
+       break;
+     case ANN_DESCENT_REALM:
+       printf("Descent of the Buddha from the realm of the gods.\n");
+       break;
+     default:
+       break;
+   }
+   // we set tmp to the total number of Earth lords to print
+   // remember that tda->nn can be 2
+   if (tda->nn)
+     tmp = 1;
+   tmp = tmp + tda->yk + tda->zph + tda-> kbz + tda->kth;
+   // a 2c optimization...
+   if (tmp == 0)
+     return;
+   printf("Earth-lords: ");
+      if (tda->yk)
+        {
+        printf("yan kwong");
+        tmp = tmp -1;
+        if (tmp)
+          printf(", ");
+        }
+      if (tda->zph)
+        {
+        printf("zin phung");
+        tmp = tmp -1;
+        if (tmp)
+          printf(", ");
+        }
+      if (tda->kbz)
+        {
+        printf("klu bzlog");
+        tmp = tmp -1;
+        if (tmp)
+          printf(", ");
+        }
+      if (tda->kth)
+        {
+        printf("klu thebs");
+        tmp = tmp -1;
+        if (tmp)
+          printf(", ");
+        }
+      if (tda->nn == 1)
+        printf("nyi nag");
+      if (tda->nn == 1)
+        printf("nyi nag ngan pa dgu 'dzom");
+      printf("\n");
   }
 
 void print_tib_day(tib_day *td)
@@ -113,7 +185,7 @@ void print_tib_day(tib_day *td)
   printf("true solar longitude: "); ui_print_lst(td->nyidag,5); printf("\n");
   printf("true weekday: "); ui_print_lst(td->gzadag,5); printf(" (%s)\n", get_weekday_str(td->gzadag[0]));
   if (td->astro_data)
-    print_tib_day_astro_data(td->astro_data);
+    print_tib_day_astro_data(td->astro_data, td->month->type); // TODO : check for td->month == NULL!
   if (td->planet_data)
     print_tib_planet_data(td->planet_data);
 }
