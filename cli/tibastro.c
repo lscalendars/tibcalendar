@@ -55,6 +55,8 @@ main ()
   free(td);
   td = get_new_year(1935, sys);
   get_day_astro_data(td, sys);
+  if (!td->month->astro_data)
+    get_month_astro_data(td->month, sys);
   print_tib_day_r(td);
   free(sys);
   //main_menu();

@@ -6,7 +6,7 @@
 #include "system.h"
 
 void get_year_astro_data(tib_year *ty);
-void get_month_astro_data(tib_month *tm);
+void get_month_astro_data(tib_month *tm, astro_system *asys);
 void get_day_astro_data(tib_day *td, astro_system *asys);
 void check_sadag (unsigned char m, unsigned char t, tib_day_astro_data *tda);
 void check_anniversary (unsigned char m, unsigned char t, tib_day_astro_data *tda, astro_system *asys );

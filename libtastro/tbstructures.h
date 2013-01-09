@@ -31,7 +31,7 @@ typedef struct tib_year_astro_data
     unsigned char yor; // the year inside the rabjung, starting with yor 0 for the first
     unsigned char animal; // animal, element and gender (ex: 2011 is female iron rabbit)
     unsigned char element;
-    unsigned char gender;
+    unsigned char gender; // 1 for Female, 0 for male
     unsigned char sme_ba;
 } tib_year_astro_data;
 

@@ -30,8 +30,10 @@ void get_year_astro_data(tib_year *year)
     // WARNING: do not compute years superior to 3007 with this function!
 }
 
-void get_month_astro_data(tib_month *month)
+void get_month_astro_data(tib_month *month, astro_system *asys)
 {
+  unsigned char tmp_e, tmp_g; // for a small optimization
+  unsigned char month_number = (unsigned char) month->month; // easier to work with
   if (!month->year)
     printf("error: you should call get_month_astro with a month with valid year field");
   if (!month->astro_data)
@@ -39,6 +41,39 @@ void get_month_astro_data(tib_month *month)
   // we need year astrological data to get the month astrological data:
   if (!month->year->astro_data)
     get_year_astro_data(month->year);
+  // we set the two values...
+  tmp_e = month->year->astro_data->element;
+  tmp_g = month->year->astro_data->gender;
+        if ( asys->type == TSURPHU )
+          {
+            // TODO: indicate the source. Code taken from tcg
+            month->astro_data->animal = (month_number + 10 ) % 12;
+            month->astro_data->c_month = month_number;
+            // element
+            if ( ( tmp_e == WOOD && tmp_g == MALE ) || ( tmp_e == EARTH && tmp_g == FEMALE ) )
+              month->astro_data->element = ((month_number - 1 ) / 2)%5;
+            if ( ( tmp_e == WOOD && tmp_g == FEMALE ) || ( tmp_e == IRON && tmp_g == MALE ) )
+              month->astro_data->element = (1 + (month_number - 1 ) / 2)%5;
+            if ( ( tmp_e == FIRE && tmp_g == MALE ) || ( tmp_e == IRON && tmp_g == FEMALE ) )
+              month->astro_data->element = (2 + (month_number - 1 ) / 2)%5;
+            if ( ( tmp_e == EARTH && tmp_g == MALE ) || ( tmp_e == WATER && tmp_g == FEMALE ) )
+              month->astro_data->element = (4 + (month_number - 1 ) / 2)%5;
+            if ( ( tmp_e == FIRE && tmp_g == FEMALE ) || ( tmp_e == WATER && tmp_g == MALE ) )
+              month->astro_data->element = (3 + (month_number - 1 ) / 2)%5;
+          }
+        else
+          {
+            month->astro_data->animal = month_number % 12;
+            month->astro_data->c_month = (month_number + 2) % 12;
+            month->astro_data->element = (tmp_e + 1 + (month_number + 1 ) / 2)%5;
+          }
+          
+        // TODO: really understand... Is it really for Tsurphu too?
+        if (tmp_g == MALE && month_number > 10)
+           month->astro_data->element = tmp_e + (month_number + 1) /2;
+           
+        // finally, the gender:
+        month->astro_data->gender = (month_number + 1 ) % 2;
   }
     
     
