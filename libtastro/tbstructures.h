@@ -46,12 +46,12 @@ typedef struct tib_month_astro_data
 typedef struct tib_day_astro_data
 {
   unsigned char element; 
-  unsigned char animal;
+  unsigned char s_animal; // animal associated with the solar day
   unsigned char c_lunar_mansion; // the chinese lunar mansion (phugpa)
   unsigned char s_sme_ba; // the solar day's mewa
   unsigned char l_sme_ba; // the lunar day's mewa
   unsigned char trigram;
-  unsigned char l_animal;
+  unsigned char l_animal; // animal associated with the lunar day
   unsigned char lm_db; // lunar mansion at daybreak
   unsigned char yoga; // yoga, see KTC p.42
   unsigned char karana; // Karanas are numbered from 0 to 7 for the changing karanas, and from 7 to
