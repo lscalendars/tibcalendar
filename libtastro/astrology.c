@@ -107,15 +107,14 @@ void get_day_astro_data(tib_day *td, astro_system *asys)
     listb[4] = ( 67 * listb[4] ) / 707;
     // This gives moon longitude at daybreak:
     sub_lst ( moonlong, moonlong, listb, 27, 67 );
-    td->astro_data->lm_db = (unsigned char) moonlong[0];
+    copy_lst(td->astro_data->moonlong_db, moonlong); // TODO: could be optimized a little...
 
    // Now calculate yoga, sbyor ba:
    // we simply add the true solar longitude and the true moon longitude
    // at daybreak.
    // This is strictly wrong, we should use the Sun's longitude at daybreak, 
    // but in the Tibetan tradition such an adjustment is not made.
-    add_lst ( lista, moonlong, td->nyidag, 27, 67 );
-    td->astro_data->yoga = (unsigned char) lista[0];
+    add_lst (td->astro_data->yoga, moonlong, td->nyidag, 27, 67 );
 
     // Now calculate karana, byed pa:
     // Karanas are numbered from 0 to 7 for the changing karanas, and from 7 to
@@ -181,6 +180,21 @@ void get_day_astro_data(tib_day *td, astro_system *asys)
    // now checking for Earth-lords:
    check_sadag((unsigned char) td->month->month, (unsigned char) td->tt, td->astro_data);
    check_anniversary ((unsigned char) td->month->month, (unsigned char) td->tt, td->month->type, td->astro_data, asys );
+}
+
+// Two small functions to get the lunar mansion element and day of week element
+// first the data
+static unsigned char lunar_mansion_elements[27] = { 3, 2, 2, 0, 3, 1, 3, 2, 1, 2, 2, 3, 3, 3, 3, 2, 0, 0,
+                       1, 1, 0, 0, 1, 0, 2, 1, 1 };
+unsigned char get_lunar_mansion_element (unsigned char lm)
+{
+  return lunar_mansion_elements[lm];
+}
+
+static unsigned char dow_elements[7] = { 0, 2, 1, 2, 1, 3, 0 };
+unsigned char get_dow_element (unsigned char dow)
+{
+  return dow_elements[dow];
 }
 
 /*

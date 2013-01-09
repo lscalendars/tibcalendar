@@ -10,6 +10,8 @@ void get_month_astro_data(tib_month *tm, astro_system *asys);
 void get_day_astro_data(tib_day *td, astro_system *asys);
 void check_sadag (unsigned char m, unsigned char t, tib_day_astro_data *tda);
 void check_anniversary (unsigned char m, unsigned char t, unsigned char month_type, tib_day_astro_data *tda, astro_system *asys );
+unsigned char get_lunar_mansion_element (unsigned char lm);
+unsigned char get_dow_element (unsigned char dow);
 
 // The four elements
 #define FOUR_EARTH 0

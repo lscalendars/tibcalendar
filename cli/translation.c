@@ -138,7 +138,7 @@ char *yogas[27] = { "Vishkambha", "Prîti", "Ayushmat", "Saubhâgya", "Shobhana"
                   "Indra", "Vaidhriti" };
 
 char *
-get_yoga_str(unsigned char yoga)
+get_yoga_str(long int yoga)
 {
   return yogas[yoga];
 }                  

@@ -76,8 +76,8 @@ void print_tib_planet_data(tib_planet_data *pd) {
 void print_tib_day_astro_data(tib_day_astro_data *tda, unsigned char month_type) {
   unsigned char tmp=0;
   printf("sideral day: %d;%d,%d (%s: %s)\n", tda->sideral_day[0], tda->sideral_day[1], tda->sideral_day[2], get_zodiac_str(tda->sideral_day[0]), get_zodiac_western_str(tda->sideral_day[0]));
-  printf("lunar mansion at daybreak: %d, ", tda->lm_db);
-  printf("yoga: %s, karana: %s\n", get_yoga_str(tda->yoga), get_karana_str(tda->karana));
+  printf("lunar mansion at daybreak: %ld, ", tda->moonlong_db[0]);
+  printf("yoga: %s, karana: %s\n", get_yoga_str(tda->yoga[0]), get_karana_str(tda->karana));
   // now anniversaries:
   if (month_type != SECOND_OF_DOUBLE)
   switch (tda->anniversary)
