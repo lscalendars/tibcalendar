@@ -53,12 +53,20 @@ wd_to_jd (int day, int month, int year)
 
 }
 
+// takes a julian day and returns the day of week
+int jd_to_dow(long int jd)
+{
+  int doweek = (int) (jd - 7L * ((jd + 1L) / 7L) + 2L);
+  if (doweek == 7)
+    doweek = 0;
+}
+
 // takes julian day, and sets day, month, year and day of week accordingly
 // as above, it is in calendar date, with astronomical year
 void
 jd_to_wd (long int jd, int *day, int *month, int *year, int *dow)
 {
-  long int l, n, j, k, i, doweek, wy, wm, wd;
+  long int l, n, j, k, i, wy, wm, wd;
 
 // This algorithm is from photcopied notes, from James Neely.
 // Also, checked with ESAA, 1992, p. 604
@@ -69,10 +77,7 @@ jd_to_wd (long int jd, int *day, int *month, int *year, int *dow)
 // by Oct 15th
 
 // First, get day of week:
-
-  doweek = jd - 7L * ((jd + 1) / 7L) + 2L;
-  if (doweek == 7L)
-    doweek = 0L;
+  *dow = jd_to_dow(jd);
 
   if (jd >= 2299161L)		// Gregorian calendar:
     {
@@ -110,5 +115,4 @@ jd_to_wd (long int jd, int *day, int *month, int *year, int *dow)
   *year = (int) wy;
   *month = (int) wm;
   *day = (int) wd;
-  *dow = (int) doweek;
 }

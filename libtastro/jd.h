@@ -17,7 +17,7 @@
 #define FRIDAY 6
  
 void jd_to_wd (long int jd, int *day, int *month, int *year, int *dow);
-
+int jd_to_dow(long int jd);
 long int wd_to_jd (int day, int month, int year);
 
  
