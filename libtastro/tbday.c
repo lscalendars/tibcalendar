@@ -29,6 +29,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "jd.h"			// for jd_to_wd
 #include "system.h" // for epoch
 #include "tbstructures.h"
+#include "astrology.h" // when we want a next day or month, we need to update the astrology linked to it if any
 
 /* Function returning the tib_day of a given tibetan date:
  * inputs:
@@ -40,7 +41,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Warning: this function can return an ommited day, in this case, you can call get_next_day
  */
 tib_day*
-get_tib_day_from_tib_date(int y, int m, int d, astro_system *asys, unsigned char m_f_o_s, unsigned char d_f_o_s)
+get_tib_day_from_tib_date (int y, int m, int d, astro_system *asys, unsigned char m_f_o_s, unsigned char d_f_o_s)
  {
   tib_day *td;
   tib_month *month;
@@ -75,22 +76,19 @@ adj_mth = adj_zla (tm, zd, &zeromthfg, asys);
 // if adj_mth is the month before the one we are looking for, we take the following one
 if ( adj_mth == tm -1 || (tm ==1L && adj_mth == 12L) )
       {
-        if ( !zeromthfg ) // Should always work TODO: really needed?
+          if (!zeromthfg)
           {
-          //zla_dag(asys->epoch, (long int) year, 2, zd);
           tm = tm + 1;
           next_zla_dag(zd);
-          adj_mth = adj_zla (tm, zd, &zeromthfg, asys);
           }
-        else
-          // we shouldn't arrive at the first of a double 12th month of previous year...
-          printf("strange error(12): please report it to the tibastro developpers.");
+          adj_mth = adj_zla (tm, zd, &zeromthfg, asys);
       }
+month->asked_month = tm; // TODO: test...
     // if we are at the first month of a double month, we cancel the changes brought by adj_mth because we are not yet in a loop
     if ( adj_mth == -month->month && m_f_o_s == FIRST) // no else before the if, who knows...
       {
         zd[0] = zd0rec;
-        zeromthfg = 0;
+        zeromthfg = 0; // TODO: this seems wrong...
         month->type = FIRST_OF_DOUBLE;
       }
       else if ( adj_mth == -month->month && m_f_o_s == SECOND)
@@ -161,6 +159,37 @@ tib_day_next(tib_day *td, astro_system *sys)
   
 }
 
+/* Function giving informations on the next month of a given tib_month */
+// it supposes that month->type and month->asked_month is well filled
+void
+tib_month_next(tib_month* month, astro_system *asys)
+{
+  long int adj_mth;
+  if ( !month->zero_month_flag )   // if zeromthfg == 1, we just call adj_zla for a second time with the same values, else:
+      {
+      next_zla_dag (month->true_month);
+      month->asked_month = (month->asked_month + 1) % 12; // TODO: test if it gives 0 or 12... test also for year change, should work, but...
+      }
+  adj_mth = adj_zla (month->asked_month, month->true_month, &(month->zero_month_flag), asys);
+  if (month->type == FIRST_OF_DOUBLE)
+      month->type = SECOND_OF_DOUBLE;
+  if (adj_mth < 0L)
+    {
+      month->type = FIRST_OF_DOUBLE;
+      month->month = -adj_mth;
+    }
+  else
+     month->month = adj_mth;
+  if (month->month == 1 && month->type != SECOND_OF_DOUBLE)  // new year
+    {
+    month->year->year = month->year->year + 1;
+    if (month->year->astro_data)
+      get_year_astro_data(month->year);
+    }
+ // finally, we update the astrology linked to it, if any
+ if (month->astro_data)
+   get_month_astro_data(month, asys);
+}
 
 /* Function to calculate true month, "zla ba rnam par dag pa" from a tibetan date
  * inputs: 
@@ -189,7 +218,7 @@ zla_dag (const epoch *epch, long int y, long int m, long int zd[2])
 inline void
 next_zla_dag (long int zd[2])
 {
-  //add_lst_2(zd[2], {1,2}, 65); // is it faster than just taking the zla_dag ? or maybe we should hardcode the add_lst function for this?
+  //equivalent to add_lst_2(zd[2], {1,2}, 65);
   long int r = zd[1] + 2;
   zd[1] = r % 65;
   zd[0] = zd[0] + 1 + r/65;
@@ -234,6 +263,8 @@ next_zla_dag (long int zd[2])
  call 2: tm=5   zd=844;1    zeromonthfg=0 -> adj_mth = 4, zeromthfg=1 and zd=843;1
  call 3: tm=5   zd=843;1    zeromonthfg=1 -> adj_mth = 5, zeromthfg=0 and zd = 844;1
  call 4: tm=6   zd=845;3    zeromonthfg=0 -> adj_mth = 6 
+
+tm here is precisely month->expected month
  
  * another example of expected sequence of calls and results (with double month)
   tm  zd[0]   zd[1]    zeromthfg (before-after)   modified zd[0]  adj_mth    type of month
@@ -297,7 +328,7 @@ phugpa_adj_zla (long int tm, long int zd[2], epoch *epch,
   return adj_mth;
 }
 
-/* Idem for Tsurphu system.
+/* Idem for Tsurphu system. TODO: there is a bug: we should return -tm sometimes...
  */
 long int
 tsurphu_adj_zla (long int tm, long int zd[2],
@@ -379,6 +410,7 @@ find_month_and_year (long int jd, astro_system *sys, tib_month *month)
       if (!zeromthfg)		// We need to use the same data, twice.
 	{
 	  zla_dag (sys->epoch, ty, tm, zd);
+	  month->asked_month = tm;
 	}
 
       adj_mth = adj_zla (tm, zd, &zeromthfg, sys);	// do not forget this can modify zd[0]
