@@ -79,7 +79,6 @@ void print_tib_day_astro_data(tib_day_astro_data *tda, unsigned char month_type)
   printf("lunar mansion at daybreak: %ld, ", tda->moonlong_db[0]);
   printf("yoga: %s, karana: %s\n", get_yoga_str(tda->yoga[0]), get_karana_str(tda->karana));
   // now anniversaries:
-  if (month_type != SECOND_OF_DOUBLE)
   switch (tda->anniversary)
    {
      case ANN_DEM_MIR:
@@ -145,7 +144,7 @@ void print_tib_day_astro_data(tib_day_astro_data *tda, unsigned char month_type)
         }
       if (tda->nn == 1)
         printf("nyi nag");
-      if (tda->nn == 1)
+      if (tda->nn == 2)
         printf("nyi nag ngan pa dgu 'dzom");
       printf("\n");
   }

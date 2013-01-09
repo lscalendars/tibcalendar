@@ -3,6 +3,7 @@
 
 // the different types of day (ommited part):
 #define NORMAL 0 // no omited nor duplicated
+#define OMMITED 1 // lunar day is ommited (a bit special...)
 #define PREVIOUS_OMMITED 2 // previous lunar day is ommited
 #define NEXT_OMMITED 3 // next lunar day is ommited
 // other types of day (duplicated part)

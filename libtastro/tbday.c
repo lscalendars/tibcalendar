@@ -310,6 +310,7 @@ long int adj_zla (long int tm, long int zd[2],
  * outputs:
  *  - it fills the month fields with everything needed
  */
+
 void
 find_month_and_year (long int jd, astro_system *sys, tib_month *month)
 {
