@@ -88,13 +88,13 @@ typedef struct tib_month
     tib_month_astro_data *astro_data;
 } tib_month;
 
-// structure for a lunar date
+// structure for a lunar date, but can actually be a lunar day that has no lunar date (in this case, ommited == OMMITED)
 typedef struct tib_day
 {
   tib_month *month;
   long int gd; // the general day (spi zag), in our case it is the julian day
   long int tt; // the lunar day
-  long int ommited; // a type above to know if there is an ommited day around
+  long int ommited; // can be : OMMITED if the lunar day is ommited, NEXT_OMMITED if the next lunar day is ommited or PREVIOUS_OMMITED (works only in the same month)
   long int duplicated; // idem, for duplicated
   long int nyibar[6]; // mean solar longitude
   long int nyidag[6]; // true solar longitude
