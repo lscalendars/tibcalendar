@@ -159,6 +159,9 @@ void print_tib_day(tib_day *td)
   printf("lunar day: %ld", td->tt);
   switch(td->ommited)
     {
+      case OMMITED: // TODO: improve, currently it does not make any sense
+        printf(" - day is ommited");
+        break;
       case PREVIOUS_OMMITED:
         printf(" - previous lunar day is ommited");
         break;

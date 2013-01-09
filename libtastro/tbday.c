@@ -30,112 +30,125 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "system.h" // for epoch
 #include "tbstructures.h"
 
-/* Function returning the tib_day of a new year */
-// TODO: rewrite (or write another function) to find the tib_day for any tibetan date
+/* Function returning the tib_day of a given tibetan date:
+ * inputs:
+ *    - year, month and day are the tibetan date for which we want the tib_day
+ *    - asys is quite obvious
+ *    - m_f_o_s (month first or second) is FIRST if, in the case of a doubled month, we take the first, or SECOND if we take the second
+ *    - d_f_o_s (day first or second) is same for the day
+ *
+ * Warning: this function can return an ommited day, in this case, you can call get_next_day
+ */
 tib_day*
-get_new_year(int year, astro_system *asys)
+get_tib_day_from_tib_date(int y, int m, int d, astro_system *asys, unsigned char m_f_o_s, unsigned char d_f_o_s)
  {
-   tib_day *td;
+  tib_day *td;
   tib_month *month;
  long int zd[2];
+ long int tt, ty, tm; // not necessary but make the code much clearer
  unsigned char zeromthfg;
  long int adj_mth;
- long int prv_gd, nxt_gd;
+ long int prv_gd, nxt_gd, prv2_gd;
  long int zd0rec; // used to cancel the potential effects on zd[0] of adj_zla
   long int nyibar[6] = { 0, 0, 0, 0, 0, 0 };	// mean solar longitude
   long int nyidag[6] = { 0, 0, 0, 0, 0, 0 };	// true solar longitude
   long int gzadag[6] = { 0, 0, 0, 0, 0, 0 };	// true weekday
   
 td = new_tib_day();
-month = td->month;
+month = td->month; // TODO: remove?
 // this is always true
-month->year->year = (long int) year;
-month->month = 1L;
+month->year->year = (long int) y;
+month->month = (long int) m;
+td->tt = d;
+ty = (long int) y;
+tm = (long int) m;
+tt = (long int) d;
  /*    Finding the month   */
  // the idea here is to get the data for 1 month of the year, directly in Tibetan date, not passing
  // through julian date
 // so first we get the true month for this month:
-zla_dag (asys->epoch, (long int) year, 1, zd);
+zla_dag (asys->epoch, ty, tm, zd);
 zd0rec = zd[0]; // we remember the true month main part
 // we adjust the month:
-adj_mth = adj_zla (1, zd, &zeromthfg, asys);
+adj_mth = adj_zla (tm, zd, &zeromthfg, asys);
 // now zd is set, we check if there are some subltelties with double month
-// if adj_mth is the last month of previous year, we take the following one
-if ( adj_mth == 12L ) // TODO: test for 1935, 2000 (Phugpa)
+// if adj_mth is the month before the one we are looking for, we take the following one
+if ( adj_mth == tm -1 || (tm ==1L && adj_mth == 12L) )
       {
         if ( !zeromthfg ) // Should always work TODO: really needed?
           {
           //zla_dag(asys->epoch, (long int) year, 2, zd);
+          tm = tm + 1;
           next_zla_dag(zd);
-          adj_mth = adj_zla (2, zd, &zeromthfg, asys);
-          if ( adj_mth == -1L ) // TODO: test for 1935, 2000 (Phugpa)
-      {
-        zd[0] = zd0rec;
-        zeromthfg = 0;
-        month-> type = FIRST_OF_DOUBLE;
-      }
+          adj_mth = adj_zla (tm, zd, &zeromthfg, asys);
           }
         else
           // we shouldn't arrive at the first of a double 12th month of previous year...
           printf("strange error(12): please report it to the tibastro developpers.");
       }
     // if we are at the first month of a double month, we cancel the changes brought by adj_mth because we are not yet in a loop
-    else if ( adj_mth == -1L ) // TODO: test for 1935, 2000 (Phugpa)
+    if ( adj_mth == -month->month && m_f_o_s == FIRST) // no else before the if, who knows...
       {
         zd[0] = zd0rec;
         zeromthfg = 0;
         month->type = FIRST_OF_DOUBLE;
       }
+      else if ( adj_mth == -month->month && m_f_o_s == SECOND)
+       {
+       month->type = SECOND_OF_DOUBLE; // TODO: test if something else is needed
+       }
       // now we can fill a few more fields
      month->true_month[0] = zd[0];
 	   month->true_month[1] = zd[1];
-	   td->month = month;
+	   month->zero_month_flag = zeromthfg; // TODO: might be optimized a little
 	   get_month_data (asys->epoch, zd[0], month->rilcha, month->nyidru, month->gzadru);
-     // TODO: test the day loop for Phugpa 1977: first day is ommited
-    // now we look for the first day
-     td->gd = get_tt_data (asys->epoch, zd[0], month->gzadru, month->nyidru, month->rilcha, 1, td->nyidag, td->gzadag, td->nyibar);
+     // Test the day loop for Phugpa 1/1/1977: first day is ommited
+    // now we look for the day
+     td->gd = get_tt_data (asys->epoch, zd[0], month->gzadru, month->nyidru, month->rilcha, tt, td->nyidag, td->gzadag, td->nyibar);
      // we have our day
-     // TODO: if the day is ommited, do we want previous one or next one? do we change month or not?
   // td->ommited and td->duplicated are the only variables that are not set, we
   // must give them a default value
   td->ommited = NORMAL;
   td->duplicated = NORMAL;
 // We now have data for the current lunar day and both the one before and following.    
 // we can set the type of day
-  prv_gd = get_tt_data (asys->epoch, zd[0], month->gzadru, month->nyidru, month->rilcha, 0, nyidag, gzadag, nyibar); // TODO: does it really work with 0? KTC23 seems to say so
-  td->tt=1;
+// we can compute for the previous lunar day even if tt = 1 (cf. KTC23 ?)
+  prv_gd = get_tt_data (asys->epoch, zd[0], month->gzadru, month->nyidru, month->rilcha, tt-1L, nyidag, gzadag, nyibar);
+  // we compute nxt_gd if the next lunar day is in the same month
+  if (tt < 30L)
+  nxt_gd = get_tt_data (asys->epoch, zd[0], month->gzadru, month->nyidru, month->rilcha, tt+1L, nyidag, gzadag, nyibar);
+  else
+  nxt_gd = 0L;
+  // we compute prv2_gd if tt>1, otherwise it would change the month
+  if (tt >1L)
+    prv2_gd = get_tt_data (asys->epoch, zd[0], month->gzadru, month->nyidru, month->rilcha, tt-2L, nyidag, gzadag, nyibar);
+  else
+    prv2_gd = 0L;
   if (prv_gd == td->gd) // means that the lunar date is ommited, we go to the next one
     {
-    td->tt=2;
-      //prv2_gd = prv_gd; 
-      prv_gd = td->gd;
-      td->gd = get_tt_data (asys->epoch, zd[0], month->gzadru, month->nyidru, month->rilcha, 2, td->nyidag, td->gzadag, td->nyibar);
-      td->ommited=PREVIOUS_OMMITED;
-      nxt_gd = get_tt_data (asys->epoch, zd[0], month->gzadru, month->nyidru, month->rilcha, 3, nyidag, gzadag, nyibar);
+      td->ommited=OMMITED; // TODO: in this case, what is td->gd?
     }
-  else if (td->gd - prv_gd == 2) // means that the lunar date is duplicated, we go to the first one
+  else if (td->gd - prv_gd == 2) // means that the lunar date is duplicated
    {
-   // we take the first one:
+   if (d_f_o_s == FIRST)
+   {
+   // in case we take the first one:
    td->duplicated=FIRST_OF_DUPLICATED;
    //TODO: useful? should be moved to the printing function?
    td->gzadag[0] = (td->gzadag[0]+6)%7;
    td->gzadag[1] = 60L; td->gzadag[2] = 0L; td->gzadag[3] = 0L; td->gzadag[4] = 0L; td->gzadag[5] = 0L;
-   // if we took the second one:
-   //td->duplicated=SECOND_OF_DUPLICATED;
-   nxt_gd = get_tt_data (asys->epoch, zd[0], month->gzadru, month->nyidru, month->rilcha, 2, nyidag, gzadag, nyibar);
+   } else { //d_f_o_s == SECOND
+   td->duplicated=SECOND_OF_DUPLICATED;
+   } 
    }
-  else
-   {
-     nxt_gd= get_tt_data (asys->epoch, zd[0], month->gzadru, month->nyidru, month->rilcha, 2, nyidag, gzadag, nyibar);
-   }
-  if (nxt_gd == td->gd)		// Few tested, all working properly
+  if (nxt_gd && nxt_gd == td->gd)		// Few tested, all working properly
     {
       td->ommited = NEXT_OMMITED;
     }
-/*  if (prv2_gd == prv_gd)	// prv2_gd is set to 0 if we didn't check for previously ommited, thus it will be different from gd... TODO: uncomment when it will make sense
+  if (prv2_gd && prv2_gd == prv_gd)	// prv2_gd is set to 0 if we didn't check for previously ommited, thus it will be different from gd... TODO: uncomment when it will make sense
     {
       td->ommited = PREVIOUS_OMMITED;
-    }*/
+    }
     return td;
  }
 
@@ -463,7 +476,7 @@ find_day (tib_day *td, long int jd, epoch *epch)
     }
   // TODO: does it work with tt=1?
   // Check for possible omitted lunar date, prior to current
-  if (gzadag[1] >= 54)		// 54?? This should get all of them, in Phugpa
+  if (gzadag[1] >= 54)		// 54?? This should get all of them, in Phugpa TODO: understand this...
     {
       prv2_gd =
 	get_tt_data (epch, cur_mth, gzadru, nyidru, rilcha, tt - 2, nyidag,

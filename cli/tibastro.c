@@ -53,7 +53,7 @@ main ()
   //get_day_data(2449749L, td, sys);
   //print_tib_day(td);
   free(td);
-  td = get_new_year(1935, sys);
+  td = get_tib_day_from_tib_date(1977, 1,1, sys, FIRST, FIRST);
   get_day_astro_data(td, sys);
   if (!td->month->astro_data)
     get_month_astro_data(td->month, sys);

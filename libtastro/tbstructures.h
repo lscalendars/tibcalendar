@@ -13,6 +13,10 @@
 #define FIRST_OF_DOUBLE 1
 #define SECOND_OF_DOUBLE 2
 
+// used in tbday.c, for month first or second and day first or second
+#define FIRST 0
+#define SECOND 1
+
 // planetary data
 typedef struct tib_planet_data
 {
