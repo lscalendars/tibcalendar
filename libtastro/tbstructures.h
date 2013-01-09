@@ -83,7 +83,7 @@ typedef struct tib_month
     long int month; // the adjusted month as appearing in the almanach
     unsigned char type;
     long int true_month[2]; // the true month
-    unsigned char zero_month_flag; // 0 if it is the second time we are on the 0th or 1st month, 1 if it's the first or if we are in another month // TODO: is it useful? redundant with month_type?
+    unsigned char zero_month_flag; // see comments of phugpa_adj_zla 
     long int start_gd; // the general day for tt=0 in the month
     long int rilcha[2]; // the anomaly
     long int gzadru[6]; // month mean weekday

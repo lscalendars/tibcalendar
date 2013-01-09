@@ -145,12 +145,22 @@ if ( adj_mth == tm -1 || (tm ==1L && adj_mth == 12L) )
     {
       td->ommited = NEXT_OMMITED;
     }
-  if (prv2_gd && prv2_gd == prv_gd)	// prv2_gd is set to 0 if we didn't check for previously ommited, thus it will be different from gd... TODO: uncomment when it will make sense
+  if (prv2_gd && prv2_gd == prv_gd)	// prv2_gd is set to 0 if we didn't check for previously ommited, thus it will be different from gd... 
     {
       td->ommited = PREVIOUS_OMMITED;
     }
     return td;
  }
+
+/* an important function to transform a tibetan day into the next lunar date (or lunar day if lunar day is ommited)
+ *
+ */
+void
+tib_day_next(tib_day *td, astro_system *sys)
+{
+  
+}
+
 
 /* Function to calculate true month, "zla ba rnam par dag pa" from a tibetan date
  * inputs: 
@@ -202,10 +212,7 @@ next_zla_dag (long int zd[2])
  *    In the case of zd[1] index becoming 0 or 1, we modify zd[0] for
  *    the first month with zd[1] of 0 or 1: zd[0] becomes zd[0]-1, but
  *    gets back to normal for the second month with zd[1] 0 or 1.
- *  - zeromthflg: zero month flag, needed for when the intercalation index 
- *    becomes 0 or 1:
- *      - if zeromthflg is 0, we haven't taken the 0th month into account yet
- *      - if zeromthflg is 1, it's the second time we take it into account
+ *  - zeromthflg: see comments of phugpa_adj_zla
  */
 
 /* Function to adjust month number, if needed
@@ -214,6 +221,33 @@ next_zla_dag (long int zd[2])
  *  - zd, tm, zeromthfg: explained above
  * returns adj_mth, as explained above
  * it also modifies zd[0] and zeromthfg so that it is well set for next use (might pose problems sometimes)
+ * taking the example of KTC54:
+ 
+ 4th month:   zd=842;64 -> adj_mth = 3
+ 5th month:   zd=844;1   -> adj_mth = 5
+ 6th month:   zd=845;3   -> adj_mth = 6
+ 
+ but 843;1 will be used for the missing 4th month
+ 
+ the expected sequence of calls for this function for this example is thus:
+ call 1: tm=4   zd=842;64  zeromonthfg=0 -> adj_mth = 3
+ call 2: tm=5   zd=844;1    zeromonthfg=0 -> adj_mth = 4, zeromthfg=1 and zd=843;1
+ call 3: tm=5   zd=843;1    zeromonthfg=1 -> adj_mth = 5, zeromthfg=0 and zd = 844;1
+ call 4: tm=6   zd=845;3    zeromonthfg=0 -> adj_mth = 6 
+ 
+ * another example of expected sequence of calls and results (with double month)
+  tm  zd[0]   zd[1]    zeromthfg (before-after)   modified zd[0]  adj_mth    type of month
+  8      23        45                     0-0                             23                       8                 normal
+  9      24        47                     0-0                             24                       9                 normal
+  10    25        49                     0-0                             25                       10               first of double
+  11    26        51                     0-0                             26                       10               second of double
+  12    27        52                     0-0                             27                       11               normal
+  ...   ...         ...                        ...                              ...                        ...               ...
+  5     32        62                      0-0                             32                       4                normal
+  6     33        64                      0-0                             33                       5                normal
+  7     35        1                        0-1                             34                       6                normal
+  7     34        1                        1-0                             35                       7                normal
+  8     35        3                        0-0                             36                       8                normal
  */
 long int
 phugpa_adj_zla (long int tm, long int zd[2], epoch *epch,
@@ -223,7 +257,7 @@ phugpa_adj_zla (long int tm, long int zd[2], epoch *epch,
   if (zd[1] == epch->zlasho || zd[1] == epch->zlasho + 1)
     {
       // for month taking the name of the following month, the convention is to
-      // return -tm
+      // return -tm. the month->type must be set to FIRST_OF_DOUBLE
       return -tm;
     }
   else
@@ -269,27 +303,21 @@ long int
 tsurphu_adj_zla (long int tm, long int zd[2],
 		unsigned char *zeromthfg)
 {
-  long int adj_mth;
       if ( zd[1] == 0 || zd[1] == 1 )
       {
-        if ( !*zeromthfg )
+         if (!*zeromthfg)
           {
-            *zeromthfg = 1;
-            adj_mth = -tm;
+           *zeromthfg = 1;
             zd[0] = zd[0] - 1;
           }
         else
           {
             *zeromthfg = 0;
-            adj_mth = tm;
             zd[0] = zd[0] + 1;
           }
       }
-    else
-      {
-        adj_mth = tm;
-      }
-  return adj_mth;
+   // here the month number cannot change...
+  return tm;
 }
 
 /* Chapeau function to call the above two (TODO: should be moved elsewhere later maybe) */
@@ -396,13 +424,6 @@ find_month_and_year (long int jd, astro_system *sys, tib_month *month)
     month->type = SECOND_OF_DOUBLE;
   // we need to get the rilcha, nyidru and gzadru for the month
   get_month_data (sys->epoch, month->true_month[0], month->rilcha, month->nyidru, month->gzadru);
-}
-
-/* Function giving informations on the next month of a given tib_month */
-tib_month*
-next_month(tib_month* month)
-{
-  return NULL;
 }
 
 /* Function looping through a month and finding the tt and its caracteristics
