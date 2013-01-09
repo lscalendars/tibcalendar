@@ -73,8 +73,6 @@ char * get_zodiac_western_str(unsigned char zodiac_sign)
 }
     }
 
-
-
 char * get_zodiac_str(unsigned char zodiac_sign)
 {
   switch(zodiac_sign)
@@ -159,19 +157,39 @@ get_element_5_str(unsigned char element)
   switch (element)
     {
       case FIRE:
-        return  _("fire");
+        return  _("Fire");
         break;
       case EARTH:
-        return  _("earth");
+        return  _("Earth");
         break;
       case IRON:
-        return  _("iron");
+        return  _("Iron");
         break;
       case WATER:
-        return  _("water");
+        return  _("Water");
         break;
-      default:
-        return  _("wood");
+      default: // case WOOD
+        return  _("Wood");
+        break;
+    }
+}
+
+char *
+get_element_4_str(unsigned char element)
+{
+  switch (element)
+    {
+      case FOUR_FIRE:
+        return  _("Fire");
+        break;
+      case FOUR_EARTH:
+        return  _("Earth");
+        break;
+      case FOUR_WIND:
+        return  _("Wind");
+        break;
+      default: //case FOUR_WATER:
+        return  _("Water");
         break;
     }
 }
@@ -182,51 +200,63 @@ get_animal_str(unsigned char animal)
   switch (animal)
     {
       case RABBIT:
-        return  _("rabbit");
+        return  _("Rabbit");
         break;
       case DRAGON:
-        return  _("dragon");
+        return  _("Dragon");
         break;
       case SNAKE:
-        return  _("snake");
+        return  _("Snake");
         break;
       case HORSE:
-        return  _("horse");
+        return  _("Horse");
         break;
       case SHEEP:
-        return  _("sheep");
+        return  _("Sheep");
         break;
       case MONKEY:
-        return  _("monkey");
+        return  _("Monkey");
         break;
       case BIRD:
-        return  _("bird");
+        return  _("Bird");
         break;
       case DOG:
-        return  _("dog");
+        return  _("Dog");
         break;
       case PIG:
-        return  _("pig");
+        return  _("Pig");
         break;
       case MOUSE:
-        return  _("mouse");
+        return  _("Mouse");
         break;
       case OX:
-        return  _("ox");
+        return  _("Ox");
         break;
       default:
-        return  _("tiger");
+        return  _("Tiger");
         break;
     }
 }
 
 // chinese lunar mansion
-char *c_lunar_mansion[28] = { "Jiao", "Kang", "Di", "Fang", "Xin", "Wei", "Ji", "Dou",
+static char *c_lunar_mansions[28] = { "Jiao", "Kang", "Di", "Fang", "Xin", "Wei", "Ji", "Dou",
                     "Niu", "Nu", "Xu", "Wei", "Shi", "Bi", "Kui", "Lou",
                     "Wei", "Mao", "Bi", "Zui", "Can", "Jing", "Gui", "Liu",
                     "Xing", "Zhang", "Yi", "Zhen" };
 
+char *
+get_c_lm_str(unsigned char c_lm)
+{
+  return c_lunar_mansions[c_lm];
+}
+
 // western month
-char *western_month[12] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug",
+static char *western_month[12] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug",
                       "Sep", "Oct", "Nov", "Dec" };
 
+static char *trigrams[8] = { "zon", "li", "khon", "dwa", "khen", "kham", "gin", "zin"};
+char *
+get_trigram_str(unsigned char trigram)
+{
+  return trigrams[trigram];
+}
