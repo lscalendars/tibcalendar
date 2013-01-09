@@ -144,25 +144,26 @@ void get_day_astro_data(tib_day *td, astro_system *asys)
     tmp = ( ( td->nyibar[0] * 60 + td->nyibar[1] ) * 60 + td->nyibar[2] ) * 6 + td->nyibar[3];
     // tmp is now the number of shvasa (1/583200th of circle) of the solar longitude
     // we want to divide it in 12*30*60th (21600th) of a circle:
-    tmp = tmp / 27; // 21600/583200 = 1/27
+    tmp = tmp / 27L; // 21600/583200 = 1/27
     // now the number of nadis:
-    td->astro_data->sideral_day[2] = (unsigned char) (tmp % 60);
-    tmp = tmp/60; // tmp is the number of days:
-    td->astro_data->sideral_day[1] = (unsigned char) (tmp % 30);
-    td->astro_data->sideral_day[0] = (unsigned char) (tmp / 30);
+    td->astro_data->sideral_day[2] = (unsigned char) (tmp % 60L);
+    tmp = tmp/60L; // tmp is the number of days:
+    td->astro_data->sideral_day[1] = (unsigned char) (tmp % 30L);
+    td->astro_data->sideral_day[0] = (unsigned char) (tmp / 30L);
    
-   //for the next values, the most simple computation is with the julian day: 
+   // Solar day data:
+   // for these values, the most simple computation is with the julian day
    td->astro_data->animal = (unsigned char) ((td->gd - 2L ) % 12L);
    td->astro_data->element = (unsigned char) (((td->gd - 3L ) / 2L ) % 5L);
    td->astro_data->c_lunar_mansion = (unsigned char) ((td->gd - 17L ) % 28L);
    td->astro_data->s_sme_ba = (unsigned char) ((td->gd - 2L ) % 9L + 1L);
-   //td->ld_sme_ba = 
+    
    // now checking for Earth-lords:
    // we need the month number
    if (!td->month)
       return;
    check_sadag((unsigned char) td->month->month, (unsigned char) td->tt, td->astro_data);
-   check_anniversary ((unsigned char) td->month->month, (unsigned char) td->tt, td->astro_data, asys );
+   check_anniversary ((unsigned char) td->month->month, (unsigned char) td->tt, td->month->type, td->astro_data, asys );
 }
 
 /*
@@ -255,9 +256,11 @@ void check_sadag (unsigned char m, unsigned char t, tib_day_astro_data *tda)
 // At the end, some commentaries show more anniversaries.
 // It simply fills the tda->anniversary field
 // Month numbers would currently be wrong for Error Correction system. (?)
-// Warning: this functions does not check, but the month must not be the second of a duplicated month! The anniversaries are celebrated only once
-void check_anniversary (unsigned char m, unsigned char t, tib_day_astro_data *tda, astro_system *asys )
+void check_anniversary (unsigned char m, unsigned char t, unsigned char month_type, tib_day_astro_data *tda, astro_system *asys )
   {
+    // if the month is delayed, we just pass, feasts are celebrated only once!
+    if (month_type == SECOND_OF_DOUBLE)
+      return;
     switch ( m )
       {
         case 1:
