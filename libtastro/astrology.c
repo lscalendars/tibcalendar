@@ -332,7 +332,7 @@ void check_anniversary (unsigned char m, unsigned char t, unsigned char month_ty
     // if the month is delayed, we just pass, feasts are celebrated only once!
     tda->anniversary = 0;
     if (month_type == SECOND_OF_DOUBLE)
-      tda->anniversary = 0;
+      return;
     switch ( m )
       {
         case 1:
