@@ -231,7 +231,22 @@ tib_month_next (tib_month* month, astro_system *asys)
   if ( !month->zero_month_flag )   // if zeromthfg == 1, we just call adj_zla for a second time with the same values, else:
       {
       next_zla_dag (month->true_month);
-      month->asked_month = (month->asked_month + 1) % 12; // TODO: test if it gives 0 or 12... test also for year change, should work, but...
+            // when we've reached the last month, month->asked_month should return to 1
+      if (month->month == 12 && month->type != FIRST_OF_DOUBLE)
+        {
+        // a bit subtle: if it's the last month of year:
+        //   - if asked_month = 12, then it should be 1
+        //   - if asked_month = 13, this means that the adjusted month will be asked_month -1
+        //     and thus if we call adj_zla with asked_month = 1, the result will be 12 and thus an
+        //     an infinite loop, so it should be 2
+        month->asked_month = month->asked_month - 11; 
+          }
+      else
+        {
+        month->asked_month = (month->asked_month + 1);
+        if (month->asked_month == 15)
+          month->asked_month = 1;
+        }
       }
   adj_mth = adj_zla (month->asked_month, month->true_month, &(month->zero_month_flag), asys);
   get_month_data (asys->epoch, month->true_month[0], month->rilcha, month->nyidru, month->gzadru);
@@ -336,9 +351,11 @@ tm here is precisely month->expected month
   tm  zd[0]   zd[1]    zeromthfg (before-after)   modified zd[0]  adj_mth    type of month
   8      23        45                     0-0                             23                       8                 normal
   9      24        47                     0-0                             24                       9                 normal
-  10    25        49                     0-0                             25                       10               first of double
+  10    25        49                     0-0                             25                       -10               first of double
   11    26        51                     0-0                             26                       10               second of double
   12    27        52                     0-0                             27                       11               normal
+  13    28        54                     0-0                             28                       12               normal
+  1      29        56                     0-0                             29                       1               normal
   ...   ...         ...                        ...                              ...                        ...               ...
   5     32        62                      0-0                             32                       4                normal
   6     33        64                      0-0                             33                       5                normal

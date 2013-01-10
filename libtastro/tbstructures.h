@@ -90,7 +90,7 @@ typedef struct tib_month
     long int nyidru[6]; // month mean solar longitude
     //astrological data
     tib_month_astro_data *astro_data;
-    long int asked_month; // not always filled, used with caution! It is the value with which we compute the true month
+    long int asked_month; // not always filled, used with caution! It is the value with which we compute the true month. The value can be up to 13.
 } tib_month;
 
 // structure for a lunar date, but can actually be a lunar day that has no lunar date (in this case, ommited == OMMITED)
