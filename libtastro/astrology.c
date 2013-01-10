@@ -68,6 +68,10 @@ void get_month_astro_data(tib_month *month, astro_system *asys)
             month->astro_data->element = (tmp_e + 1 + (month_number + 1 ) / 2)%5;
           }
           
+        // a little adjustment so that c_month is 1-12 instead of 0-11
+        if (month->astro_data->c_month == 0)
+          month->astro_data->c_month = 12;
+          
         // TODO: really understand... Is it really for Tsurphu too?
         if (tmp_g == MALE && month_number > 10)
            month->astro_data->element = tmp_e + (month_number + 1) /2;
