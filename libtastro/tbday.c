@@ -153,6 +153,7 @@ month->asked_month = tm; // TODO: test...
 
 /* an important function to transform a tibetan day into the next lunar date (or lunar day if lunar day is ommited)
  *  TODO: maybe we should add an option to pass ommited days and factorize a lot of code...
+ * function supposes that if td->astro_data exists, then it is correct
  */
 void
 tib_day_next (tib_day *td, astro_system *asys)
@@ -209,6 +210,9 @@ tib_day_next (tib_day *td, astro_system *asys)
    td->gzadag[1] = 60L; td->gzadag[2] = 0L; td->gzadag[3] = 0L; td->gzadag[4] = 0L; td->gzadag[5] = 0L;
    td->gd = td->gd - 1;
   }
+  // here we consider that astro_data was correctly filled...
+  if (td->astro_data)
+    get_day_astro_data(td, asys, 1);
 }
 
 /* Function giving informations on the next month of a given tib_month */

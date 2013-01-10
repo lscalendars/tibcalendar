@@ -11,6 +11,30 @@
  * in order to compare and make large tests.
  */
 
+void print_calendar(FILE *f, int y, astro_system *asys)
+  {
+  tib_day *td;
+  long int prev_month = 0; // to record last month's number
+  unsigned char prev_month_type = NORMAL; // to record last month's type
+  td = get_tib_day_from_tib_date (y, 1, 1, asys, FIRST, FIRST);
+  get_day_astro_data(td, asys, 0); // to initialize the astrological data
+  print_year_info(f, td->month->year);
+  
+  while (td->month->year->year == y)
+   {
+     // if we changed month (it also prints the first month
+     if (prev_month != td->month->month || td->month->type != prev_month_type)
+       {
+         print_month_info(f, td->month);
+         prev_month = td->month->month;
+         prev_month_type = td->month->type;
+       }
+     print_day_info(f, td, asys);
+     // automaticall updated td->month, td->year, etc.
+     tib_day_next(td, asys);
+   }
+  }
+
 void print_year_info(FILE *f, tib_year *year)
  {
     if (!year->astro_data)
@@ -81,6 +105,7 @@ void print_day_info(FILE *f, tib_day *td, astro_system *asys)
                           td->tt,
                           get_animal_str(td->astro_data->l_animal),
                           cycparT[td->astro_data->trigram],  td->astro_data->l_sme_ba);
+                return;
               }
                 jd_to_wd (td->gd, &wday, &wmonth, &wyear, &dow);
                 // Line 1
