@@ -4,6 +4,8 @@ add_library(
 	jd.h
 	tbday.c
 	tbday.h
+	tbmonth.c
+	tbmonth.h
 	utils.c
 	utils.h
 	tbplanets.c
