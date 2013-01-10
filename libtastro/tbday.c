@@ -1,9 +1,8 @@
-/* TC_PCALC.C */
-
 /*********************************************************************************
-License for TCG - Tibetan Calendar software for "grub rtsis"
+License for Tibastro - Tibetan astronomical and astrological calculation program
 
 Copyright (c) 2009-2011 Edward Henning
+Copyright (c) 2012-2013 Elie Roux <elie.roux@telecom-bretagne.eu>
 
 Permission is hereby granted, free of charge, to any person  obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in the
