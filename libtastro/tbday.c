@@ -328,7 +328,7 @@ phugpa_adj_zla (long int tm, long int zd[2], epoch *epch,
   return adj_mth;
 }
 
-/* Idem for Tsurphu system. TODO: there is a bug: we should return -tm sometimes...
+/* Idem for Tsurphu system.
  */
 long int
 tsurphu_adj_zla (long int tm, long int zd[2],
@@ -340,6 +340,7 @@ tsurphu_adj_zla (long int tm, long int zd[2],
           {
            *zeromthfg = 1;
             zd[0] = zd[0] - 1;
+            return -tm;
           }
         else
           {
@@ -347,7 +348,6 @@ tsurphu_adj_zla (long int tm, long int zd[2],
             zd[0] = zd[0] + 1;
           }
       }
-   // here the month number cannot change...
   return tm;
 }
 
