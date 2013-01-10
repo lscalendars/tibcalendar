@@ -135,6 +135,7 @@ month->asked_month = tm; // TODO: test...
    //TODO: useful? should be moved to the printing function?
    td->gzadag[0] = (td->gzadag[0]+6)%7;
    td->gzadag[1] = 60L; td->gzadag[2] = 0L; td->gzadag[3] = 0L; td->gzadag[4] = 0L; td->gzadag[5] = 0L;
+   td->gd = td->gd - 1; //TODO: ?
    } else { //d_f_o_s == SECOND
    td->duplicated=SECOND_OF_DUPLICATED;
    } 
@@ -151,18 +152,69 @@ month->asked_month = tm; // TODO: test...
  }
 
 /* an important function to transform a tibetan day into the next lunar date (or lunar day if lunar day is ommited)
- *
+ *  TODO: maybe we should add an option to pass ommited days and factorize a lot of code...
  */
 void
-tib_day_next(tib_day *td, astro_system *sys)
+tib_day_next (tib_day *td, astro_system *asys)
 {
-  
+  long int prv_gd, nxt_gd=0L;
+    long int nyibar[6] = { 0, 0, 0, 0, 0, 0 };	// mean solar longitude
+  long int nyidag[6] = { 0, 0, 0, 0, 0, 0 };	// true solar longitude
+  long int gzadag[6] = { 0, 0, 0, 0, 0, 0 };	// true weekday
+  if (td->duplicated == FIRST_OF_DUPLICATED)
+      {
+       // if we want day after a first of duplicated, almost nothing change:
+       td->duplicated = SECOND_OF_DUPLICATED;
+       // we have to recompute gzadag
+       // TODO: this could be optimized a lot!
+       td->gd = get_tt_data (asys->epoch, td->month->true_month[0], td->month->gzadru, td->month->nyidru, td->month->rilcha, td->tt, td->nyidag, td->gzadag, td->nyibar);
+       return;
+       }
+       td->duplicated = NORMAL; // if we were on a second of duplicated, we just cancel td->duplicated
+  switch(td->ommited)
+  {
+    case NEXT_OMMITED: // this can never happen on 30th
+       td->ommited = OMMITED;
+       td->tt = td->tt+1;
+       return;
+       break;
+    case OMMITED:
+       td->ommited = PREVIOUS_OMMITED;
+       break;
+    default:
+      td->ommited = NORMAL;
+      break;
+  }
+  // now ommited and duplicated are set for what concerns the day before
+  // and we compute things thinking we are already on the next day
+  // if we are the second of a duplicated day, the tt doesn't change, else yes
+       td->tt = td->tt+1;
+       if (td->tt > 30)
+         {
+           tib_month_next(td->month, asys);
+           td->tt = 1;
+         }
+  prv_gd = td->gd;
+  td->gd = get_tt_data (asys->epoch, td->month->true_month[0], td->month->gzadru, td->month->nyidru, td->month->rilcha, td->tt, td->nyidag, td->gzadag, td->nyibar);
+  if (td->tt < 30)
+    nxt_gd = get_tt_data (asys->epoch, td->month->true_month[0], td->month->gzadru, td->month->nyidru, td->month->rilcha, td->tt + 1, nyidag, gzadag, nyibar);
+  if (nxt_gd && nxt_gd == td->gd)		// Few tested, all working properly
+      td->ommited = NEXT_OMMITED;
+  if (td->gd - prv_gd == 2) // means that the lunar date is duplicated
+   {
+   // in case we take the first one:
+   td->duplicated=FIRST_OF_DUPLICATED;
+   //TODO: useful? should be moved to the printing function?
+   td->gzadag[0] = (td->gzadag[0]+6)%7;
+   td->gzadag[1] = 60L; td->gzadag[2] = 0L; td->gzadag[3] = 0L; td->gzadag[4] = 0L; td->gzadag[5] = 0L;
+   td->gd = td->gd - 1;
+  }
 }
 
 /* Function giving informations on the next month of a given tib_month */
 // it supposes that month->type and month->asked_month is well filled
 void
-tib_month_next(tib_month* month, astro_system *asys)
+tib_month_next (tib_month* month, astro_system *asys)
 {
   long int adj_mth;
   if ( !month->zero_month_flag )   // if zeromthfg == 1, we just call adj_zla for a second time with the same values, else:
@@ -316,15 +368,11 @@ phugpa_adj_zla (long int tm, long int zd[2], epoch *epch,
 		}
 	    }
 	  else			// Arrive here if 1 < zladag[1] < zlasho
-	    {
 	      adj_mth = tm;
-	    }
 	}
     }
 	  if (adj_mth == 0)
-	    {
 	      adj_mth = 12;
-	    }
   return adj_mth;
 }
 
@@ -382,7 +430,7 @@ long int adj_zla (long int tm, long int zd[2],
  * outputs:
  *  - it fills the month fields with everything needed
  */
-
+// TODO; modify it to use tib_month_next
 void
 find_month_and_year (long int jd, astro_system *sys, tib_month *month)
 {
@@ -463,6 +511,7 @@ find_month_and_year (long int jd, astro_system *sys, tib_month *month)
  * element must be already filled with the good month and year (it actually uses
  * only the true_month[0] part).
  */
+ // TODO: modify it to use tib_day_next
 void
 find_day (tib_day *td, long int jd, epoch *epch)
 {
