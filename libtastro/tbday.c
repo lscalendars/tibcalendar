@@ -178,6 +178,8 @@ tib_day_next (tib_day *td, astro_system *asys)
     case NEXT_OMMITED: // this can never happen on 30th
        td->ommited = OMMITED;
        td->tt = td->tt+1;
+       if (td->astro_data)
+          get_day_astro_data(td, asys, 1);
        return;
        break;
     case OMMITED:
