@@ -235,6 +235,8 @@ tib_month_next (tib_month* month, astro_system *asys)
       }
   adj_mth = adj_zla (month->asked_month, month->true_month, &(month->zero_month_flag), asys);
   get_month_data (asys->epoch, month->true_month[0], month->rilcha, month->nyidru, month->gzadru);
+  if (month->type == SECOND_OF_DOUBLE)
+      month->type = NORMAL;
   if (month->type == FIRST_OF_DOUBLE)
       month->type = SECOND_OF_DOUBLE;
   if (adj_mth < 0L)
