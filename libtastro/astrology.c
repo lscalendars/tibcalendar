@@ -80,8 +80,9 @@ void get_month_astro_data(tib_month *month, astro_system *asys)
 /* Function to calculate daily informations. Currently it fills the lm_db, yoga
  * and karana fields of a tib_day.
  * See KTC p.42 for the details.
+ * updateflg is 1 if  we just need to update the fields (set for the previous day) or 0 if we need to fill everything
  */
-void get_day_astro_data(tib_day *td, astro_system *asys)
+void get_day_astro_data(tib_day *td, astro_system *asys, unsigned char updateflg)
 {
     if (!td->astro_data)
     td->astro_data = new_tib_day_astro_data();
@@ -92,6 +93,9 @@ void get_day_astro_data(tib_day *td, astro_system *asys)
   
    // Lunar day data:
    // this is what we do first, as it is the only data computed for ommited days
+   // the lunar day data does not change for update of duplicated day (it is the same lunar day!)
+   if (updateflg != 1 || td->duplicated != SECOND_OF_DUPLICATED)
+     {
    // first we compute the value (chinese_month -1)*30 + tt that will be used later on:
    // it is the number of lunar days since first chinese month, then we can derive the useful values
    tmp_uc = (td->month->astro_data->c_month - 1) * 30 + (unsigned char) td->tt;
@@ -103,9 +107,31 @@ void get_day_astro_data(tib_day *td, astro_system *asys)
       td->astro_data->l_sme_ba = 9;
    // If Chinese month is number 1, Animal is Tiger, index = 11
    td->astro_data->l_animal = (tmp_uc + 10) % 12;
+     }
+   // if it is an ommited day, we can stop here, none of the other astrological data makes sense...
    if (td->ommited == OMMITED)
       return;
-  
+
+   // Solar day data:
+  // now an optimization: if we want just to update the data that are set for previous day and previous day is the first of a duplicated day,
+  // almost everything is already set up, we just need a few solar day data adjustments:
+   if (updateflg == 1)
+     {
+        // this is how they are traditionnaly computed
+        td->astro_data->s_animal = (td->astro_data->s_animal +1) % 12;
+        td->astro_data->element = ( td->astro_data->element + 1) % 5;
+        td->astro_data->c_lunar_mansion = (td->astro_data->c_lunar_mansion + 1) % 28;
+        td->astro_data->s_sme_ba = td->astro_data->s_sme_ba % 9 + 1; // TODO: test
+        // in the case of the update of a duplicated day, this is the only data that changes...
+        if (td->duplicated == SECOND_OF_DUPLICATED)
+          return;
+     }
+   // if it's the first time, the most simple computation is with the julian day
+   td->astro_data->s_animal = (unsigned char) ((td->gd - 2L ) % 12L);
+   td->astro_data->element = (unsigned char) (((td->gd - 3L ) / 2L ) % 5L);
+   td->astro_data->c_lunar_mansion = (unsigned char) ((td->gd - 17L ) % 28L);
+   td->astro_data->s_sme_ba = (unsigned char) ((td->gd - 2L ) % 9L + 1L);
+
   // Calculate lunar mansion at daybreak:
   // The idea here is that we computed the solar longitude at a time where the
   // sun and the moon are apart from tt*12° (54 nadis), so we can compute the
@@ -167,13 +193,6 @@ void get_day_astro_data(tib_day *td, astro_system *asys)
     tmp = tmp/60L; // tmp is the number of days:
     td->astro_data->sideral_day[1] = (unsigned char) (tmp % 30L);
     td->astro_data->sideral_day[0] = (unsigned char) (tmp / 30L);
-   
-   // Solar day data:
-   // for these values, the most simple computation is with the julian day
-   td->astro_data->s_animal = (unsigned char) ((td->gd - 2L ) % 12L);
-   td->astro_data->element = (unsigned char) (((td->gd - 3L ) / 2L ) % 5L);
-   td->astro_data->c_lunar_mansion = (unsigned char) ((td->gd - 17L ) % 28L);
-   td->astro_data->s_sme_ba = (unsigned char) ((td->gd - 2L ) % 9L + 1L);
 
    // for all further computation, we need the month number and the astrological data for this month
    if (!td->month)
