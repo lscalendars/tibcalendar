@@ -98,6 +98,10 @@ void get_day_astro_data(tib_day *td, astro_system *asys, unsigned char updateflg
    if (!td->month->astro_data)
      get_month_astro_data(td->month, asys); 
  
+   // Earth-lords and anniversaries, must be checked each day
+   check_sadag((unsigned char) td->month->month, (unsigned char) td->tt, td->astro_data);
+   check_anniversary ((unsigned char) (td->month->month), (unsigned char) (td->tt), td->month->type, td->astro_data, asys );
+ 
    // Lunar day data:
    // this is what we do first, as it is the only data computed for ommited days
    // the lunar day data does not change for update of duplicated day (it is the same lunar day!)
@@ -211,9 +215,6 @@ void get_day_astro_data(tib_day *td, astro_system *asys, unsigned char updateflg
     td->astro_data->sideral_day[1] = (unsigned char) (tmp % 30L);
     td->astro_data->sideral_day[0] = (unsigned char) (tmp / 30L);
     
-   // now checking for Earth-lords:
-   check_sadag((unsigned char) td->month->month, (unsigned char) td->tt, td->astro_data);
-   check_anniversary ((unsigned char) td->month->month, (unsigned char) td->tt, td->month->type, td->astro_data, asys );
 }
 
 // Two small functions to get the lunar mansion element and day of week element
@@ -321,11 +322,13 @@ void check_sadag (unsigned char m, unsigned char t, tib_day_astro_data *tda)
 // At the end, some commentaries show more anniversaries.
 // It simply fills the tda->anniversary field
 // Month numbers would currently be wrong for Error Correction system. (?)
+// TODO: what about feasts falling in ommited days? ex: 1/1/1977 Phugpa
 void check_anniversary (unsigned char m, unsigned char t, unsigned char month_type, tib_day_astro_data *tda, astro_system *asys )
   {
     // if the month is delayed, we just pass, feasts are celebrated only once!
+    tda->anniversary = 0;
     if (month_type == SECOND_OF_DOUBLE)
-      return;
+      tda->anniversary = 0;
     switch ( m )
       {
         case 1:

@@ -196,10 +196,12 @@ tib_day_next (tib_day *td, astro_system *asys)
            tib_month_next(td->month, asys);
            td->tt = 1;
          }
-       else
-          prv_gd = td->gd;  // we don't set prv_gd if we change month (though it would make sense...)
+
+          prv_gd = td->gd; // we set prv_gd in all cases (think about a duplicated 1st lunar date
   
   td->gd = get_tt_data (asys->epoch, td->month->true_month[0], td->month->gzadru, td->month->nyidru, td->month->rilcha, td->tt, td->nyidag, td->gzadag, td->nyibar);
+    if(prv_gd == td->gd)
+     td->ommited = OMMITED;
   if (td->tt < 30)
     nxt_gd = get_tt_data (asys->epoch, td->month->true_month[0], td->month->gzadru, td->month->nyidru, td->month->rilcha, td->tt + 1, nyidag, gzadag, nyibar);
   if (nxt_gd && nxt_gd == td->gd)		// Few tested, all working properly
@@ -223,7 +225,6 @@ tib_day_next (tib_day *td, astro_system *asys)
 void
 tib_month_next (tib_month* month, astro_system *asys)
 {
-  printf("toto\n");
   long int adj_mth;
   if ( !month->zero_month_flag )   // if zeromthfg == 1, we just call adj_zla for a second time with the same values, else:
       {
@@ -231,6 +232,7 @@ tib_month_next (tib_month* month, astro_system *asys)
       month->asked_month = (month->asked_month + 1) % 12; // TODO: test if it gives 0 or 12... test also for year change, should work, but...
       }
   adj_mth = adj_zla (month->asked_month, month->true_month, &(month->zero_month_flag), asys);
+  get_month_data (asys->epoch, month->true_month[0], month->rilcha, month->nyidru, month->gzadru);
   if (month->type == FIRST_OF_DOUBLE)
       month->type = SECOND_OF_DOUBLE;
   if (adj_mth < 0L)

@@ -33,7 +33,6 @@ void print_calendar(FILE *f, int y, astro_system *asys)
      // automaticall updated td->month, td->year, etc.
      tib_day_next(td, asys); // will change td->month->year->year
    }
-printf("%d", td->month->year->year);
   }
 
 void print_year_info(FILE *f, tib_year *year)
