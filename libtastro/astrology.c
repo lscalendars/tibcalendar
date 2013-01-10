@@ -103,7 +103,7 @@ void get_day_astro_data(tib_day *td, astro_system *asys, unsigned char updateflg
  
    // Earth-lords and anniversaries, must be checked each day
    check_sadag((unsigned char) td->month->month, (unsigned char) td->tt, td->astro_data);
-   check_anniversary ((unsigned char) (td->month->month), (unsigned char) (td->tt), td->month->type, td->astro_data, asys );
+   check_anniversary ((unsigned char) (td->month->month), (unsigned char) (td->tt), td, asys );
  
    // Lunar day data:
    // this is what we do first, as it is the only data computed for ommited days
@@ -324,43 +324,43 @@ void check_sadag (unsigned char m, unsigned char t, tib_day_astro_data *tda)
   
 // Routine to check for special anniversaries linked with the life of the Buddha.
 // At the end, some commentaries show more anniversaries.
-// It simply fills the tda->anniversary field
+// It simply fills the td->astro_data->anniversary field
 // Month numbers would currently be wrong for Error Correction system. (?)
 // TODO: what about feasts falling in ommited days? ex: 1/1/1977 Phugpa
-void check_anniversary (unsigned char m, unsigned char t, unsigned char month_type, tib_day_astro_data *tda, astro_system *asys )
+void check_anniversary (unsigned char m, unsigned char t, tib_day *td, astro_system *asys )
   {
-    // if the month is delayed, we just pass, feasts are celebrated only once!
-    tda->anniversary = 0;
-    if (month_type == SECOND_OF_DOUBLE)
+    td->astro_data->anniversary = 0;
+    // if the month is delayed, or the day is the first of a double, there is not feast
+    if (td->month->type == SECOND_OF_DOUBLE || td->duplicated == FIRST_OF_DUPLICATED)
       return;
     switch ( m )
       {
         case 1:
           if ( t == 1 )
-            tda->anniversary = ANN_DEM_MIR;
+            td->astro_data->anniversary = ANN_DEM_MIR;
         break;
         case 3:
           if ( t == 15 )
-           tda->anniversary = ANN_REV_KALACAKRA;
+           td->astro_data->anniversary = ANN_REV_KALACAKRA;
         break;
         case 4:
           // 7 for Phugpa, 8 for Tsurphu
           if ( t == 7 && asys->type != TSURPHU )
-             tda->anniversary = ANN_BIRTH;
+             td->astro_data->anniversary = ANN_BIRTH;
           else if ( t == 8 && asys->type == TSURPHU)
-            tda->anniversary = ANN_BIRTH;
+            td->astro_data->anniversary = ANN_BIRTH;
           else if ( t == 15 )
-             tda->anniversary = ANN_ENL_PARI;
+             td->astro_data->anniversary = ANN_ENL_PARI;
         break;
         case 6:
           if ( t == 4 )
-             tda->anniversary = ANN_TURN_WHEEL;
+             td->astro_data->anniversary = ANN_TURN_WHEEL;
           else if ( t == 15 )
-             tda->anniversary = ANN_ENTRY_WOMB;
+             td->astro_data->anniversary = ANN_ENTRY_WOMB;
         break;
         case 9:
           if ( t == 22 )
-             tda->anniversary = ANN_DESCENT_REALM;
+             td->astro_data->anniversary = ANN_DESCENT_REALM;
         break;
         default:
         break;
