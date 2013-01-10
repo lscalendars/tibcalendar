@@ -247,6 +247,12 @@ unsigned char get_dow_element (unsigned char dow)
 // they are casted as unsigned char instead of long int in order to reduce the cost
 void check_sadag (unsigned char m, unsigned char t, tib_day_astro_data *tda)
   {
+    tda->yk = 0;
+    tda->zph = 0;
+    tda->kbz = 0;
+    tda->kth=0;
+    tda->nn=0;
+    
 // First, "yan kwong": // Data from Kongleg.
     if ( ( m == 1 && t == 13 ) || 
     ( m == 2 && t == 11 ) || 

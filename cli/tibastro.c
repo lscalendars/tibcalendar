@@ -48,7 +48,7 @@ main ()
   //get_tpdata(2449719L); // 1/1/1995
   //get_tpdata(2449719L, td);
   //print_tib_day(td);
-  sys = get_astro_system(PHUGPA);
+  sys = get_astro_system(TSURPHU);
   //get_day_data(2449749L, td, sys);
   //print_tib_day(td);
   //free(td);
@@ -57,7 +57,7 @@ main ()
   if (!td->month->astro_data)
     get_month_astro_data(td->month, sys);
   //print_tib_day_r(td);
-  print_calendar(stdout, 1941, sys);
+  print_calendar(stdout, 1843, sys);
   free(sys);
   //main_menu();
   end_ui();
