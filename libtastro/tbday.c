@@ -45,9 +45,8 @@ get_tib_day_from_tib_date (int y, int m, int d, astro_system *asys, unsigned cha
  {
   tib_day *td;
   tib_month *month;
- long int zd[2];
  long int tt, ty, tm; // not necessary but make the code much clearer
- unsigned char zeromthfg;
+ unsigned char zeromthfg; // just to record the zeromonthflag
  long int adj_mth;
  long int prv_gd, nxt_gd, prv2_gd;
  long int zd0rec; // used to cancel the potential effects on zd[0] of adj_zla
@@ -68,10 +67,11 @@ tt = (long int) d;
  // the idea here is to get the data for 1 month of the year, directly in Tibetan date, not passing
  // through julian date
 // so first we get the true month for this month:
-zla_dag (asys->epoch, ty, tm, zd);
-zd0rec = zd[0]; // we remember the true month main part
+zla_dag (asys->epoch, ty, tm, month->true_month);
+zd0rec = month->true_month[0]; // we remember the true month main part
+zeromthfg = month->zero_month_flag;
 // we adjust the month:
-adj_mth = adj_zla (tm, zd, &zeromthfg, asys);
+adj_mth = adj_zla (tm, month->true_month, &(month->zero_month_flag), asys);
 // now zd is set, we check if there are some subltelties with double month
 // if adj_mth is the month before the one we are looking for, we take the following one
 if ( adj_mth == tm -1 || (tm ==1L && adj_mth == 12L) )
@@ -79,16 +79,16 @@ if ( adj_mth == tm -1 || (tm ==1L && adj_mth == 12L) )
           if (!zeromthfg)
           {
           tm = tm + 1;
-          next_zla_dag(zd);
+          next_zla_dag(month->true_month);
           }
-          adj_mth = adj_zla (tm, zd, &zeromthfg, asys);
+          adj_mth = adj_zla (tm, month->true_month, &(month->zero_month_flag), asys);
       }
 month->asked_month = tm; // TODO: test...
     // if we are at the first month of a double month, we cancel the changes brought by adj_mth because we are not yet in a loop
     if ( adj_mth == -month->month && m_f_o_s == FIRST) // no else before the if, who knows...
       {
-        zd[0] = zd0rec;
-        zeromthfg = 0; // TODO: this seems wrong...
+        month->true_month[0] = zd0rec;
+        month->zero_month_flag = zeromthfg;
         month->type = FIRST_OF_DOUBLE;
       }
       else if ( adj_mth == -month->month && m_f_o_s == SECOND)
@@ -96,13 +96,10 @@ month->asked_month = tm; // TODO: test...
        month->type = SECOND_OF_DOUBLE; // TODO: test if something else is needed
        }
       // now we can fill a few more fields
-     month->true_month[0] = zd[0];
-	   month->true_month[1] = zd[1];
-	   month->zero_month_flag = zeromthfg; // TODO: might be optimized a little
-	   get_month_data (asys->epoch, zd[0], month->rilcha, month->nyidru, month->gzadru);
+	   get_month_data (asys->epoch, month->true_month[0], month->rilcha, month->nyidru, month->gzadru);
      // Test the day loop for Phugpa 1/1/1977: first day is ommited
     // now we look for the day
-     td->gd = get_tt_data (asys->epoch, zd[0], month->gzadru, month->nyidru, month->rilcha, tt, td->nyidag, td->gzadag, td->nyibar);
+     td->gd = get_tt_data (asys->epoch, month->true_month[0], month->gzadru, month->nyidru, month->rilcha, tt, td->nyidag, td->gzadag, td->nyibar);
      // we have our day
   // td->ommited and td->duplicated are the only variables that are not set, we
   // must give them a default value
@@ -111,15 +108,15 @@ month->asked_month = tm; // TODO: test...
 // We now have data for the current lunar day and both the one before and following.    
 // we can set the type of day
 // we can compute for the previous lunar day even if tt = 1 (cf. KTC23 ?)
-  prv_gd = get_tt_data (asys->epoch, zd[0], month->gzadru, month->nyidru, month->rilcha, tt-1L, nyidag, gzadag, nyibar);
+  prv_gd = get_tt_data (asys->epoch, month->true_month[0], month->gzadru, month->nyidru, month->rilcha, tt-1L, nyidag, gzadag, nyibar);
   // we compute nxt_gd if the next lunar day is in the same month
   if (tt < 30L)
-  nxt_gd = get_tt_data (asys->epoch, zd[0], month->gzadru, month->nyidru, month->rilcha, tt+1L, nyidag, gzadag, nyibar);
+  nxt_gd = get_tt_data (asys->epoch, month->true_month[0], month->gzadru, month->nyidru, month->rilcha, tt+1L, nyidag, gzadag, nyibar);
   else
   nxt_gd = 0L;
   // we compute prv2_gd if tt>1, otherwise it would change the month
   if (tt >1L)
-    prv2_gd = get_tt_data (asys->epoch, zd[0], month->gzadru, month->nyidru, month->rilcha, tt-2L, nyidag, gzadag, nyibar);
+    prv2_gd = get_tt_data (asys->epoch, month->true_month[0], month->gzadru, month->nyidru, month->rilcha, tt-2L, nyidag, gzadag, nyibar);
   else
     prv2_gd = 0L;
   if (prv_gd == td->gd) // means that the lunar date is ommited, we go to the next one
@@ -169,6 +166,10 @@ tib_day_next (tib_day *td, astro_system *asys)
        // we have to recompute gzadag
        // TODO: this could be optimized a lot!
        td->gd = get_tt_data (asys->epoch, td->month->true_month[0], td->month->gzadru, td->month->nyidru, td->month->rilcha, td->tt, td->nyidag, td->gzadag, td->nyibar);
+       if (td->astro_data)
+          get_day_astro_data(td, asys, 1);
+       //if (td->planet_data)
+        //  get_day_planet_data(td, asys); TODO: uncomment when it's good
        return;
        }
        td->duplicated = NORMAL; // if we were on a second of duplicated, we just cancel td->duplicated
@@ -195,7 +196,9 @@ tib_day_next (tib_day *td, astro_system *asys)
            tib_month_next(td->month, asys);
            td->tt = 1;
          }
-  prv_gd = td->gd;
+       else
+          prv_gd = td->gd;  // we don't set prv_gd if we change month (though it would make sense...)
+  
   td->gd = get_tt_data (asys->epoch, td->month->true_month[0], td->month->gzadru, td->month->nyidru, td->month->rilcha, td->tt, td->nyidag, td->gzadag, td->nyibar);
   if (td->tt < 30)
     nxt_gd = get_tt_data (asys->epoch, td->month->true_month[0], td->month->gzadru, td->month->nyidru, td->month->rilcha, td->tt + 1, nyidag, gzadag, nyibar);
@@ -220,6 +223,7 @@ tib_day_next (tib_day *td, astro_system *asys)
 void
 tib_month_next (tib_month* month, astro_system *asys)
 {
+  printf("toto\n");
   long int adj_mth;
   if ( !month->zero_month_flag )   // if zeromthfg == 1, we just call adj_zla for a second time with the same values, else:
       {

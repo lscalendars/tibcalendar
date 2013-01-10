@@ -34,8 +34,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include<jd.h>
 #include<tbday.h>
 #include<tbcal.h>
-
-
+#include "printcalendar.h"
 
 int
 main ()
@@ -43,7 +42,7 @@ main ()
   // TODO: command-line analysis
   tib_day *td;
   astro_system *sys;
-  td = new_tib_day();
+  //td = new_tib_day();
   init_ui();
   //run_tests();
   //get_tpdata(2449719L); // 1/1/1995
@@ -52,12 +51,13 @@ main ()
   sys = get_astro_system(PHUGPA);
   //get_day_data(2449749L, td, sys);
   //print_tib_day(td);
-  free(td);
+  //free(td);
   td = get_tib_day_from_tib_date(1977, 1,1, sys, FIRST, FIRST);
   get_day_astro_data(td, sys, 0);
   if (!td->month->astro_data)
     get_month_astro_data(td->month, sys);
-  print_tib_day_r(td);
+  //print_tib_day_r(td);
+  print_calendar(stdout, 1977, sys);
   free(sys);
   //main_menu();
   end_ui();

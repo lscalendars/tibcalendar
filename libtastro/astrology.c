@@ -21,12 +21,12 @@ void get_year_astro_data(tib_year *year)
     else
      {
        year->astro_data->rabjung = ((year->year - 1027) / 60 ) + 1;
-       year->astro_data->yor = (unsigned char) (year->year - 1027) - 60 * (year->astro_data->rabjung - 1 );
+       year->astro_data->yor = (unsigned char) ((year->year - 1027L) - 60L * (year->astro_data->rabjung - 1L ));
      } 
-    year->astro_data->animal = (unsigned char) ( year->year + 1200 - 7 ) % 12;
-    year->astro_data->element = (unsigned char) (( year->year + 1200 ) / 2 - 3 ) % 5;
-    year->astro_data->gender = (unsigned char) (year->year % 2); // 1 = female, odd; 0 // TODO: test with negative years
-    year->astro_data->sme_ba = (unsigned char) (1 + ( 3007 - year->year ) % 9); // the nine numbers
+    year->astro_data->animal = (unsigned char) (( year->year + 1200L - 7L ) % 12L);
+    year->astro_data->element = (unsigned char) ((( year->year + 1200L ) / 2L - 3L ) % 5L);
+    year->astro_data->gender = (unsigned char) (year->year % 2L); // 1 = female, odd; 0 // TODO: test with negative years
+    year->astro_data->sme_ba = (unsigned char) (1L + ( 3007L - year->year ) % 9L); // the nine numbers
     // WARNING: do not compute years superior to 3007 with this function!
 }
 
@@ -84,13 +84,20 @@ void get_month_astro_data(tib_month *month, astro_system *asys)
  */
 void get_day_astro_data(tib_day *td, astro_system *asys, unsigned char updateflg)
 {
-    if (!td->astro_data)
-    td->astro_data = new_tib_day_astro_data();
   long int moonlong[5] = {0,0,0,0,0}; // moon longitude at daybreak
-  long int lista[5], listb[5];
+  long int lista[5]; // cannot be used unitialized
+  long int listb[5] = {0,0,0,0,0}; // this one can
   long int tmp;
   unsigned char tmp_uc;
-  
+ 
+     if (!td->astro_data)
+    td->astro_data = new_tib_day_astro_data(); 
+   // for almost all computation, we need the month number and the astrological data for this month
+   if (!td->month)
+      return; //TODO: error
+   if (!td->month->astro_data)
+     get_month_astro_data(td->month, asys); 
+ 
    // Lunar day data:
    // this is what we do first, as it is the only data computed for ommited days
    // the lunar day data does not change for update of duplicated day (it is the same lunar day!)
@@ -115,7 +122,7 @@ void get_day_astro_data(tib_day *td, astro_system *asys, unsigned char updateflg
    // Solar day data:
   // now an optimization: if we want just to update the data that are set for previous day and previous day is the first of a duplicated day,
   // almost everything is already set up, we just need a few solar day data adjustments:
-   if (updateflg == 1)
+   if (updateflg == 1 && td->ommited != PREVIOUS_OMMITED)
      {
         // this is how they are traditionnaly computed
         td->astro_data->s_animal = (td->astro_data->s_animal +1) % 12;
@@ -123,31 +130,37 @@ void get_day_astro_data(tib_day *td, astro_system *asys, unsigned char updateflg
         td->astro_data->c_lunar_mansion = (td->astro_data->c_lunar_mansion + 1) % 28;
         td->astro_data->s_sme_ba = td->astro_data->s_sme_ba % 9 + 1; // TODO: test
         // in the case of the update of a duplicated day, this is the only data that changes...
-        if (td->duplicated == SECOND_OF_DUPLICATED)
-          return;
      }
-   // if it's the first time, the most simple computation is with the julian day
+  else  // if it's the first time, the most simple computation is with the julian day
+    {
    td->astro_data->s_animal = (unsigned char) ((td->gd - 2L ) % 12L);
    td->astro_data->element = (unsigned char) (((td->gd - 3L ) / 2L ) % 5L);
    td->astro_data->c_lunar_mansion = (unsigned char) ((td->gd - 17L ) % 28L);
    td->astro_data->s_sme_ba = (unsigned char) ((td->gd - 2L ) % 9L + 1L);
+     }
 
   // Calculate lunar mansion at daybreak:
   // The idea here is that we computed the solar longitude at a time where the
   // sun and the moon are apart from tt*12° (54 nadis), so we can compute the
   // moon longitude
-    moonlong[1] = 54;  // 1/30th of a revolution
+    moonlong[1] = 54L;  // 1/30th of a revolution
     mul_lst ( moonlong, moonlong, td->tt, 27, 67 );
     add_lst ( moonlong, moonlong, td->nyidag, 27, 67 );
     // now we substract the hours, knowing that the moon moves one angular nadi
     // in one time nadi. We have the hours in the true weekday
-    copy_lst(listb, td->gzadag);
     // method is not sure... see KTC p.43
     if ( td->duplicated == FIRST_OF_DUPLICATED ) 
-      listb[0] = 1;
+      {
+      listb[0] = 1L;
+      }
     else
-      listb[0] = 0;
-    listb[4] = ( 67 * listb[4] ) / 707;
+      {
+      copy_lst(listb, td->gzadag);
+      listb[0] = 0L;
+      listb[4] = ( 67L * listb[4] ) / 707L;
+      listb[5] = 0;
+    }
+
     // This gives moon longitude at daybreak:
     sub_lst ( moonlong, moonlong, listb, 27, 67 );
     copy_lst(td->astro_data->moonlong_db, moonlong); // TODO: could be optimized a little...
@@ -183,8 +196,12 @@ void get_day_astro_data(tib_day *td, astro_system *asys, unsigned char updateflg
     else
       td->astro_data->karana = ( td->astro_data->karana - 1 ) % 7;
     
+    // if we are updating the second of a duplicated day, we can stop now, everything afterwards will be the same as the day before
+    if (td->duplicated == SECOND_OF_DUPLICATED && updateflg == 1)
+          return;
+    
     // now computing the sideral day data corresponding to the mean solar longitude
-    tmp = ( ( td->nyibar[0] * 60 + td->nyibar[1] ) * 60 + td->nyibar[2] ) * 6 + td->nyibar[3];
+    tmp = ( ( td->nyibar[0] * 60L + td->nyibar[1] ) * 60L + td->nyibar[2] ) * 6L + td->nyibar[3];
     // tmp is now the number of shvasa (1/583200th of circle) of the solar longitude
     // we want to divide it in 12*30*60th (21600th) of a circle:
     tmp = tmp / 27L; // 21600/583200 = 1/27
@@ -193,12 +210,6 @@ void get_day_astro_data(tib_day *td, astro_system *asys, unsigned char updateflg
     tmp = tmp/60L; // tmp is the number of days:
     td->astro_data->sideral_day[1] = (unsigned char) (tmp % 30L);
     td->astro_data->sideral_day[0] = (unsigned char) (tmp / 30L);
-
-   // for all further computation, we need the month number and the astrological data for this month
-   if (!td->month)
-      return;
-   if (!td->month->astro_data)
-     get_month_astro_data(td->month, asys);
     
    // now checking for Earth-lords:
    check_sadag((unsigned char) td->month->month, (unsigned char) td->tt, td->astro_data);

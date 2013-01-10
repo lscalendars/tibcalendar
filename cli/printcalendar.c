@@ -31,15 +31,16 @@ void print_calendar(FILE *f, int y, astro_system *asys)
        }
      print_day_info(f, td, asys);
      // automaticall updated td->month, td->year, etc.
-     tib_day_next(td, asys);
+     tib_day_next(td, asys); // will change td->month->year->year
    }
+printf("%d", td->month->year->year);
   }
 
 void print_year_info(FILE *f, tib_year *year)
  {
     if (!year->astro_data)
       get_year_astro_data(year);
-    fprintf (f, "New Year: %ld, %s-%s-%s\n", year->year,
+    fprintf (f, "\nNew Year: %ld, %s-%s-%s\n", year->year,
                                   get_element_5_str(year->astro_data->element),
                                   get_gender_str(year->astro_data->gender),
                                   get_animal_str(year->astro_data->animal));
@@ -47,7 +48,7 @@ void print_year_info(FILE *f, tib_year *year)
  
 void print_month_info(FILE *f, tib_month *month)
  {
-           fprintf (f, "Tibetan Lunar Month: %ld", month->month);
+           fprintf (f, "\nTibetan Lunar Month: %ld", month->month);
   switch(month->type)
    {
    case FIRST_OF_DOUBLE:
@@ -59,7 +60,7 @@ void print_month_info(FILE *f, tib_month *month)
     default:
           break;
     }
-    fprintf(f, " - %s-%s-%s",
+    fprintf(f, " - %s-%s-%s\n\n",
           get_element_5_str(month->astro_data->element),
           get_gender_str(month->astro_data->gender), get_animal_str(month->astro_data->animal));
  }
@@ -99,9 +100,9 @@ void print_day_info(FILE *f, tib_day *td, astro_system *asys)
  {
                 int dow, wday, wmonth, wyear; // in order to compute the western date
                 // First special case: the case of ommited days:
-               if (td->ommited)   // This is for omitted lunar day
+               if (td->ommited == OMMITED)   // This is for omitted lunar day
               {
-                fprintf (f, "%ld. Omitted: %s %s %d",
+                fprintf (f, "%ld. Omitted: %s %s %d\n",
                           td->tt,
                           get_animal_str(td->astro_data->l_animal),
                           cycparT[td->astro_data->trigram],  td->astro_data->l_sme_ba);
@@ -111,12 +112,13 @@ void print_day_info(FILE *f, tib_day *td, astro_system *asys)
                 // Line 1
                 fprintf (f, "%ld: %s. %s. %s-%s; %d %s %d\n",
                           td->tt,
-                          dayoweek[dow], // TODO: maybe a more traditional way would be good...
+                          dayoweek[td->gzadag[0]], 
                           lunmanT[td->astro_data->moonlong_db[0]],
                           get_element_4_str(get_dow_element(dow)),
                           get_element_4_str(get_lunar_mansion_element (td->astro_data->moonlong_db[0])),
                           wday, wmonths[wmonth - 1], wyear);
-                // Line 2
+                // Line 2, not printed in case of first of a duplicated day
+                if (td->duplicated != FIRST_OF_DUPLICATED)
                 fprintf (f, "\x20\x20%s, %s, %s, %s %d\n",
                           yogaT[td->astro_data->yoga[0]],
                           byedT[td->astro_data->karana],
@@ -138,7 +140,7 @@ void print_day_info(FILE *f, tib_day *td, astro_system *asys)
                               get_animal_str(td->astro_data->s_animal),
                               Clunman[td->astro_data->c_lunar_mansion] );
                 if (asys->type != TSURPHU)
-                    fprintf(f, "%d",
+                    fprintf(f, " %d",
                           td->astro_data->s_sme_ba);
                 fprintf (f, "\n");
                 // Line 5
