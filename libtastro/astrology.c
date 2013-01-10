@@ -89,6 +89,23 @@ void get_day_astro_data(tib_day *td, astro_system *asys)
   long int lista[5], listb[5];
   long int tmp;
   unsigned char tmp_uc;
+  
+   // Lunar day data:
+   // this is what we do first, as it is the only data computed for ommited days
+   // first we compute the value (chinese_month -1)*30 + tt that will be used later on:
+   // it is the number of lunar days since first chinese month, then we can derive the useful values
+   tmp_uc = (td->month->astro_data->c_month - 1) * 30 + (unsigned char) td->tt;
+   // If Chinese month is number 1, Trigram is Li, index = 1
+   td->astro_data->trigram = tmp_uc % 8;
+   // If Chinese month is number 1, lunar "sme ba" is 1
+   td->astro_data->l_sme_ba = tmp_uc % 9;
+   if ( td->astro_data->l_sme_ba == 0 )
+      td->astro_data->l_sme_ba = 9;
+   // If Chinese month is number 1, Animal is Tiger, index = 11
+   td->astro_data->l_animal = (tmp_uc + 10) % 12;
+   if (td->ommited == OMMITED)
+      return;
+  
   // Calculate lunar mansion at daybreak:
   // The idea here is that we computed the solar longitude at a time where the
   // sun and the moon are apart from tt*12° (54 nadis), so we can compute the
@@ -163,19 +180,6 @@ void get_day_astro_data(tib_day *td, astro_system *asys)
       return;
    if (!td->month->astro_data)
      get_month_astro_data(td->month, asys);
-
-   // Lunar day data:
-   // first we compute the value (chinese_month -1)*30 + tt that will be used later on:
-   // it is the number of lunar days since first chinese month, then we can derive the useful values
-   tmp_uc = (td->month->astro_data->c_month - 1) * 30 + (unsigned char) td->tt;
-   // If Chinese month is number 1, Trigram is Li, index = 1
-   td->astro_data->trigram = tmp_uc % 8;
-   // If Chinese month is number 1, lunar "sme ba" is 1
-   td->astro_data->l_sme_ba = tmp % 9;
-   if ( td->astro_data->l_sme_ba == 0 )
-      td->astro_data->l_sme_ba = 9;
-   // If Chinese month is number 1, Animal is Tiger, index = 11
-   td->astro_data->l_animal = (tmp_uc + 10) % 12;
     
    // now checking for Earth-lords:
    check_sadag((unsigned char) td->month->month, (unsigned char) td->tt, td->astro_data);
