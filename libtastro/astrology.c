@@ -74,7 +74,7 @@ void get_month_astro_data(tib_month *month, astro_system *asys)
           
         // TODO: really understand... Is it really for Tsurphu too?
         if (tmp_g == MALE && month_number > 10)
-           month->astro_data->element = tmp_e + (month_number + 1) /2;
+           month->astro_data->element = (tmp_e + (month_number + 1) /2) %5;
            
         // finally, the gender:
         month->astro_data->gender = (month_number + 1 ) % 2;
