@@ -53,6 +53,7 @@ typedef struct epoch
     long int zlasho; // index of the intercalary months, see KTC p.51. we always consider that the second index is the first + 1, and this long int is the first
     long int gzad[6]; // mean weekday at new moon at the epoch: see KTC p.18
     long int nyid[6]; // mean sun of the epoch's month: see KTC p.21
+    
 } epoch;
 
 // the system structure

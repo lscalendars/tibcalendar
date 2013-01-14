@@ -69,3 +69,26 @@ static const epoch tsurphu_epoch= // we take -1000 as a reference
     { 5, 38, 22, 3, 701, 0 },
     { 0, 7, 25, 0, 30, 0 },
 };
+
+// for now we take the -1000 version
+static const epoch sherab_ling_epoch= // we take -1000 as a reference
+{
+    -1000,
+    45,
+    4,
+    19,
+    416,
+    56,
+    4,
+    1355818L,
+    91,
+    47477L, // ????  This is subtracted for drag po'i rkang 'dzin.
+    -102L,
+    86L,
+    671L,
+    371L,
+    3167L,
+    16L, // Maybe 18??
+    { 5, 38, 22, 3, 701, 0 },
+    { 0, 7, 25, 0, 30, 0 },
+};

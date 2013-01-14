@@ -244,7 +244,7 @@ tsurphu_adj_zla (long int tm, long int zd[2],
 long int adj_zla (long int tm, long int zd[2],
 		unsigned char *zeromthfg, astro_system *sys)
 {
-	    if (sys->type == PHUGPA)
+	    if (sys->type == PHUGPA || sys->type == SHERAB_LING)
         return phugpa_adj_zla (tm, zd, sys->epoch, zeromthfg);
       else if (sys->type == TSURPHU)
         return tsurphu_adj_zla (tm, zd, zeromthfg);
