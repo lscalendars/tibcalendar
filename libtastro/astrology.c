@@ -54,6 +54,29 @@ void get_year_astro_data(tib_year *year)
     // WARNING: do not compute years superior to 3007 with this function!
 }
 
+// a function to returning the chinese month for a specified month and system
+void get_chinese_month(tib_month *month, astro_system *asys)
+{
+        if ( asys->type == TSURPHU )
+                    month->astro_data->c_month = (unsigned char) month->month;
+        else if (asys->type == PHUGPA)
+                    month->astro_data->c_month = ((unsigned char) (month->month) + 2) % 12;
+        else // SHERAB_LING
+            {
+               month->astro_data->c_month = (unsigned char) month->month;
+                if ( month->true_month[0] >= 14833L && month->true_month[0] <= 14847L )
+      month->astro_data->c_month = month->astro_data->c_month + 1;
+    else if ( month->true_month[0] >= 14866L && month->true_month[0] <= 14882L )
+      month->astro_data->c_month = month->astro_data->c_month + 1;
+    else if ( month->true_month[0] >= 14900L && month->true_month[0] <= 14918L )
+      month->astro_data->c_month = month->astro_data->c_month + 1;
+    else if ( month->true_month[0] >= 14933L && month->true_month[0] <= 14948L )
+      month->astro_data->c_month = month->astro_data->c_month + 1;
+    if ( month->astro_data->c_month > 12L )
+      month->astro_data->c_month = 12L;
+      }
+}
+
 void get_month_astro_data(tib_month *month, astro_system *asys)
 {
   unsigned char tmp_e, tmp_g; // for a small optimization
@@ -72,7 +95,6 @@ void get_month_astro_data(tib_month *month, astro_system *asys)
           {
             // TODO: indicate the source. Code taken from tcg
             month->astro_data->animal = (month_number + 10 ) % 12;
-            month->astro_data->c_month = month_number;
             // element
             if ( ( tmp_e == WOOD && tmp_g == MALE ) || ( tmp_e == EARTH && tmp_g == FEMALE ) )
               month->astro_data->element = ((month_number - 1 ) / 2)%5;
@@ -88,7 +110,6 @@ void get_month_astro_data(tib_month *month, astro_system *asys)
         else
           {
             month->astro_data->animal = month_number % 12;
-            month->astro_data->c_month = (month_number + 2) % 12;
             month->astro_data->element = (tmp_e + 1 + (month_number + 1 ) / 2)%5;
           }
           
