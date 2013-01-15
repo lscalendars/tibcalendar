@@ -64,6 +64,7 @@ void get_chinese_month(tib_month *month, astro_system *asys)
         else // SHERAB_LING
             {
                month->astro_data->c_month = (unsigned char) month->month;
+               // this code is from T4.c get_chimonth
                 if ( month->true_month[0] >= 14833L && month->true_month[0] <= 14847L )
       month->astro_data->c_month = month->astro_data->c_month + 1;
     else if ( month->true_month[0] >= 14866L && month->true_month[0] <= 14882L )
@@ -72,8 +73,9 @@ void get_chinese_month(tib_month *month, astro_system *asys)
       month->astro_data->c_month = month->astro_data->c_month + 1;
     else if ( month->true_month[0] >= 14933L && month->true_month[0] <= 14948L )
       month->astro_data->c_month = month->astro_data->c_month + 1;
-    if ( month->astro_data->c_month > 12L )
-      month->astro_data->c_month = 12L;
+    // month->astro_data->c_month = (unsigned char) month->month + 2; // This is from T4.c in prn_bir2_cal but it's not used
+    if ( month->astro_data->c_month > 12 )
+      month->astro_data->c_month = month->astro_data->c_month - 12;
       }
 }
 
@@ -91,6 +93,7 @@ void get_month_astro_data(tib_month *month, astro_system *asys)
   // we set the two values...
   tmp_e = month->year->astro_data->element;
   tmp_g = month->year->astro_data->gender;
+  // TODO: change for switch loop
         if ( asys->type == TSURPHU )
           {
             // TODO: indicate the source. Code taken from tcg
@@ -107,10 +110,14 @@ void get_month_astro_data(tib_month *month, astro_system *asys)
             if ( ( tmp_e == FIRE && tmp_g == FEMALE ) || ( tmp_e == WATER && tmp_g == MALE ) )
               month->astro_data->element = (3 + (month_number - 1 ) / 2)%5;
           }
-        else
+        else if (asys->type == PHUGPA)
           {
             month->astro_data->animal = month_number % 12;
             month->astro_data->element = (tmp_e + 1 + (month_number + 1 ) / 2)%5;
+          }
+         else // SHERAB_LING
+          {
+            month->astro_data->animal = month_number % 12;
           }
           
         // a little adjustment so that c_month is 1-12 instead of 0-11
@@ -158,10 +165,14 @@ void get_day_astro_data(tib_day *td, astro_system *asys, unsigned char updateflg
    // first we compute the value (chinese_month -1)*30 + tt that will be used later on:
    // it is the number of lunar days since first chinese month, then we can derive the useful values
    tmp = ((long int) (td->month->astro_data->c_month) - 1L) * 30L + td->tt;
-   // If Chinese month is number 1, Trigram is Li, index = 1
-   td->astro_data->trigram = (unsigned char) (tmp % 8L);
-   // If Chinese month is number 1, lunar "sme ba" is 1
-   td->astro_data->l_sme_ba = (unsigned char) (tmp % 9L);
+   if (asys->type == SHERAB_LING) //TODO: check
+       td->astro_data->trigram = (unsigned char) ((tmp + 4L) % 8L);
+   else // If Chinese month is number 1, Trigram is Li, index = 1
+       td->astro_data->trigram = (unsigned char) (tmp % 8L);
+   if (asys->type == SHERAB_LING) //TODO: check 
+       td->astro_data->l_sme_ba = (unsigned char) ((tmp +6L) % 9L);
+   else // If Chinese month is number 1, lunar "sme ba" is 1
+       td->astro_data->l_sme_ba = (unsigned char) (tmp % 9L);
    if ( td->astro_data->l_sme_ba == 0 )
       td->astro_data->l_sme_ba = 9;
    // If Chinese month is number 1, Animal is Tiger, index = 11
@@ -210,7 +221,7 @@ void get_day_astro_data(tib_day *td, astro_system *asys, unsigned char updateflg
       {
       copy_lst(listb, td->gzadag);
       listb[0] = 0L;
-      listb[4] = ( 67L * listb[4] ) / 707L;
+      listb[4] = ( 67L * listb[4] ) / 707L; // TODO: do we need long long int here?
       listb[5] = 0;
     }
 
