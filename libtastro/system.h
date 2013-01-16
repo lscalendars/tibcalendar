@@ -60,6 +60,8 @@ typedef struct epoch
 typedef struct astro_system
 {
     unsigned char type; // PHUGPA, TSURPHU, etc.
+    long int sun_f;
+    long int nyi_drup_const[5];
     epoch *epoch;
 } astro_system;
 

@@ -58,7 +58,7 @@ tib_month_next (tib_month* month, astro_system *asys)
         }
       }
   adj_mth = adj_zla (month->asked_month, month->true_month, &(month->zero_month_flag), asys);
-  get_month_data (asys->epoch, month->true_month[0], month->rilcha, month->nyidru, month->gzadru);
+  get_month_data (asys, month->true_month[0], month->rilcha, month->nyidru, month->gzadru);
   if (month->type == SECOND_OF_DOUBLE)
       month->type = NORMAL;
   if (month->type == FIRST_OF_DOUBLE)
@@ -305,7 +305,7 @@ find_month_and_year (long int jd, astro_system *sys, tib_month *month)
 
       // here the lunar day is 0 thus we don't need the corrections that
       // apply to other lunar days (KTC 23).
-      get_month_data (sys->epoch, zd[0], month->rilcha, month->nyidru, month->gzadru);
+      get_month_data (sys, zd[0], month->rilcha, month->nyidru, month->gzadru);
       gd = get_tt_data (sys->epoch, zd[0], month->gzadru, month->nyidru, month->rilcha, 0, nyidag, gzadag, nyibar);
 
       // Now, have we gone far enough? We first find the true new Moon date 
@@ -343,7 +343,7 @@ find_month_and_year (long int jd, astro_system *sys, tib_month *month)
   else if ((sys->type == PHUGPA && (month->true_month[1] == sys->epoch->zlasho+2 || month->true_month[1] == sys->epoch->zlasho+3 ) ) || (sys->type == TSURPHU && (month->true_month[1] == 0 || month->true_month[1] == 1 ) ))
     month->type = SECOND_OF_DOUBLE;
   // we need to get the rilcha, nyidru and gzadru for the month
-  get_month_data (sys->epoch, month->true_month[0], month->rilcha, month->nyidru, month->gzadru);
+  get_month_data (sys, month->true_month[0], month->rilcha, month->nyidru, month->gzadru);
 }
 
 /* Function to calculate month mean Sun, "nyi ma'i dhru ba" at new moon
@@ -352,21 +352,20 @@ find_month_and_year (long int jd, astro_system *sys, tib_month *month)
  * See KTC p. 21 for details
  */
 void
-get_month_data (epoch *epch, long int zd0, long int rilcha[2], long int nyidru[6], long int gzadru[6])
+get_month_data (astro_system *asys, long int zd0, long int rilcha[2], long int nyidru[6], long int gzadru[6])
 {
   long int a, b;
-  static long int nyi_drup_const[5] = { 2, 10, 58, 1, 17 };
   static long int gza_drup_const[5] = { 1, 31, 50, 0, 480 } ;
   // first we compute rilcha
-  b = zd0 + epch->ril_b;
-  a = 2 * zd0 + epch->ril_a + b / 126;
+  b = zd0 + asys->epoch->ril_b;
+  a = 2 * zd0 + asys->epoch->ril_a + b / 126;
   rilcha[1] = b % 126;
   rilcha[0] = a % 28;
   //printf("getmonthdatarilcha0 : %ld\nrilcha1 : %ld\n", rilcha[0], rilcha[1]);
   // then nyidru
-  mul_lst (nyidru, nyi_drup_const, zd0, 27, 67);
-  add_lst (nyidru, nyidru, epch->nyid, 27, 67);
+  mul_lst (nyidru, asys->nyi_drup_const, zd0, 27, asys->sun_f);
+  add_lst (nyidru, nyidru, asys->epoch->nyid, 27, asys->sun_f);
   // then gzadru
   mul_lst (gzadru, gza_drup_const, zd0, 7, 707);
-  add_lst (gzadru, gzadru, epch->gzad, 7, 707);
+  add_lst (gzadru, gzadru, asys->epoch->gzad, 7, 707);
 }

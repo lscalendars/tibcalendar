@@ -26,7 +26,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 // private data for the epochs
 
-static const epoch phugpa_epoch= // we take -1000 as a reference
+static /*const*/ epoch phugpa_epoch= // we take -1000 as a reference
 {
     -1000,
     7,
@@ -48,7 +48,7 @@ static const epoch phugpa_epoch= // we take -1000 as a reference
     { 26, 45, 53, 4, 26, 0 },
 };
 
-static const epoch tsurphu_epoch= // we take -1000 as a reference
+static /*const*/ epoch tsurphu_epoch= // we take -1000 as a reference
 {
     -1000,
     11,
@@ -65,13 +65,13 @@ static const epoch tsurphu_epoch= // we take -1000 as a reference
     3,
     512,
     2988,
-    0, // used only for phugpa
+    0, // not used for tsurphu
     { 5, 38, 22, 3, 701, 0 },
     { 0, 7, 25, 0, 30, 0 },
 };
 
-// for now we take the -1000 version
-static const epoch sherab_ling_epoch= // we take -1000 as a reference
+// for now we take only the -1000 version
+static /*const*/ epoch sherab_ling_epoch= // we take -1000 as a reference
 {
     -1000,
     45,
@@ -88,7 +88,7 @@ static const epoch sherab_ling_epoch= // we take -1000 as a reference
     671L,
     371L,
     3167L,
-    16L, // Maybe 18??
-    { 5, 38, 22, 3, 701, 0 },
-    { 0, 7, 25, 0, 30, 0 },
+    16L, // Maybe 17??
+    { 4,  6, 56, 5, 293, 0 },
+    { 22, 49, 17, 1, 2398189L, 0 },
 };

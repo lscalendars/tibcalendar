@@ -96,7 +96,7 @@ month->asked_month = tm; // TODO: test...
        month->type = SECOND_OF_DOUBLE; // TODO: test if something else is needed
        }
       // now we can fill a few more fields
-	   get_month_data (asys->epoch, month->true_month[0], month->rilcha, month->nyidru, month->gzadru);
+	   get_month_data (asys, month->true_month[0], month->rilcha, month->nyidru, month->gzadru);
      // Test the day loop for Phugpa 1/1/1977: first day is ommited
     // now we look for the day
      td->gd = get_tt_data (asys->epoch, month->true_month[0], month->gzadru, month->nyidru, month->rilcha, tt, td->nyidag, td->gzadag, td->nyibar);
