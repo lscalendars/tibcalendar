@@ -306,7 +306,7 @@ find_month_and_year (long int jd, astro_system *sys, tib_month *month)
       // here the lunar day is 0 thus we don't need the corrections that
       // apply to other lunar days (KTC 23).
       get_month_data (sys, zd[0], month->rilcha, month->nyidru, month->gzadru);
-      gd = get_tt_data (sys->epoch, zd[0], month->gzadru, month->nyidru, month->rilcha, 0, nyidag, gzadag, nyibar);
+      gd = get_tt_data (sys, zd[0], month->gzadru, month->nyidru, month->rilcha, 0, nyidag, gzadag, nyibar);
 
       // Now, have we gone far enough? We first find the true new Moon date 
       // immediately after or equal to our target date (only for coming back

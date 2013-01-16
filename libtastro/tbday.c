@@ -121,7 +121,7 @@ month->asked_month = tm; // TODO: test...
     prv2_gd = 0L;
   if (prv_gd == td->gd) // means that the lunar date is ommited, we go to the next one
     {
-      td->ommited=OMMITED; // TODO: in this case, what is td->gd?
+      td->ommited=OMMITED; // TODO: in this case, what should be td->gd?
     }
   else if (td->gd - prv_gd == 2) // means that the lunar date is duplicated
    {
@@ -147,6 +147,16 @@ month->asked_month = tm; // TODO: test...
     }
     return td;
  }
+
+// a function to fill the duplicated and ommited fields of tib_day
+// updateflg is 1 if the fields are correctly set for previous day
+// warning: this function does work only inside a month
+// TODO: do it and use it! it could factorize quite a lot of lines...
+void
+tib_day_find_duplicated_ommited(tib_day *td, astro_system *asys, unsigned char updateflg)
+{
+
+}
 
 /* an important function to transform a tibetan day into the next lunar date (or lunar day if lunar day is ommited)
  *  TODO: maybe we should add an option to pass ommited days and factorize a lot of code...
@@ -285,7 +295,7 @@ find_day (tib_day *td, long int jd, astro_system *asys)
   // First, a check. Is it possible that current lunar day and previous both
   // calculate to same solar day? This would be if current lunar day is omitted
   // and entirely contained within the solar day. Maybe if lunar day 1 is omitted?
-  // This has not been found in testing, and should not happen. TODO: test with 1/1 1977
+  // This has not been found in testing, and should not happen. 
   // The way we should find an omitted is when the following lunar day and
   // current calculate to same solar day.
   if (td->gzadag[0] == gzadag[0])	// This is now error code
@@ -369,7 +379,7 @@ unsigned int gza_short_flag = 0;	// TODO: let the user choose if he wants it or 
 void
 nyi_dag_and_gza_dag (long int nyibar[6], long int tsebar[6],
 		       long int rilcha[2], long int tt, long int nyidag[6],
-		       long int gzadag[6])
+		       long int gzadag[6], long int sun_f)
 {
   long int test, tquo, trem, tot, rilpo;
   long int lista[6] = { 0, 0, 0, 0, 0, 0 };	// four temporary values
@@ -396,14 +406,14 @@ nyi_dag_and_gza_dag (long int nyibar[6], long int tsebar[6],
   static long int sl_second_corr[6] = { 13, 30, 0, 0, 0, 0 };
 
   // first we get the true solar longitude
-  sub_lst (nyiwor, nyibar, sl_first_corr, 27, 67);	// KTC 31
+  sub_lst (nyiwor, nyibar, sl_first_corr, 27, sun_f);	// KTC 31
   test = 60 * nyiwor[0] + nyiwor[1];
   if (test < 810)
     nyidor = 0;
   else
     {
       nyidor = 1;
-      sub_lst (nyiwor, nyiwor, sl_second_corr, 27, 67);
+      sub_lst (nyiwor, nyiwor, sl_second_corr, 27, sun_f);
       test = 60 * nyiwor[0] + nyiwor[1];
     }
   trem = test % 135;
@@ -415,20 +425,20 @@ nyi_dag_and_gza_dag (long int nyibar[6], long int tsebar[6],
   lista[3] = nyiwor[3] * nyibye[(int) tquo - 1];
   lista[4] = nyiwor[4] * nyibye[(int) tquo - 1];
 
-  div_lst_6 (lista, lista, 135, 67, 1);
-  add_lst (lista, zerolst, lista, 27, 67);
+  div_lst_6 (lista, lista, 135, sun_f, 1);
+  add_lst (lista, zerolst, lista, 27, sun_f);
 
   // listc is the intermediate correction, KTC p.34
   listb[1] = nyidom[(int) tquo - 1];
   if (tquo == 3 || tquo == 4 || tquo == 5)	// Then, subtract:
-    sub_lst (listc, listb, lista, 27, 67);
+    sub_lst (listc, listb, lista, 27, sun_f);
   else
-    add_lst (listc, listb, lista, 27, 67);
+    add_lst (listc, listb, lista, 27, sun_f);
 
   if (nyidor == 0)
-    sub_lst (nyidag, nyibar, listc, 27, 67);
+    sub_lst (nyidag, nyibar, listc, 27, sun_f);
   else
-    add_lst (nyidag, nyibar, listc, 27, 67);
+    add_lst (nyidag, nyibar, listc, 27, sun_f);
 
   // then the true weekday (we keep listc, it will be useful)
 
@@ -470,16 +480,16 @@ nyi_dag_and_gza_dag (long int nyibar[6], long int tsebar[6],
   else
     sub_lst (gzawor, tsebar, listd, 7, 707);
 
-  gzawor[4] = (long) (((long long) gzawor[4] * 67) / 707);
-//  The above is: gzawor[4] = ( 67 * gzawor[4] ) / 707;
+  gzawor[4] = (long) (((long long) gzawor[4] * sun_f) / 707);
+//  The above is: gzawor[4] = ( sun_f * gzawor[4] ) / 707;
 
   if (nyidor == 0)
-    sub_lst (gzadag, gzawor, listc, 7, 67);
+    sub_lst (gzadag, gzawor, listc, 7, sun_f);
   else
-    add_lst (gzadag, gzawor, listc, 7, 67);
+    add_lst (gzadag, gzawor, listc, 7, sun_f);
 
 // Convert back the lowest fractional part:
-  gzadag[4] = (long) (((long long) gzadag[4] * 707) / 67);
+  gzadag[4] = (long) (((long long) gzadag[4] * 707) / sun_f);
 }
 
 /*
@@ -517,11 +527,11 @@ get_tt_data (astro_system *asys, long int cur_mth, long int gzadru[6],
       mul_lst (nyilon, asys->nyi_long_const, tt, 27, asys->sun_f);
       add_lst (tsebar, gzadru, tsedru, 7, 707);
       add_lst (nyibar, nyidru, nyilon, 27, asys->sun_f);
-      nyi_dag_and_gza_dag (nyibar, tsebar, rilcha, tt, nyidag, gzadag);
+      nyi_dag_and_gza_dag (nyibar, tsebar, rilcha, tt, nyidag, gzadag, asys->sun_f);
     }
   else
     {
-      nyi_dag_and_gza_dag (nyidru, gzadru, rilcha, 0, nyidag, gzadag);
+      nyi_dag_and_gza_dag (nyidru, gzadru, rilcha, 0, nyidag, gzadag, asys->sun_f);
     }
   return spi_zag (asys->epoch, cur_mth, tt, gzadag[0]);
 }

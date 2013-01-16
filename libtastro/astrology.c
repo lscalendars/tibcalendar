@@ -221,7 +221,7 @@ void get_day_astro_data(tib_day *td, astro_system *asys, unsigned char updateflg
       {
       copy_lst(listb, td->gzadag);
       listb[0] = 0L;
-      listb[4] = ( 67L * listb[4] ) / 707L; // TODO: do we need long long int here?
+      listb[4] = ( 67L * listb[4] ) / 707L; // TODO: maybe we need long long int here?
       listb[5] = 0;
     }
 
