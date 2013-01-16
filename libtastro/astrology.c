@@ -208,8 +208,8 @@ void get_day_astro_data(tib_day *td, astro_system *asys, unsigned char updateflg
   // sun and the moon are apart from tt*12° (54 nadis), so we can compute the
   // moon longitude
     moonlong[1] = 54L;  // 1/30th of a revolution
-    mul_lst ( moonlong, moonlong, td->tt, 27, 67 );
-    add_lst ( moonlong, moonlong, td->nyidag, 27, 67 );
+    mul_lst ( moonlong, moonlong, td->tt, 27, asys->sun_f );
+    add_lst ( moonlong, moonlong, td->nyidag, 27, asys->sun_f );
     // now we substract the hours, knowing that the moon moves one angular nadi
     // in one time nadi. We have the hours in the true weekday
     // method is not sure... see KTC p.43
@@ -221,12 +221,12 @@ void get_day_astro_data(tib_day *td, astro_system *asys, unsigned char updateflg
       {
       copy_lst(listb, td->gzadag);
       listb[0] = 0L;
-      listb[4] = ( 67L * listb[4] ) / 707L; // TODO: maybe we need long long int here?
+      listb[4] = (long) (( (long long int) asys->sun_f  * (long long int) listb[4] ) / 707LL);
       listb[5] = 0;
     }
 
     // This gives moon longitude at daybreak:
-    sub_lst ( moonlong, moonlong, listb, 27, 67 );
+    sub_lst ( moonlong, moonlong, listb, 27, asys->sun_f );
     copy_lst(td->astro_data->moonlong_db, moonlong); // TODO: could be optimized a little...
 
    // Now calculate yoga, sbyor ba:
@@ -234,14 +234,14 @@ void get_day_astro_data(tib_day *td, astro_system *asys, unsigned char updateflg
    // at daybreak.
    // This is strictly wrong, we should use the Sun's longitude at daybreak, 
    // but in the Tibetan tradition such an adjustment is not made.
-    add_lst (td->astro_data->yoga, moonlong, td->nyidag, 27, 67 );
+    add_lst (td->astro_data->yoga, moonlong, td->nyidag, 27, asys->sun_f );
 
     // Now calculate karana, byed pa:
     // Karanas are numbered from 0 to 7 for the changing karanas, and from 7 to
     // 10 for the fixed ones.
     // lista is the angle between the sun and the moon (same error as in the
     // yoga calculation)
-    sub_lst ( lista, moonlong, td->nyidag, 27, 67 );
+    sub_lst ( lista, moonlong, td->nyidag, 27, asys->sun_f );
     // lista[0]*60+lista[1] is the number of nadis of the angle
     // now a trick: in 1/60th of a full circle, there are 27 nadis
     // as there are 60 nadis in 1/27th of a full circle.
