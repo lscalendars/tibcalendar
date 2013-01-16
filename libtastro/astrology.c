@@ -171,11 +171,7 @@ void get_day_astro_data(tib_day *td, astro_system *asys, unsigned char updateflg
    if (asys->type == SHERAB_LING) //TODO: check
        td->astro_data->trigram = (unsigned char) ((tmp + 4L) % 8L);
    else // If Chinese month is number 1, Trigram is Li, index = 1
-      {
-      printf("tmp: %ld\n", tmp);
        td->astro_data->trigram = (unsigned char) (tmp % 8L);
-       printf("trigram: %u\n", td->astro_data->trigram);
-       }
    // sme ba
    if (asys->type == SHERAB_LING) //TODO: check 
        td->astro_data->l_sme_ba = (unsigned char) ((tmp +6L) % 9L);
