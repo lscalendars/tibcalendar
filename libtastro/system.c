@@ -41,7 +41,9 @@ astro_system *new_system()
 astro_system *get_astro_system(unsigned char type)
 {
   static long int ndc_p[5] = { 2, 10, 58, 1, 17 }; // temporary variable... could certainly be easier...
-  static long int ndc_sl[5] = { 2, 10, 58, 2, 3846950L };
+  static long int ndc_sl[5] = { 2, 10, 58, 2, 3846950L }; // same for Sherab Ling
+  static long int nlc_p[6] = { 0, 4, 21, 5, 43, 0 }; // idem, see KTC p. 23
+  static long int nlc_sl[6] = { 0, 4, 21, 5, 3338483L, 0 }; // idem, code was div_g6 ( nyilm, 30L, sun_f, 1L )
   astro_system *sys = new_system();
   sys->type = type;
   if (type == PHUGPA)
@@ -49,18 +51,21 @@ astro_system *get_astro_system(unsigned char type)
       sys->epoch = &phugpa_epoch;
       sys->sun_f = 67L;
       copy_lst(sys->nyi_drup_const, ndc_p); // solar motion in a month
+      copy_lst(sys->nyi_long_const, nlc_p); // same in a lunar day
     }
   else if (type == TSURPHU)
     {
       sys->epoch = &tsurphu_epoch;
       sys->sun_f = 67L;
       copy_lst(sys->nyi_drup_const, ndc_p);
+      copy_lst(sys->nyi_long_const, nlc_p);
     }
   else // SHERAB_LING
     {
       sys->epoch = &sherab_ling_epoch;
       sys->sun_f = 4815377L;
       copy_lst(sys->nyi_drup_const, ndc_sl);
+      copy_lst(sys->nyi_long_const, nlc_sl);
     }
   return sys;
 }

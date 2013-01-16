@@ -99,7 +99,7 @@ month->asked_month = tm; // TODO: test...
 	   get_month_data (asys, month->true_month[0], month->rilcha, month->nyidru, month->gzadru);
      // Test the day loop for Phugpa 1/1/1977: first day is ommited
     // now we look for the day
-     td->gd = get_tt_data (asys->epoch, month->true_month[0], month->gzadru, month->nyidru, month->rilcha, tt, td->nyidag, td->gzadag, td->nyibar);
+     td->gd = get_tt_data (asys, month->true_month[0], month->gzadru, month->nyidru, month->rilcha, tt, td->nyidag, td->gzadag, td->nyibar);
      // we have our day
   // td->ommited and td->duplicated are the only variables that are not set, we
   // must give them a default value
@@ -108,15 +108,15 @@ month->asked_month = tm; // TODO: test...
 // We now have data for the current lunar day and both the one before and following.    
 // we can set the type of day
 // we can compute for the previous lunar day even if tt = 1 (cf. KTC23 ?)
-  prv_gd = get_tt_data (asys->epoch, month->true_month[0], month->gzadru, month->nyidru, month->rilcha, tt-1L, nyidag, gzadag, nyibar);
+  prv_gd = get_tt_data (asys, month->true_month[0], month->gzadru, month->nyidru, month->rilcha, tt-1L, nyidag, gzadag, nyibar);
   // we compute nxt_gd if the next lunar day is in the same month
   if (tt < 30L)
-  nxt_gd = get_tt_data (asys->epoch, month->true_month[0], month->gzadru, month->nyidru, month->rilcha, tt+1L, nyidag, gzadag, nyibar);
+  nxt_gd = get_tt_data (asys, month->true_month[0], month->gzadru, month->nyidru, month->rilcha, tt+1L, nyidag, gzadag, nyibar);
   else
   nxt_gd = 0L;
   // we compute prv2_gd if tt>1, otherwise it would change the month
   if (tt >1L)
-    prv2_gd = get_tt_data (asys->epoch, month->true_month[0], month->gzadru, month->nyidru, month->rilcha, tt-2L, nyidag, gzadag, nyibar);
+    prv2_gd = get_tt_data (asys, month->true_month[0], month->gzadru, month->nyidru, month->rilcha, tt-2L, nyidag, gzadag, nyibar);
   else
     prv2_gd = 0L;
   if (prv_gd == td->gd) // means that the lunar date is ommited, we go to the next one
@@ -165,7 +165,7 @@ tib_day_next (tib_day *td, astro_system *asys)
        td->duplicated = SECOND_OF_DUPLICATED;
        // we have to recompute gzadag
        // TODO: this could be optimized a lot!
-       td->gd = get_tt_data (asys->epoch, td->month->true_month[0], td->month->gzadru, td->month->nyidru, td->month->rilcha, td->tt, td->nyidag, td->gzadag, td->nyibar);
+       td->gd = get_tt_data (asys, td->month->true_month[0], td->month->gzadru, td->month->nyidru, td->month->rilcha, td->tt, td->nyidag, td->gzadag, td->nyibar);
        if (td->astro_data)
           get_day_astro_data(td, asys, 1);
        //if (td->planet_data)
@@ -201,11 +201,11 @@ tib_day_next (tib_day *td, astro_system *asys)
 
           prv_gd = td->gd; // we set prv_gd in all cases (think about a duplicated 1st lunar date
   
-  td->gd = get_tt_data (asys->epoch, td->month->true_month[0], td->month->gzadru, td->month->nyidru, td->month->rilcha, td->tt, td->nyidag, td->gzadag, td->nyibar);
+  td->gd = get_tt_data (asys, td->month->true_month[0], td->month->gzadru, td->month->nyidru, td->month->rilcha, td->tt, td->nyidag, td->gzadag, td->nyibar);
     if(prv_gd == td->gd)
      td->ommited = OMMITED;
   if (td->tt < 30)
-    nxt_gd = get_tt_data (asys->epoch, td->month->true_month[0], td->month->gzadru, td->month->nyidru, td->month->rilcha, td->tt + 1, nyidag, gzadag, nyibar);
+    nxt_gd = get_tt_data (asys, td->month->true_month[0], td->month->gzadru, td->month->nyidru, td->month->rilcha, td->tt + 1, nyidag, gzadag, nyibar);
   if (nxt_gd && nxt_gd == td->gd)		// Few tested, all working properly
       td->ommited = NEXT_OMMITED;
   if (td->gd - prv_gd == 2) // means that the lunar date is duplicated
@@ -231,7 +231,7 @@ tib_day_next (tib_day *td, astro_system *asys)
  */
  // TODO: modify it to use tib_day_next
 void
-find_day (tib_day *td, long int jd, epoch *epch)
+find_day (tib_day *td, long int jd, astro_system *asys)
 {
   // month values
   long int rilcha[2];	// anomaly
@@ -258,7 +258,7 @@ find_day (tib_day *td, long int jd, epoch *epch)
   copy_lst(gzadru, td->month->gzadru);
   copy_lst(nyidru, td->month->nyidru);
   td->gd =
-    get_tt_data (epch, cur_mth, gzadru, nyidru, rilcha, tt, td->nyidag, td->gzadag,
+    get_tt_data (asys, cur_mth, gzadru, nyidru, rilcha, tt, td->nyidag, td->gzadag,
 		 td->nyibar);
   // first loop in order to get gd around jd
   // if gd == jd, it should be a normal day, and if gd == jd + 1, it should be a duplicated day
@@ -272,7 +272,7 @@ find_day (tib_day *td, long int jd, epoch *epch)
 	  return;
 	}
       td->gd =
-	get_tt_data (epch, cur_mth, gzadru, nyidru, rilcha, tt, td->nyidag,
+	get_tt_data (asys, cur_mth, gzadru, nyidru, rilcha, tt, td->nyidag,
 		     td->gzadag, td->nyibar);
     }
   // we found our day! and td-> gd, td->nyidag, td->gzadag and td->nyibar are already filled
@@ -280,7 +280,7 @@ find_day (tib_day *td, long int jd, epoch *epch)
   // getting previous, second previous and next day general day to know if 
   // there are ommited or duplicated days around...
   prv_gd =
-    get_tt_data (epch, cur_mth, gzadru, nyidru, rilcha, tt - 1, nyidag,
+    get_tt_data (asys, cur_mth, gzadru, nyidru, rilcha, tt - 1, nyidag,
 		 gzadag, nyibar);
   // First, a check. Is it possible that current lunar day and previous both
   // calculate to same solar day? This would be if current lunar day is omitted
@@ -299,12 +299,12 @@ find_day (tib_day *td, long int jd, epoch *epch)
   if (gzadag[1] >= 54)		// 54?? This should get all of them, in Phugpa TODO: understand this...
     {
       prv2_gd =
-	get_tt_data (epch, cur_mth, gzadru, nyidru, rilcha, tt - 2, nyidag,
+	get_tt_data (asys, cur_mth, gzadru, nyidru, rilcha, tt - 2, nyidag,
 		     gzadag, nyibar);
     }
 // Now get data for next lunar day
   nxt_gd =
-    get_tt_data (epch, cur_mth, gzadru, nyidru, rilcha, tt + 1, nyidag,
+    get_tt_data (asys, cur_mth, gzadru, nyidru, rilcha, tt + 1, nyidag,
 		 gzadag, nyibar);
   // td->ommited and td->duplicated are the only variables that are not set, we
   // must give them a default value
@@ -351,7 +351,7 @@ get_td_from_jd (long int jd, tib_day *td, astro_system *sys)
   // first we find the month and year
   find_month_and_year (jd, sys, td->month);
   // Then we find the day inside the month
-  find_day (td, jd, sys->epoch);
+  find_day (td, jd, sys);
 }
 
 
@@ -497,7 +497,7 @@ nyi_dag_and_gza_dag (long int nyibar[6], long int tsebar[6],
  *  - spi zag
  */
 int
-get_tt_data (epoch *epch, long int cur_mth, long int gzadru[6],
+get_tt_data (astro_system *asys, long int cur_mth, long int gzadru[6],
 	     long int nyidru[6], long int rilcha[2], long int tt,
 	     long int nyidag[6], long int gzadag[6], long int nyibar[6])
 {
@@ -506,8 +506,7 @@ get_tt_data (epoch *epch, long int cur_mth, long int gzadru[6],
   long int tsebar[6] = { 0, 0, 0, 0, 0, 0 };	// mean weekday (for a precise tt)
   // constant to calculate lunar day mean weekday, "tshes kyi dhru ba", see KTC p. 23
   static long int tse_drup_const[6] = { 0, 59, 3, 4, 16, 0 };
-  // constant to calculate lunar day solar longitude, "nyi ma'i longs spyod", see KTC p. 23
-  static long int nyi_long_const[6] = { 0, 4, 21, 5, 43, 0 };
+  // TODO: in t4.c: does Sherab Ling do with { 0, 59, 0, 0, 0, 0 } ?
 
   // small optimization: if tt=0, less calculations are needed as a lot of results will be 0
   if (tt != 0)
@@ -515,16 +514,16 @@ get_tt_data (epoch *epch, long int cur_mth, long int gzadru[6],
       // first computing tsedru
       mul_lst (tsedru, tse_drup_const, tt, 7, 707);
       // then nyilon
-      mul_lst (nyilon, nyi_long_const, tt, 27, 67);
+      mul_lst (nyilon, asys->nyi_long_const, tt, 27, asys->sun_f);
       add_lst (tsebar, gzadru, tsedru, 7, 707);
-      add_lst (nyibar, nyidru, nyilon, 27, 67);
+      add_lst (nyibar, nyidru, nyilon, 27, asys->sun_f);
       nyi_dag_and_gza_dag (nyibar, tsebar, rilcha, tt, nyidag, gzadag);
     }
   else
     {
       nyi_dag_and_gza_dag (nyidru, gzadru, rilcha, 0, nyidag, gzadag);
     }
-  return spi_zag (epch, cur_mth, tt, gzadag[0]);
+  return spi_zag (asys->epoch, cur_mth, tt, gzadag[0]);
 }
 
 /* Function computing the general day (spyi zhag)

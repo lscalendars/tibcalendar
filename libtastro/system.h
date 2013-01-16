@@ -62,6 +62,7 @@ typedef struct astro_system
     unsigned char type; // PHUGPA, TSURPHU, etc.
     long int sun_f;
     long int nyi_drup_const[5];
+     long int nyi_long_const[6]; // constant to calculate lunar day solar longitude, "nyi ma'i longs spyod", see KTC p. 23
     epoch *epoch;
 } astro_system;
 
