@@ -58,7 +58,7 @@ main ()
   if (!td->month->astro_data)
     get_month_astro_data(td->month, sys);
   //print_tib_day_r(td);
-  print_calendar(stdout, 1942, sys);
+  print_calendar(stdout, 1457, sys);
   free(sys);
   //main_menu();
   end_ui();

@@ -159,7 +159,7 @@ void print_day_info(FILE *f, tib_day *td, astro_system *asys)
                 fprintf (f, "\n");
                 // Line 4
                 fprintf (f, "\x20\x20Solar: %s-%s. %s" ,
-                              get_element_5_str(td->astro_data->element),
+                              get_element_5_str(td->astro_data->s_element),
                               get_animal_str(td->astro_data->s_animal),
                               Clunman[td->astro_data->c_lunar_mansion] );
                 if (asys->type != TSURPHU)

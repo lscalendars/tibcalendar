@@ -68,4 +68,11 @@ unsigned char get_dow_element (unsigned char dow);
 #define OX 10
 #define TIGER 11
 
+// The five sanskrit vowels (see KTC p. 156)
+#define VOW_A 0
+#define VOW_I 1
+#define VOW_R 2
+#define VOW_U 3
+#define VOW_L 4
+
 #endif

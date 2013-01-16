@@ -74,7 +74,8 @@ typedef struct tib_month_astro_data
 
 typedef struct tib_day_astro_data
 {
-  unsigned char element; 
+  unsigned char s_element; 
+  unsigned char l_element; 
   unsigned char s_animal; // animal associated with the solar day
   unsigned char c_lunar_mansion; // the chinese lunar mansion (phugpa)
   unsigned char s_sme_ba; // the solar day's mewa

@@ -99,7 +99,8 @@ void get_month_astro_data(tib_month *month, astro_system *asys)
   // TODO: change for switch loop
         if ( asys->type == TSURPHU )
           {
-            // TODO: indicate the source. Code taken from tcg
+            // See KTC p.198
+            // TODO: instead of TSURPHU and PHUGPA, add a switch asys->element_calculation
             month->astro_data->animal = (month_number + 10 ) % 12;
             // element
             if ( ( tmp_e == WOOD && tmp_g == MALE ) || ( tmp_e == EARTH && tmp_g == FEMALE ) )
@@ -113,14 +114,10 @@ void get_month_astro_data(tib_month *month, astro_system *asys)
             if ( ( tmp_e == FIRE && tmp_g == FEMALE ) || ( tmp_e == WATER && tmp_g == MALE ) )
               month->astro_data->element = (3 + (month_number - 1 ) / 2)%5;
           }
-        else if (asys->type == PHUGPA)
+        else // PHUGPA or SHERAB_LING
           {
             month->astro_data->animal = month_number % 12;
             month->astro_data->element = (tmp_e + 1 + (month_number + 1 ) / 2)%5;
-          }
-         else // SHERAB_LING
-          {
-            month->astro_data->animal = month_number % 12;
           }
         
         // now getting the chinese month
@@ -181,6 +178,7 @@ void get_day_astro_data(tib_day *td, astro_system *asys, unsigned char updateflg
       td->astro_data->l_sme_ba = 9;
    // If Chinese month is number 1, Animal is Tiger, index = 11
    td->astro_data->l_animal = (unsigned char) ((tmp + 10L) % 12L);
+   // TODO: compute td->astro_data->l_element, see KTC p. 207
      }
    // if it is an ommited day, we can stop here, none of the other astrological data makes sense...
    if (td->ommited == OMMITED)
@@ -205,7 +203,7 @@ void get_day_astro_data(tib_day *td, astro_system *asys, unsigned char updateflg
      }
      
      // for the element, it's more simple with the general day
-        td->astro_data->element = (unsigned char) (((td->gd - 3L ) / 2L ) % 5L);
+        td->astro_data->s_element = (unsigned char) (((td->gd - 3L ) / 2L ) % 5L);
      
   // Calculate lunar mansion at daybreak:
   // The idea here is that we computed the solar longitude at a time where the
