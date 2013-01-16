@@ -74,9 +74,12 @@ void get_chinese_month(tib_month *month, astro_system *asys)
     else if ( month->true_month[0] >= 14933L && month->true_month[0] <= 14948L )
       month->astro_data->c_month = month->astro_data->c_month + 1;
     // month->astro_data->c_month = (unsigned char) month->month + 2; // This is from T4.c in prn_bir2_cal but it's not used
-    if ( month->astro_data->c_month > 12 )
-      month->astro_data->c_month = month->astro_data->c_month - 12;
       }
+          if ( month->astro_data->c_month > 12 )
+      month->astro_data->c_month = month->astro_data->c_month - 12;
+      // a little adjustment so that c_month is 1-12 instead of 0-11
+        if (month->astro_data->c_month == 0)
+          month->astro_data->c_month = 12;
 }
 
 void get_month_astro_data(tib_month *month, astro_system *asys)
@@ -119,10 +122,9 @@ void get_month_astro_data(tib_month *month, astro_system *asys)
           {
             month->astro_data->animal = month_number % 12;
           }
-          
-        // a little adjustment so that c_month is 1-12 instead of 0-11
-        if (month->astro_data->c_month == 0)
-          month->astro_data->c_month = 12;
+        
+        // now getting the chinese month
+        get_chinese_month(month, asys);
           
         // TODO: really understand... Is it really for Tsurphu too?
         if (tmp_g == MALE && month_number > 10)
@@ -165,10 +167,16 @@ void get_day_astro_data(tib_day *td, astro_system *asys, unsigned char updateflg
    // first we compute the value (chinese_month -1)*30 + tt that will be used later on:
    // it is the number of lunar days since first chinese month, then we can derive the useful values
    tmp = ((long int) (td->month->astro_data->c_month) - 1L) * 30L + td->tt;
+   // trigram
    if (asys->type == SHERAB_LING) //TODO: check
        td->astro_data->trigram = (unsigned char) ((tmp + 4L) % 8L);
    else // If Chinese month is number 1, Trigram is Li, index = 1
+      {
+      printf("tmp: %ld\n", tmp);
        td->astro_data->trigram = (unsigned char) (tmp % 8L);
+       printf("trigram: %u\n", td->astro_data->trigram);
+       }
+   // sme ba
    if (asys->type == SHERAB_LING) //TODO: check 
        td->astro_data->l_sme_ba = (unsigned char) ((tmp +6L) % 9L);
    else // If Chinese month is number 1, lunar "sme ba" is 1

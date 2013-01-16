@@ -161,6 +161,7 @@ tib_day_find_duplicated_ommited(tib_day *td, astro_system *asys, unsigned char u
 /* an important function to transform a tibetan day into the next lunar date (or lunar day if lunar day is ommited)
  *  TODO: maybe we should add an option to pass ommited days and factorize a lot of code...
  * function supposes that if td->astro_data exists, then it is correct
+ * interesting tests: 6/9/1457 : second of duplicated and next is ommited (TODO)
  */
 void
 tib_day_next (tib_day *td, astro_system *asys)
