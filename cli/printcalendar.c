@@ -128,7 +128,7 @@ void print_day_info(FILE *f, tib_day *td, astro_system *asys)
                 fprintf (f, "%ld. Omitted: %s %s %d\n",
                           td->tt,
                           get_animal_str(td->astro_data->l_animal),
-                          cycparT[td->astro_data->trigram],  td->astro_data->l_sme_ba);
+                          cycparT[td->astro_data->l_trigram],  td->astro_data->l_sme_ba);
                 return;
               }
                 jd_to_wd (td->gd, &wday, &wmonth, &wyear, &dow);
@@ -146,7 +146,7 @@ void print_day_info(FILE *f, tib_day *td, astro_system *asys)
                           yogaT[td->astro_data->yoga[0]],
                           byedT[td->astro_data->karana],
                           get_animal_str(td->astro_data->l_animal),
-                          cycparT[td->astro_data->trigram], td->astro_data->l_sme_ba);
+                          cycparT[td->astro_data->l_trigram], td->astro_data->l_sme_ba);
                 // Line 3
                 fprintf (f, "\x20\x20%ld;%ld,%ld %ld;%ld,%ld %ld;%ld,%ld %ld;%ld,%ld",
                           td->gzadag[0], td->gzadag[1], td->gzadag[2],

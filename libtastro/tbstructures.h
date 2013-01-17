@@ -79,12 +79,14 @@ typedef struct tib_day_astro_data
   unsigned char s_animal; // animal associated with the solar day
   unsigned char c_lunar_mansion; // the chinese lunar mansion (phugpa)
   unsigned char s_sme_ba; // the solar day's mewa
+  unsigned char s_trigram; // the solar day's trigram
   unsigned char l_sme_ba; // the lunar day's mewa
-  unsigned char trigram;
+  unsigned char l_trigram;
   unsigned char l_animal; // animal associated with the lunar day
   long int moonlong_db[6]; // lunar mansion at daybreak
   long int yoga[6]; // yoga, see KTC p.42
   unsigned char karana; // Karanas are numbered from 0 to 7 for the changing karanas, and from 7 to
+  unsigned char solar_term; // if a solar term is passed in this day, we record it here
   unsigned char sideral_day[3]; // the zodiacal sign (month), day and nadi for the mean solar longitude
   unsigned char anniversary; // could be better or even thrown out of libtastro, but we'll see... currently it's just one of the values listed below.
   // 10 for the fixed ones, see KTC p.43

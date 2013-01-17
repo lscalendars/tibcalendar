@@ -166,9 +166,9 @@ void get_day_astro_data(tib_day *td, astro_system *asys, unsigned char updateflg
    tmp = ((long int) (td->month->astro_data->c_month) - 1L) * 30L + td->tt;
    // trigram
    if (asys->type == SHERAB_LING) //TODO: check
-       td->astro_data->trigram = (unsigned char) ((tmp + 4L) % 8L);
+       td->astro_data->l_trigram = (unsigned char) ((tmp + 4L) % 8L);
    else // If Chinese month is number 1, Trigram is Li, index = 1
-       td->astro_data->trigram = (unsigned char) (tmp % 8L);
+       td->astro_data->l_trigram = (unsigned char) (tmp % 8L);
    // sme ba
    if (asys->type == SHERAB_LING) //TODO: check 
        td->astro_data->l_sme_ba = (unsigned char) ((tmp +6L) % 9L);
@@ -185,12 +185,16 @@ void get_day_astro_data(tib_day *td, astro_system *asys, unsigned char updateflg
       return;
 
    // Solar day data:
-  // now an optimization: if we want just to update the data that are set for previous day and previous day is the first of a duplicated day,
-  // almost everything is already set up, we just need a few solar day data adjustments:
+   // Animal, element, trigram and number, are based on Rigthig, p. 113 (57a)
+   // Agrees Baidkar (VKP_1, p.224)
+   // Citsjam has trigram different by 4. But Citsmel agrees.
+   // now an optimization: if we want just to update the data that are set for previous day and previous day is the first of a duplicated day,
+   // almost everything is already set up, we just need a few solar day data adjustments (TODO: is it just unneccessary code?)
    if (updateflg == 1 && td->ommited != PREVIOUS_OMMITED)
      {
         // this is how they are traditionnaly computed, with the previous one
         td->astro_data->s_animal = (td->astro_data->s_animal +1) % 12;
+        td->astro_data->s_trigram = (td->astro_data->s_trigram +1) % 8;
         td->astro_data->c_lunar_mansion = (td->astro_data->c_lunar_mansion + 1) % 28;
         td->astro_data->s_sme_ba = td->astro_data->s_sme_ba % 9 + 1; // TODO: test
         // in the case of the update of a duplicated day, this is the only data that changes...
@@ -200,6 +204,7 @@ void get_day_astro_data(tib_day *td, astro_system *asys, unsigned char updateflg
    td->astro_data->s_animal = (unsigned char) ((td->gd - 2L ) % 12L);
    td->astro_data->c_lunar_mansion = (unsigned char) ((td->gd - 17L ) % 28L);
    td->astro_data->s_sme_ba = (unsigned char) ((td->gd - 2L ) % 9L + 1L);
+   td->astro_data->s_trigram = (unsigned char) ((td->gd - 6L ) % 8L);
      }
      
      // for the element, it's more simple with the general day
@@ -236,6 +241,8 @@ void get_day_astro_data(tib_day *td, astro_system *asys, unsigned char updateflg
    // at daybreak.
    // This is strictly wrong, we should use the Sun's longitude at daybreak, 
    // but in the Tibetan tradition such an adjustment is not made.
+   // TODO: interestingly, this operation would imply multiplication of two values written as lists
+   // and this would be the only one of such operations... maybe tibetans did not know how to do it?
     add_lst (td->astro_data->yoga, moonlong, td->nyidag, 27, asys->sun_f );
 
     // Now calculate karana, byed pa:
@@ -293,6 +300,158 @@ unsigned char get_dow_element (unsigned char dow)
 {
   return dow_elements[dow];
 }
+
+/*
+// TODO: finish integration
+// pc1 = prochen1
+// pc2 = prochen2
+// doweek = day of week
+// lunmanx = 
+void get_phrochen ( long int *pc1, long int *pc2, long int doweek, long int lunmanx,
+long int nxt_lm, long int monlong1 ) // VKP, 1,148
+  {
+    long int x;
+    x = lunmanx;
+    if ( x > 21L )
+      x = x + 1L;
+    else if ( x == 21L && monlong1 >= 30L )
+      x = x + 1L;
+
+    if ( doweek == 1L )
+      *pc1 = x;
+    else if ( doweek == 0L )
+      *pc1 = x - 24L;
+    else
+      *pc1 = x - ( doweek - 1L ) * 4L;
+    if ( *pc1 < 0L )
+      *pc1 = *pc1 + 28L;
+
+    x = nxt_lm;
+    if ( x > 21L )
+      x = x + 1L;
+    else if ( x == 21L )
+      x = x + 1L;
+
+    if ( doweek == 1L )
+      *pc2 = x;
+    else if ( doweek == 0L )
+      *pc2 = x - 24L;
+    else
+      *pc2 = x - ( doweek - 1L ) * 4L;
+    if ( *pc2 < 0L )
+      *pc2 = *pc2 + 28L;
+  }
+//
+
+// This function fills the solar term astrological data for a solar day
+// see KTC p.50
+// In this function we work in dbugs (breath, 21600th of day, see KTC p.12). This is basically the same as working with lists
+// but it enables to multiplies one number by another, which we currently cannot do with lists
+// TODO: convert all in terms of lists, would be clearer, if possible?
+int chk_solar_term (tib_day *td)
+  {
+    long int sundb1, sundb2; // Mean sun at daybreak, begin and end
+    long int sunmid;
+    long int x; //, y;
+    long int s1, r, s2, s2t, s2t1, s2t2, s2t3;
+    long int s2long, s2long1, s2long2, s2long3;
+    long int gzadag = ( td->gzadag[1] * 60L + td->gzadag[2] ) * 6L + td->gzadag[3]; // gzadag (with gzadag[0] = 0) converted in dbugs
+    long int nyibar = (( td->nyibar[0] * 60L + td->nyibar[1] ) * 60L + td->nyibar[2] ) * 6L + td->nyibar[3];
+    
+    td->solar_term = 0; // 0? really?
+    if (td->ommited == OMMITED)
+       return;
+    
+   // Each day, mean sun moves 21600/360 = 0;4,26,2 = 1598 dbugs // no
+    // copy_lst(sunmid, nyibar);
+    sunmid = sundb1;
+    // the sun has moved gzadag * 1598 since daybreak // no
+    // we set sundb1 to mean sun longitude at day break of current day
+    sundb1 = nyibar - ( gzadag * 1598L ) / 21600L;
+    sundb2 = sundb1 + 1598L;
+
+// Now, find where we are in solar terms. First is actually 3 sgang:
+
+    if ( sundb1 < 11340L )
+      sundb1 = sundb1 + 583200L;
+    x = sundb1 - 11340L;
+    s1 = x / 24300L;
+    r = x - ( s1 * 24300L );
+
+//  printf ( "Term index = %ld, remainder = %ld\n", s1, r );
+
+// If index is zero and remainder positive, we have passed "3 sgang"
+// It appears that the remainder is never zero.
+
+    if ( sundb2 < 11340L )
+      sundb2 = sundb2 + 583200L;
+    x = sundb2 - 11340L;
+    s2 = x / 24300L;
+    r = x - ( s2 * 24300L );
+
+//  printf ( "Second term index = %ld, remainder = %ld\n", s2, r );
+
+// Convert to solar terms, "1 dbugs" = 1, etc.
+
+    s1 = s1 + 6L;
+    if ( s1 > 24L )
+      s1 = s1 - 24L;
+    s2 = s2 + 6L;
+    if ( s2 > 24L )
+      s2 = s2 - 24L;
+
+    if ( s1 == s2 )
+      return (0); // No solar term
+
+// Now, find the time of the term.
+// between each solar term, 24300 "dbugs"
+// Solar daily motion = 1598 dbugs
+
+    s2long = ( s2 - 6L ) * 24300L + 11340;
+    if ( s2long < 0L )
+      s2long = s2long + 583200L;
+//  printf ( "Step 1, S2long = %ld\n", s2long );
+
+    if ( s2long < 0L )
+      s2long = s2long + 583200L;
+    else if ( s2 == 1L )
+      s2long = s2long + 583200L;
+
+    if ( sundb1 > s2long ) // It must have been incremented, so do the same:
+      s2long = s2long + 583200L;
+
+    s2t = ( 21600L * ( s2long - sundb1 ))/ 1598L;
+    s2t2 = s2t / 6L;
+    s2t3 = s2t - s2t2 * 6L;
+    s2t1 = s2t2 / 60L;
+    s2t2 = s2t2 - s2t1 * 60L;
+
+// solar_term_str[60];
+
+    if ( s2long < 0L )
+      s2long = s2long + 583200L;
+    s2long = ( s2long + 3L ) / 6L;
+    s2long2 = s2long / 60L;
+    s2long3 = s2long % 60L;
+    s2long1 = s2long2 / 60L;
+    s2long2 = s2long2 % 60L;
+
+    x = ( 1L + s2 ) / 2L;
+
+    if ( s2 % 2L ) // If index odd, then "dbugs"
+      {
+        sprintf ( solar_term_str, "%ld,%ld,%ld %ld dbugs %ld;%ld,%ld",
+                  s2t1, s2t2, s2t3, x, s2long1, s2long2, s2long3 );
+      }
+    else // "sgang"
+      {
+        sprintf ( solar_term_str, "%ld,%ld,%ld %ld sgang %ld;%ld,%ld",
+                  s2t1, s2t2, s2t3, x, s2long1, s2long2, s2long3 );
+      }
+    return (1); // solar term found
+  } // chk_solar_term
+*/
+
 
 /*
  *
