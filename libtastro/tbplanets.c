@@ -225,7 +225,7 @@ get_planets_data (long int jd, long int tt, long int zd0, long int nyibar[6], as
   long int vendaldag[6] = {0,0,0,0,0,0};
   long int dragkang[6] = {0,0,0,0,0,0};
   long int nyindhru[6] = {0,0,0,0,0,0};
-  long int rkang_frac;
+  long int rkang_frac, nsz;
 
   pd = new_tib_planet_data();
 // mars, dal dag. - KTC 57
@@ -252,16 +252,44 @@ get_planets_data (long int jd, long int tt, long int zd0, long int nyibar[6], as
 // Checked against tables by "dbyangs can grub pa'i rdo rje", p. 612
   get_mean_slow_l(venkanbar, (sz*10 + sys->epoch->venadd) % vencyc, vencyc, venfrac);
 
+// now we set nyindhru to 
+// TODO: use switch loop
 // for Phugpa, we use the dragkang method:
   if (sys->type == PHUGPA)
     {
-  rkang_frac = 149209L;
+  rkang_frac = 149209L; // maybe this should go in sys? maybe not... yes: valued in epoch are dependant of this!
 // drag gsum rkang 'dzin, zhi gnyis dal bar - KTC 63
   // here we call the dragkang list nyindhru
+  // sys->epoch->dragkadd is here added, be careful setting it in the epoch!
+  // if it was -x, then we can add 6714405-x, it's the same...
   nyindhru[0] = 27 * (long) (((long long) sz * 18382 + (long long) sys->epoch->dragkadd) % 6714405LL);
   // here is something a bit different to compute inner planets dal dag
   div_lst_6 (nyindhru, nyindhru, 6714405L, rkang_frac, 1);
     }
+  else if (sys->type == SHERAB_LING)
+    {
+     rkang_frac = 115787L;
+     // Now a calculation specific to Sherab Ling:
+     // 365;15,31,1,121 (317) * 317 years = 115787 round days 
+     // so 317 years is a cycle with a full number of days, and we spot the current day
+     // in this cycle. The 317 cycles start with a day at daybreak of which mean solar longitude is 0.
+     // nsz is the index of the day in the 317 years cycle
+     // same remark as above, nyi_cnt is added, as if we were substracting 115787-nyi_cnt
+     nsz = (sz + sys->epoch->nyi_cnt) % 115787L;
+     // we set nyindhru to the mean motion of the sun in a solar day
+     // for Sherab Ling, it is 0;4,26,0,78348 (115787), a fixed value given by 
+     // a full circle divided by 365;15,31,1,121 (317), the number of days in
+     // a year according to Sherab Ling system, see KTC p. 343.
+     // here nyindhru is {0,0,0,0,0,0}, we fill only non-zero values
+    nyindhru[1] = 4L;  
+    nyindhru[2] = 26L;
+    nyindhru[4] = 78348L;
+    // so now we just have to multiply the mean solar motion by the number of days
+    // since solar longitude was 0 (nsz), in order to have the mean solar longitude:
+    mul_lst_6 ( nyindhru, nyindhru, nsz, rkang_frac, 1 );
+    // and we keep only the fraction in the ecliptic, removing full circles:
+    nyindhru[0] = nyindhru[0] % 27L;
+     }
   else // tsurphu
     {
      rkang_frac = 13;       
