@@ -77,7 +77,7 @@ void add_lst_6 ( long int a1[6], long int a2[6], long int a3[6], long int n0,
 void div_lst_6 ( long int res[6], long int lst[6], long int x, long int n4, long int n5 )
   {
     long long int r;
-    long long int b; //TODO: remove, it's useless...
+    long long int b; 
     
     r = ((long long) lst[0] % (long long) x) * 60;
     res[0] = lst[0] / x;
@@ -100,6 +100,36 @@ void div_lst_6 ( long int res[6], long int lst[6], long int x, long int n4, long
     
     b = ((long long) lst[5]) + r;
     res[5] = (long) (b / x);
+}
+
+/*
+ * function to divise a list:
+ * res = lst % x
+ * n4 can vary
+ */
+void div_lst ( long int res[6], long int lst[6], long int x, long int n4 )
+  {
+    long int r;
+    long int b; 
+    
+    r = ( lst[0] % x) * 60;
+    res[0] = lst[0] / x;
+    
+    b = (lst[1]) + r;
+    res[1] = (b / x);
+    r = (b % x) * 60;
+    
+    b = ( lst[2]) + r;
+    res[2] =  (b / x);
+    r = (b %  x) * 6;
+    
+    b = ( lst[3]) + r;
+    res[3] = (b / x);
+    r = (b % x) * n4;
+    printf("%ld", r);
+    
+    b = lst[4] + r;
+    res[4] = (b / x);
 }
 
 /* 

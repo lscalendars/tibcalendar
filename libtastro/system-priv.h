@@ -28,8 +28,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 static /*const*/ epoch phugpa_epoch= // we take -1000 as a reference
 {
-    -1000,
-    7,
+    -1000, // year
+    7, // eyr_a
     6,
     61,
     10,
@@ -44,6 +44,7 @@ static /*const*/ epoch phugpa_epoch= // we take -1000 as a reference
     511,
     2995,
     48,
+    0,
     { 5, 35, 36, 4, 160, 0 },
     { 26, 45, 53, 4, 26, 0 },
 };
@@ -66,6 +67,7 @@ static /*const*/ epoch tsurphu_epoch= // we take -1000 as a reference
     512,
     2988,
     0, // not used for tsurphu
+    0, //idem
     { 5, 38, 22, 3, 701, 0 },
     { 0, 7, 25, 0, 30, 0 },
 };
@@ -89,6 +91,7 @@ static /*const*/ epoch sherab_ling_epoch= // we take -1000 as a reference
     371L,
     3167L,
     16L, // Maybe 17??
+    37565L,
     { 4,  6, 56, 5, 293, 0 },
     { 22, 49, 17, 1, 2398189L, 0 },
 };

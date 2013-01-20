@@ -51,6 +51,7 @@ typedef struct epoch
     long int jupadd;
     long int satadd;
     long int zlasho; // index of the intercalary months, see KTC p.51. we always consider that the second index is the first + 1, and this long int is the first
+    long int nyi_cnt; // used only for Sherab Ling, number of days elapsed in a cycle of 115787 days, used for planet longitude computation
     long int gzad[6]; // mean weekday at new moon at the epoch: see KTC p.18
     long int nyid[6]; // mean sun of the epoch's month: see KTC p.21
     
