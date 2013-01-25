@@ -126,7 +126,6 @@ void div_lst ( long int res[6], long int lst[6], long int x, long int n4 )
     b = ( lst[3]) + r;
     res[3] = (b / x);
     r = (b % x) * n4;
-    printf("%ld", r);
     
     b = lst[4] + r;
     res[4] = (b / x);
@@ -199,6 +198,42 @@ void mul_lst_6 ( long int res[6], long int lst[6], long int x, long int n4,
         res[0] = (long) (r);
   }
 
+/*
+ * a very brutal function multiplying two lists by reducing both to lowest fractional part,
+ * multiplying the result and making a list out of it again.
+ * the function supposes n0 and n4 are the same for the two lists
+ */
+
+void 
+mul_lst_lst ( long int res[5], long int lst1[5], long int lst2[5], long int n0,
+               long int n4)
+{
+  long long int lst1_frac;
+  long long int r; // a temporary result
+  lst1_frac = (long long int) lst1[4] 
+        + (long long int) n4 * (long long int) lst1[3]
+        + 6LL * (long long int) n4 * (long long int) lst1[2]
+        + 60LL * 6LL * (long long int) n4 * (long long int) lst1[1]
+        + 60LL * 60LL * 6LL * (long long int) n4 * (long long int) lst1[0];
+
+  // res is the result, basically it's just lst1_frac * lst2_frac (where lst2_frac is computed
+  // the same way lst1_frac was
+  r = lst1_frac * ((long long int) lst2[4] 
+        + (long long int) n4 * (long long int) lst2[3]
+        + 6LL * (long long int) n4 * (long long int) lst2[2]
+        + 60LL * 6LL * (long long int) n4 * (long long int) lst2[1]
+        + 60LL * 60LL * 6LL * (long long int) n4 * (long long int) lst2[0]);
+        
+  res[4] = (long int) (r % (long long int) n4);
+  r = r / (long long int) n4;
+  res[3] = (long int) (r % 6LL);
+  r = r / 6LL;
+  res[2] = (long int) (r % 60LL);
+  r = r / 60LL;
+  res[1] = (long int) (r % 60LL);
+  r = r / 60LL;
+  res[0] = (long int) (r % (long long int) n0);
+}
 
 /* 
  * function adding two lists of 5 integers:
