@@ -31,6 +31,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define SHERAB_LING 3
 #define ERROR_CORRECTION 4
 #define MODERN_KALACAKRA 5
+#define BHUTAN 6
 
 // the epoch structure for traditional systems
 typedef struct epoch
@@ -50,7 +51,6 @@ typedef struct epoch
     long int maradd;
     long int jupadd;
     long int satadd;
-    long int zlasho; // index of the intercalary months, see KTC p.51. we always consider that the second index is the first + 1, and this long int is the first
     long int nyi_cnt; // used only for Sherab Ling, number of days elapsed in a cycle of 115787 days, used for planet longitude computation
     long int gzad[6]; // mean weekday at new moon at the epoch: see KTC p.18
     long int nyid[6]; // mean sun of the epoch's month: see KTC p.21
@@ -63,7 +63,8 @@ typedef struct astro_system
     unsigned char type; // PHUGPA, TSURPHU, etc.
     long int sun_f;
     long int nyi_drup_const[5];
-     long int nyi_long_const[6]; // constant to calculate lunar day solar longitude, "nyi ma'i longs spyod", see KTC p. 23
+    long int nyi_long_const[6]; // constant to calculate lunar day solar longitude, "nyi ma'i longs spyod", see KTC p. 23
+    long int zlasho;  // index of the intercalary months, see KTC p.51. we always consider that the second index is the first + 1, and this long int is the first. Convention is: if -1, then we use Tsurphu style, else Phugpa style
     epoch *epoch;
 } astro_system;
 

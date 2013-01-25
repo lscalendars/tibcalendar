@@ -43,7 +43,6 @@ static /*const*/ epoch phugpa_epoch= // we take -1000 as a reference
     4,
     511,
     2995,
-    48,
     0,
     { 5, 35, 36, 4, 160, 0 },
     { 26, 45, 53, 4, 26, 0 },
@@ -66,8 +65,7 @@ static /*const*/ epoch tsurphu_epoch= // we take -1000 as a reference
     3,
     512,
     2988,
-    0, // not used for tsurphu
-    0, //idem
+    0, // not used for Tsurphu // TODO: make an option for the use of it...
     { 5, 38, 22, 3, 701, 0 },
     { 0, 7, 25, 0, 30, 0 },
 };
@@ -90,8 +88,30 @@ static /*const*/ epoch sherab_ling_epoch= // we take -1000 as a reference
     671L,
     371L,
     3167L,
-    16L, // Maybe 17??
     37565L,
     { 4,  6, 56, 5, 293, 0 },
     { 22, 49, 17, 1, 2398189L, 0 },
+};
+
+// for now we take only the -1000 version
+static /*const*/ epoch bhutan_epoch= // we take -1000 as a reference
+{
+    -1000,
+    11,
+    6,
+    111,
+    579,
+    23,
+    5,
+    1355847L,
+    93,
+    17895L,
+    6939L,
+    284L,
+    5L,
+    512L,
+    2988L,
+    0,
+    { 5, 37, 40, 1, 73, 0 },
+    { 0, 6, 2, 4, 8, 0 },
 };

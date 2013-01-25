@@ -46,26 +46,38 @@ astro_system *get_astro_system(unsigned char type)
   static long int nlc_sl[6] = { 0, 4, 21, 5, 3338483L, 0 }; // idem, code was div_g6 ( nyilm, 30L, sun_f, 1L )
   astro_system *sys = new_system();
   sys->type = type;
-  if (type == PHUGPA)
-    {
+  switch (type)
+  {
+  case PHUGPA:
       sys->epoch = &phugpa_epoch;
       sys->sun_f = 67L;
+      sys->zlasho = 48L;
       copy_lst(sys->nyi_drup_const, ndc_p); // solar motion in a month
       copy_lst(sys->nyi_long_const, nlc_p); // same in a lunar day
-    }
-  else if (type == TSURPHU)
-    {
+      break;
+  case TSURPHU:
       sys->epoch = &tsurphu_epoch;
       sys->sun_f = 67L;
+      sys->zlasho = -1; // we don't use it in Tsurphu
       copy_lst(sys->nyi_drup_const, ndc_p);
       copy_lst(sys->nyi_long_const, nlc_p);
-    }
-  else // SHERAB_LING
-    {
+      break;
+  case SHERAB_LING:
       sys->epoch = &sherab_ling_epoch;
       sys->sun_f = 4815377L;
+      sys->zlasho = 16L; // Maybe 17??
       copy_lst(sys->nyi_drup_const, ndc_sl);
       copy_lst(sys->nyi_long_const, nlc_sl);
-    }
+      break;
+  case BHUTAN:
+      sys->epoch = &bhutan_epoch;
+      sys->sun_f = 67L;
+      sys->zlasho = 59L; // (comment from EH's code) Not found this information in the actual texts - calculated; originally had 56
+      copy_lst(sys->nyi_drup_const, ndc_p); // solar motion in a month
+      copy_lst(sys->nyi_long_const, nlc_p); // same in a lunar day
+      break;
+  default:
+      break;
+  }
   return sys;
 }

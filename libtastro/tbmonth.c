@@ -173,11 +173,11 @@ tm here is precisely month->expected month
   8     35        3                        0-0                             36                       8                normal
  */
 long int
-phugpa_adj_zla (long int tm, long int zd[2], epoch *epch,
+complex_adj_zla (long int tm, long int zd[2], long int zlasho,
 		unsigned char *zeromthfg)
 {
   long int adj_mth;
-  if (zd[1] == epch->zlasho || zd[1] == epch->zlasho + 1)
+  if (zd[1] == zlasho || zd[1] == zlasho + 1)
     {
       // for month taking the name of the following month, the convention is to
       // return -tm. the month->type must be set to FIRST_OF_DOUBLE
@@ -185,7 +185,7 @@ phugpa_adj_zla (long int tm, long int zd[2], epoch *epch,
     }
   else
     {
-      if (zd[1] > epch->zlasho + 1)
+      if (zd[1] > zlasho + 1)
 	{
 	  adj_mth = tm - 1;
 	}
@@ -216,10 +216,10 @@ phugpa_adj_zla (long int tm, long int zd[2], epoch *epch,
   return adj_mth;
 }
 
-/* Idem for Tsurphu system.
+/* This is a more simple function, used in Tsurphu
  */
 long int
-tsurphu_adj_zla (long int tm, long int zd[2],
+simple_adj_zla (long int tm, long int zd[2],
 		unsigned char *zeromthfg)
 {
       if ( zd[1] == 0 || zd[1] == 1 )
@@ -244,13 +244,10 @@ tsurphu_adj_zla (long int tm, long int zd[2],
 long int adj_zla (long int tm, long int zd[2],
 		unsigned char *zeromthfg, astro_system *sys)
 {
-	    if (sys->type == PHUGPA || sys->type == SHERAB_LING)
-        return phugpa_adj_zla (tm, zd, sys->epoch, zeromthfg);
-      else if (sys->type == TSURPHU)
-        return tsurphu_adj_zla (tm, zd, zeromthfg);
+	    if (sys->zlasho != -1)
+        return complex_adj_zla (tm, zd, sys->zlasho, zeromthfg);
       else
-        printf ("error: function adj_sla called with unknown system.");
-        return 0;
+        return simple_adj_zla (tm, zd, zeromthfg);
 }
 
 /*
@@ -339,8 +336,9 @@ find_month_and_year (long int jd, astro_system *sys, tib_month *month)
       month->type = FIRST_OF_DOUBLE;
       month->month = -month->month;
     }
+  // TODO: review the code, see if it should be done with zermomthfg...
   // for the Phugpa system, delayed month are month with zd[1] equal to 50 or 51, for tsurphu it's 0 or 1
-  else if ((sys->type == PHUGPA && (month->true_month[1] == sys->epoch->zlasho+2 || month->true_month[1] == sys->epoch->zlasho+3 ) ) || (sys->type == TSURPHU && (month->true_month[1] == 0 || month->true_month[1] == 1 ) ))
+  else if ((sys->zlasho != -1 && (month->true_month[1] == (sys->zlasho) + 2 || month->true_month[1] == (sys->zlasho) + 3 ) ) || (sys->zlasho == -1 && (month->true_month[1] == 0 || month->true_month[1] == 1 ) ))
     month->type = SECOND_OF_DOUBLE;
   // we need to get the rilcha, nyidru and gzadru for the month
   get_month_data (sys, month->true_month[0], month->rilcha, month->nyidru, month->gzadru);

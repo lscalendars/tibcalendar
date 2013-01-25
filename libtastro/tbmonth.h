@@ -11,5 +11,4 @@ long int adj_zla (long int tm, long int zd[2], 	unsigned char *zeromthfg, astro_
 void tib_month_next (tib_month* month, astro_system *asys);
 void find_month_and_year (long int jd, astro_system *sys, tib_month *month);
 
-
 #endif
