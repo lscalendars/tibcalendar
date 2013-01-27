@@ -361,6 +361,16 @@ int chk_solar_term (tib_day *td)
     td->solar_term = 0; // 0? really?
     if (td->ommited == OMMITED)
        return;
+       
+   // For Sherab Ling only, TODO: adapt for other systems
+   // A full year is 365;15,31,1,121 (317)
+   // Each year, mean sun moves 27;0,0,0,0
+   // which makes 27;0,0,0,0 / 365;15,31,1,121 (317) per day
+   // = 0;4,26,0,78348 (115787), a fixed value, put to the factor 4815377
+   // it makes 0;4,26,0,3258355 (4815377)
+   // Now we have to multiply it by something that is maximum 0;59,59,5,4815376.
+   // In order to use mul_lst_lst, we have to compute the maximum intermediate
+   // value and see if it's < 2^63 -1. It's not... so we pass 1...
     
    // Each day, mean sun moves 21600/360 = 0;4,26,2 = 1598 dbugs // no
     // copy_lst(sunmid, nyibar);
