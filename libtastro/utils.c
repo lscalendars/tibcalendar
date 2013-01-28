@@ -25,7 +25,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include<stdio.h>
 #include"utils.h"
 // TODO: use a normal gmp.h
-#include "mini-gmp.h"
+//#include "mini-gmp.h"
+#include <gmp.h>
 
 // Functions to handle list calculations as done by tibetans, see KTC 18-19 for an example
 
@@ -218,7 +219,7 @@ void mul_lst_6 ( long int res[6], long int lst[6], long int x, long int n4,
 
 void 
 mul_lst_lst ( long int res[5], long int lst1[5], long int lst2[5], long int n0,
-               long int n4)
+               long int n4, unsigned char flag)
 {
   long long int lst1_frac;
   long long int r; // a temporary result
@@ -226,7 +227,7 @@ mul_lst_lst ( long int res[5], long int lst1[5], long int lst2[5], long int n0,
   mpz_t gmp_r, gmp_lst2_frac, gmp_lst1_frac, gmp_n4;
   
   // now we have to decide if we can work with long long int or if we need to use gmp
-   if (n4 < 5206) // sqrt((2^63−1)÷(27×60×60×6)^2) = 5206, the max value authorized if we consider n0 to be 27
+    if (n4 < 5206) // sqrt((2^63−1)÷(27×60×60×6)^2) = 5206, the max value authorized if we consider n0 to be 27
     {
   // for this, long long int are enough
   lst1_frac = (long long int) lst1[4] 
@@ -234,7 +235,6 @@ mul_lst_lst ( long int res[5], long int lst1[5], long int lst2[5], long int n0,
         + 6LL * (long long int) n4 * (long long int) lst1[2]
         + 60LL * 6LL * (long long int) n4 * (long long int) lst1[1]
         + 60LL * 60LL * 6LL * (long long int) n4 * (long long int) lst1[0];
-        printf("lst1_frac: %ld\n", lst1_frac);
 
   // res is the result, basically it's just lst1_frac * lst2_frac (where lst2_frac is computed
   // the same way lst1_frac was
@@ -244,17 +244,18 @@ mul_lst_lst ( long int res[5], long int lst1[5], long int lst2[5], long int n0,
         + 60LL * 6LL * (long long int) n4 * (long long int) lst2[1]
         + 60LL * 60LL * 6LL * (long long int) n4 * (long long int) lst2[0]);
   
+    r = r / (6LL * 60LL * 60LL* (long long int) n4);
   // now something to be more efficient (we mod by a full circle)
-  //r = r % ((long long int) n4 * 6LL * 60LL * 60LL * (long long int) n0);
+  r = r % (6LL * 60LL * 60LL* (long long int) n4 * (long long int) n0);
   
-  res[4] = (long int) (r % (long long int) n4);
-  r = r / (long long int) n4;
-  res[3] = (long int) (r % 6LL);
-  r = r / 6LL;
-  res[2] = (long int) (r % 60LL);
-  r = r / 60LL;
-  res[1] = (long int) (r % 60LL);
-  res[0] = ((long int) r / 60L)%n0; // we don't need to mod by n0, we already mod by a full circle
+  res[4] = (long int) (r % ((long long int) n4));
+  r = r / ((long long int) n4 );
+  res[3] = (long int) (r % (6LL));
+  r = r / (6LL);
+  res[2] = (long int) (r % (60LL));
+  r = r / (60LL);
+  res[1] = (long int) (r % (60LL));
+  res[0] = ((long int) r / (60L)) % n0; // we don't need to mod by n0, we already mod by a full circle
     }
    else
     {
@@ -276,12 +277,16 @@ mul_lst_lst ( long int res[5], long int lst1[5], long int lst2[5], long int n0,
       mpz_add_ui(gmp_lst2_frac, gmp_lst2_frac, (unsigned long int) lst2[4]);
       // now gmp_lst1 and gmp_lst2 are set, we multiply them
       mpz_mul (gmp_r, gmp_lst1_frac, gmp_lst2_frac);
-      // now, just as above, we mod to a full circle, we reuse gmp_lst1 as a temporary value
-      mpz_set_si(gmp_lst1_frac, n0*60L*60L*6);
+      // we divide by the ratio
+      mpz_set_si(gmp_lst1_frac, 60L*60L*6L);
       mpz_mul(gmp_lst1_frac, gmp_lst1_frac, gmp_n4);
+      mpz_div(gmp_r, gmp_r, gmp_lst1_frac);
+      // we mod by a full circle
+      mpz_mul_ui(gmp_lst1_frac, gmp_lst1_frac, (unsigned long int) n0);
       mpz_mod(gmp_r, gmp_r, gmp_lst1_frac);
       // now we set res[4], using gmp_lst1 as temporary value
       mpz_fdiv_qr(gmp_r, gmp_lst1_frac, gmp_r, gmp_n4);
+      //gmp_r is quotient and gmp_lst1 is mod
       res[4] = mpz_get_si(gmp_lst1_frac);
       // max value is now 27*60*60*6 = 583200 < 2^32, so we can safely come back to just long ints!
       tmp = mpz_get_si(gmp_r);
