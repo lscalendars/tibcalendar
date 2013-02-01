@@ -20,6 +20,7 @@ elseif(CMAKE_COMPILER_IS_GNUCC)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ggdb3 -O0 -Wall -Wextra -std=c99 -Wno-long-long -pedantic")
 endif()
 
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lgmp")
 
 # The version number.
 set (tibastro_VERSION_MAJOR 0)
