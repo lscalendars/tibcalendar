@@ -38,46 +38,43 @@ astro_system *new_system()
 }
 
 // For now this is very basic... almost stupid, but this is where the options will come later
-astro_system *get_astro_system(unsigned char type)
+astro_system *
+get_astro_system (unsigned char type)
 {
-  static long int ndc_p[5] = { 2, 10, 58, 1, 17 }; // temporary variable... could certainly be easier...
-  static long int ndc_sl[5] = { 2, 10, 58, 2, 3846950L }; // same for Sherab Ling
-  static long int nlc_p[6] = { 0, 4, 21, 5, 43, 0 }; // idem, see KTC p. 23
-  static long int nlc_sl[6] = { 0, 4, 21, 5, 3338483L, 0 }; // idem, code was div_g6 ( nyilm, 30L, sun_f, 1L )
-  astro_system *sys = new_system();
+  astro_system *sys = new_system ();
   sys->type = type;
   switch (type)
-  {
-  case PHUGPA:
+    {
+    case PHUGPA:
       sys->epoch = &phugpa_epoch;
       sys->sun_f = 67L;
       sys->zlasho = 48L;
-      copy_lst(sys->nyi_drup_const, ndc_p); // solar motion in a month
-      copy_lst(sys->nyi_long_const, nlc_p); // same in a lunar day
+      set_lst (sys->nyi_drup_const, 2, 10, 58, 1, 17);	// solar motion in a month
+      set_lst_6 (sys->nyi_long_const, 0, 4, 21, 5, 43, 0);	// same in a lunar day, see KTC p. 23
       break;
-  case TSURPHU:
+    case TSURPHU:
       sys->epoch = &tsurphu_epoch;
       sys->sun_f = 67L;
-      sys->zlasho = -1; // we don't use it in Tsurphu
-      copy_lst(sys->nyi_drup_const, ndc_p);
-      copy_lst(sys->nyi_long_const, nlc_p);
+      sys->zlasho = -1;		// we don't use it in Tsurphu
+      set_lst (sys->nyi_drup_const, 2, 10, 58, 1, 17);
+      set_lst_6 (sys->nyi_long_const, 0, 4, 21, 5, 43, 0);
       break;
-  case SHERAB_LING:
+    case SHERAB_LING:
       sys->epoch = &sherab_ling_epoch;
       sys->sun_f = 4815377L;
-      sys->zlasho = 16L; // Maybe 17??
-      copy_lst(sys->nyi_drup_const, ndc_sl);
-      copy_lst(sys->nyi_long_const, nlc_sl);
+      sys->zlasho = 16L;	// Maybe 17??
+      set_lst (sys->nyi_drup_const, 2, 10, 58, 2, 3846950L);
+      set_lst_6 (sys->nyi_long_const, 0, 4, 21, 5, 3338483L, 0);	// code was div_g6 ( nyilm, 30L, sun_f, 1L )
       break;
-  case BHUTAN:
+    case BHUTAN:
       sys->epoch = &bhutan_epoch;
       sys->sun_f = 67L;
-      sys->zlasho = 59L; // (comment from EH's code) Not found this information in the actual texts - calculated; originally had 56
-      copy_lst(sys->nyi_drup_const, ndc_p); // solar motion in a month
-      copy_lst(sys->nyi_long_const, nlc_p); // same in a lunar day
+      sys->zlasho = 59L;	// (comment from EH's code) Not found this information in the actual texts - calculated; originally had 56
+      set_lst (sys->nyi_drup_const, 2, 10, 58, 1, 17);
+      set_lst_6 (sys->nyi_long_const, 0, 4, 21, 5, 43, 0);
       break;
-  default:
+    default:
       break;
-  }
+    }
   return sys;
 }

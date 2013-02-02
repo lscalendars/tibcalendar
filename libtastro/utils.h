@@ -48,4 +48,7 @@ void sub_lst_6 ( long int a1[6], long int a2[6], long int a3[6], long int n0, lo
 void clear_lst_6 ( long int l[6] );
 void copy_lst_6 ( long int dest[6], long int src[6]);
 
+void set_lst(long int lst[5], long int lst0, long int lst1, long int lst2, long int lst3, long int lst4);
+void set_lst_6(long int lst[5], long int lst0, long int lst1, long int lst2, long int lst3, long int lst4, long int lst5);
+
 #endif

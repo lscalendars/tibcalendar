@@ -575,3 +575,27 @@ inline void copy_lst_6(long int dest[6], long src[6])
     for ( n = 0; n < 6; ++n )
       dest[n] = src[n];  
   }
+  
+// very dumb but useful functions to set a list
+void
+set_lst (long int lst[5], long int lst0, long int lst1, long int lst2,
+	 long int lst3, long int lst4)
+{
+  lst[0] = lst0;
+  lst[1] = lst1;
+  lst[2] = lst2;
+  lst[3] = lst3;
+  lst[4] = lst4;
+}
+
+void
+set_lst_6 (long int lst[5], long int lst0, long int lst1, long int lst2,
+	   long int lst3, long int lst4, long int lst5)
+{
+  lst[0] = lst0;
+  lst[1] = lst1;
+  lst[2] = lst2;
+  lst[3] = lst3;
+  lst[4] = lst4;
+  lst[4] = lst5;
+}
