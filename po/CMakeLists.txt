@@ -23,33 +23,26 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-############ Settings. ###########
-set_directory_properties(PROPERTIES CLEAN_NO_CUSTOM true)
-
-
 ############ pot update. ###########
 
 if(ENABLE_POT_UPDATE_TARGET)
-
-
 		# Update the source file dependencies.
-#		include(update_pot_source_dependencies)
 
 		# Generate pot file for c++ data.
 		add_custom_command(
 			# misses bug address
-			OUTPUT ${PROJECT_SOURCE_DIR}/po/tibastro.pot
+			OUTPUT ${PROJECT_BINARY_DIR}/po/tibastro.pot
 			# create the pot file make sure we always get output.
 			COMMAND ${GETTEXT_XGETTEXT_EXECUTABLE} ${GETTEXT_XGETTEXT_OPTIONS}
 					--files-from=${PROJECT_SOURCE_DIR}/po/POTFILES.in 
-					--output=${PROJECT_SOURCE_DIR}/po/tibastro.pot
+					--output=${PROJECT_BINARY_DIR}/po/tibastro.pot
 			# replace the chartype
 			COMMAND sed -i 
 				s/charset=CHARSET/charset=UTF-8/ 
-				${PROJECT_SOURCE_DIR}/po/tibastro.pot
+				${PROJECT_BINARY_DIR}/po/tibastro.pot
 			# Remove some header info - Need to test whether needed.
 			DEPENDS ${PROJECT_SOURCE_DIR}/po/POTFILES.in
-			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} # this is because files in POTFILES.in have paths relative to source dir
 			COMMENT "pot-update: Generated source pot file."
 		)
 
@@ -59,41 +52,40 @@ if(ENABLE_POT_UPDATE_TARGET)
 			### Generate new po file.
 
 			# For some reason CMake is rather happy to delete the po file in
-			# some cases. Too avoid that problem only generate the init rule
+			# some cases. To avoid that problem only generate the init rule
 			# if the po file doesn't exist. The case where a po file used to
 			# exist and no longer exists should never occur
-
-			if(NOT EXISTS ${PROJECT_SOURCE_DIR}/po/${LINGUA}.po)
+			if(NOT EXISTS ${PROJECT_BINARY_DIR}/po/${LINGUA}.po)
 				add_custom_command(
-					OUTPUT ${PROJECT_SOURCE_DIR}/po/${LINGUA}.po
+					OUTPUT ${PROJECT_BINARY_DIR}/po/${LINGUA}.po
 					COMMAND ${GETTEXT_MSGINIT_EXECUTABLE}
 							--no-translator 
 							--input=tibastro.pot 
 							--output-file=${LINGUA}.po
 							--locale=${LINGUA}
-					WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/po
+					#WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/po
 					DEPENDS
-						${PROJECT_SOURCE_DIR}/po/tibastro.pot
+						${PROJECT_BINARY_DIR}/po/tibastro.pot
 					COMMENT 
 						"pot-update [${LINGUA}]: Initialized po file."
 				)
-			endif(NOT EXISTS ${PROJECT_SOURCE_DIR}/po/${LINGUA}.po)
+			endif(NOT EXISTS ${PROJECT_BINARY_DIR}/po/${LINGUA}.po)
 
 			### Update existing po file.
 			add_custom_command(
 				# The pot-update depends on a dummy file which we promise to
 				# make. We don't make this dummy file but the pot-update
 				# still works.
-				OUTPUT ${PROJECT_SOURCE_DIR}/po/${LINGUA}.po.dummy
+				OUTPUT ${PROJECT_BINARY_DIR}/po/${LINGUA}.po.dummy
 				COMMAND ${GETTEXT_MSGMERGE_EXECUTABLE} 
 						--backup=none
 						--previous
 						-U ${LINGUA}.po 
 						tibastro.pot
 				DEPENDS
-					${PROJECT_SOURCE_DIR}/po/tibastro.pot 
-					${PROJECT_SOURCE_DIR}/po/${LINGUA}.po
-				WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/po
+					${PROJECT_BINARY_DIR}/po/tibastro.pot 
+					${PROJECT_BINARY_DIR}/po/${LINGUA}.po
+				WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/po
 				COMMENT "pot-update [${LINGUA}]: Updated po file."
 			)
 
@@ -104,7 +96,7 @@ if(ENABLE_POT_UPDATE_TARGET)
 		# Add to target list
 		SET(pot-update-SRC 
 			${pot-update-SRC} 
-			${PROJECT_SOURCE_DIR}/po/tibastro.pot # should depend on languages
+			${PROJECT_BINARY_DIR}/po/tibastro.pot # should depend on languages
 		)
 
 
@@ -121,7 +113,7 @@ if(ENABLE_POT_UPDATE_TARGET)
 				# The pot-update depends on a dummy file which we promise to
 				# make. We don't make this dummy file but the pot-update
 				# still works.
-				OUTPUT ${PROJECT_SOURCE_DIR}/po/${LINGUA}.po.lang.dummy
+				OUTPUT ${PROJECT_BINARY_DIR}/po/${LINGUA}.po.lang.dummy
 				# After the po file is updated it might look not entirely as
 				# wanted, for example poedit reorders the file. Use msgattrib
 				# to reformat the file, use a helper file to do so.
@@ -139,12 +131,12 @@ if(ENABLE_POT_UPDATE_TARGET)
 						--previous
 						-U ${LINGUA}.po
 						tibastro.pot
-				WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/po
+			WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/po
 				COMMENT "po-update [${LINGUA}]: Updated po file."
 			)
 
 			set(po-update-LINGUA-SRC ${po-update-LINGUA-SRC} 
-				${PROJECT_SOURCE_DIR}/po/${LINGUA}.po.lang.dummy
+				${PROJECT_BINARY_DIR}/po/${LINGUA}.po.lang.dummy
 			)
 
 		add_custom_target(po-update-${LINGUA}
@@ -168,32 +160,36 @@ if(ENABLENLS)
 	foreach(LINGUA ${LINGUAS})
 
 			add_custom_command(
-				OUTPUT ${CMAKE_SOURCE_DIR}/po/${LOCALEDIR}/${LINGUA}/LC_MESSAGES
+				OUTPUT ${CMAKE_BINARY_DIR}/po/${LINGUA}/LC_MESSAGES
 				COMMAND ${CMAKE_COMMAND} -E make_directory 
-						${CMAKE_SOURCE_DIR}/po/${LOCALEDIR}/${LINGUA}/LC_MESSAGES
+						${CMAKE_BINARY_DIR}/po/${LINGUA}/LC_MESSAGES
 				COMMENT "mo-update [${LINGUA}]: Creating locale directory."
 			)
+			
+		set_directory_properties(properties 
+		  ADDITIONAL_MAKE_CLEAN_FILES ${CMAKE_BINARY_DIR}/po/${LINGUA}/
+	  )
 
 			add_custom_command(
-				OUTPUT ${CMAKE_SOURCE_DIR}/po/${LOCALEDIR}/${LINGUA}/LC_MESSAGES/tibastro.mo
+				OUTPUT ${CMAKE_BINARY_DIR}/po/${LINGUA}/LC_MESSAGES/tibastro.mo
 				COMMAND ${GETTEXT_MSGFMT_EXECUTABLE}
 						${GETTEXT_MSGFMT_PARAMETER}
-						-o ${CMAKE_SOURCE_DIR}/po/${LOCALEDIR}/${LINGUA}/LC_MESSAGES/tibastro.mo ${LINGUA}.po
+						-o ${CMAKE_BINARY_DIR}/po/${LINGUA}/LC_MESSAGES/tibastro.mo ${LINGUA}.po
 				DEPENDS 
-					${CMAKE_SOURCE_DIR}/po/${LOCALEDIR}/${LINGUA}/LC_MESSAGES
-					${PROJECT_SOURCE_DIR}/po/${LINGUA}.po
-				WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/po
+					${CMAKE_BINARY_DIR}/po/${LINGUA}/LC_MESSAGES
+					${PROJECT_BINARY_DIR}/po/${LINGUA}.po
+				WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/po
 				COMMENT "mo-update [${LINGUA}]: Creating mo file."
 			)
 
-			install(FILES ${CMAKE_SOURCE_DIR}/po/${LOCALEDIR}/${LINGUA}/LC_MESSAGES/tibastro.mo
+			install(FILES ${CMAKE_BINARY_DIR}/po/${LINGUA}/LC_MESSAGES/tibastro.mo
 					DESTINATION ${LOCALE_INSTALL}/${LINGUA}/LC_MESSAGES)
 
 			set(mo-update-SRC ${mo-update-SRC} 
-				${CMAKE_SOURCE_DIR}/po/${LOCALEDIR}/${LINGUA}/LC_MESSAGES/tibastro.mo
+				${CMAKE_BINARY_DIR}/po/${LINGUA}/LC_MESSAGES/tibastro.mo
 			)
 			set(mo-update-LINGUA-SRC ${mo-update-LINGUA-SRC} 
-				${CMAKE_SOURCE_DIR}/po/${LOCALEDIR}/${LINGUA}/LC_MESSAGES/tibastro.mo
+				${CMAKE_BINARY_DIR}/po/${LINGUA}/LC_MESSAGES/tibastro.mo
 			)
 
 		if(ENABLE_POT_UPDATE_TARGET)
@@ -210,10 +206,6 @@ if(ENABLENLS)
 	add_custom_target(mo-update ALL
 		COMMENT "mo-update: Done."
 		DEPENDS ${mo-update-SRC}
-	)
-
-	set_directory_properties(properties 
-		ADDITIONAL_MAKE_CLEAN_FILES ${CMAKE_SOURCE_DIR}/po/${LOCALEDIR}
 	)
 
 endif(ENABLENLS)

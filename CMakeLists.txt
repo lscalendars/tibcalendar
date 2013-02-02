@@ -27,7 +27,7 @@ set (tibastro_VERSION_MAJOR 0)
 set (tibastro_VERSION_MINOR 1)
 
 
-include_directories ("${PROJECT_BINARY_DIR}")
+#include_directories ("${PROJECT_BINARY_DIR}")
 include_directories ("${PROJECT_SOURCE_DIR}/libtastro")
 add_subdirectory (libtastro)
 add_subdirectory (cli)
@@ -35,7 +35,7 @@ add_subdirectory (cli)
 # translation options
 if(NOT MSVC)
 # Pot updates don't work at Windows so no reason to even try
-option(ENABLE_POT_UPDATE_TARGET "Enables the tools to update the pot files and manuals. This target has extra dependencies." OFF)
+option(ENABLE_POT_UPDATE_TARGET "Enables the tools to update the pot files and manuals. This target has extra dependencies." ON)
 endif(NOT MSVC)
 option(ENABLENLS "Enable building of translations" ON)
 if (ENABLENLS)
