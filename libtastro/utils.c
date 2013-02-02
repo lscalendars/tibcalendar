@@ -299,6 +299,112 @@ mul_lst_lst ( long int res[5], long int lst1[5], long int lst2[5], long int n0,
     }
 }
 
+/*
+ * A function similar to the previous one, but dividing one list by another
+ * by reducing both to lowest fractional part,
+ * the function supposes n0 and n4 are the same for the two lists
+ * worse case would be to divise 26;59,59,5,4815376 (4815377) by anything, as we have to
+ * first multiply it by n0;0,0,0,0, so this makes 2808327866399 x 2808327866400 (just lower than 2^83)
+ * which is higher than 2^63 -1 = 9223372036854775808... so same comment as previous function!
+ * 
+ * Warning: we assume that n0 is not above 27.
+ *
+ * Warning 2: use with caution, this kind of operation is *never* found in the traditional
+ * calculations!
+ *
+ */
+
+void
+div_lst_lst (long int res[5], long int lst1[5], long int lst2[5], long int n4)
+{
+  long long int lst1_frac, lst2_frac, r;
+  long int tmp;
+  mpz_t gmp_r, gmp_lst2_frac, gmp_lst1_frac, gmp_n4;
+
+  // now we have to decide if we can work with long long int or if we need to use gmp
+  if (n4 < 5206)		// in the case of div_lst_lst, it might be a bit more... but it's not important...
+    {
+      lst1_frac = (long long int) lst1[4]
+	+ (long long int) n4 *(long long int) lst1[3]
+	+ 6LL * (long long int) n4 *(long long int) lst1[2]
+	+ 60LL * 6LL * (long long int) n4 *(long long int) lst1[1]
+	+ 60LL * 60LL * 6LL * (long long int) n4 *(long long int) lst1[0];
+
+      // we compute lst2_frac to check division by 0
+      lst2_frac = (long long int) lst2[4]
+	+ (long long int) n4 *(long long int) lst2[3]
+	+ 6LL * (long long int) n4 *(long long int) lst2[2]
+	+ 60LL * 6LL * (long long int) n4 *(long long int) lst2[1]
+	+ 60LL * 60LL * 6LL * (long long int) n4 *(long long int) lst2[0];
+
+      if (lst2_frac == 0)
+	{
+	  printf ("error: division by 0 in div_lst_lst\n");
+	  return;
+	}
+
+      // now we have to multiply by the factor for the lowest fractional part: to take the
+      // same example as above, 2,3 / 3,2 : 23/32 = 0 (we work only with integers here!), which is not
+      // really helpful... if we first multiply by 10: 230/32 = 7, so it makes 0,7
+      r = lst1_frac * 6LL * 60LL * 60LL * ((long long int) n4);
+
+      // now we divide
+      r = r / lst2_frac;
+
+      res[4] = (long int) (r % ((long long int) n4));
+      r = r / ((long long int) n4);
+      res[3] = (long int) (r % (6LL));
+      r = r / (6LL);
+      res[2] = (long int) (r % (60LL));
+      r = r / (60LL);
+      res[1] = (long int) (r % (60LL));
+      res[0] = ((long int) r / (60L));	// with division, it's not necessary to % by n0
+    }
+  else
+    {
+      // beginning is the same as mul_lst_lst
+      mpz_init_set_ui (gmp_n4, (unsigned long int) n4);
+      mpz_init2 (gmp_lst1_frac, 42);
+      mpz_init2 (gmp_lst2_frac, 42);
+      mpz_init2 (gmp_r, 83);
+      tmp =
+	lst1[3] + 6L * lst1[2] + 60L * 6L * lst1[1] +
+	60L * 60L * 6L * lst1[0];
+      mpz_set_si (gmp_lst1_frac, tmp);
+      mpz_mul (gmp_lst1_frac, gmp_lst1_frac, gmp_n4);
+      mpz_add_ui (gmp_lst1_frac, gmp_lst1_frac, (unsigned long int) lst1[4]);
+      tmp =
+	lst2[3] + 6L * lst2[2] + 60L * 6L * lst2[1] +
+	60L * 60L * 6L * lst2[0];
+      mpz_set_si (gmp_lst2_frac, tmp);
+      mpz_mul (gmp_lst2_frac, gmp_lst2_frac, gmp_n4);
+      mpz_add_ui (gmp_lst2_frac, gmp_lst2_frac, (unsigned long int) lst2[4]);
+      // checking division by 0:
+      if (mpz_cmp_si (gmp_lst2_frac, 0L) == 0)
+	{
+	  printf ("error: division by 0 in div_lst_lst\n");
+	  return;
+	}
+      // now gmp_lst1 and gmp_lst2 are set, we multiply gmp_lst1_frac by 60*60*6*n4
+      mpz_mul_ui (gmp_r, gmp_lst1_frac, 6L * 60L * 60L);
+      mpz_mul (gmp_r, gmp_r, gmp_n4);
+      // and we divide
+      mpz_div (gmp_r, gmp_r, gmp_lst2_frac);
+      // now we set res[4], using gmp_lst1 as temporary value
+      mpz_fdiv_qr (gmp_r, gmp_lst1_frac, gmp_r, gmp_n4);
+      //gmp_r is quotient and gmp_lst1 is mod
+      res[4] = mpz_get_si (gmp_lst1_frac);
+      // max value is now 27*60*60*6 = 583200 < 2^32, so we can safely come back to just long ints!
+      tmp = mpz_get_si (gmp_r);
+      res[3] = tmp % 6L;
+      tmp = tmp / 6L;
+      res[2] = tmp % 60L;
+      tmp = tmp / 60L;
+      res[1] = tmp % 60L;
+      res[0] = (tmp / 60L);	// we don't have to %n0 as we already have mod by a full circle
+    }
+}
+
 /* 
  * function adding two lists of 5 integers:
  *  a1 = a2 + a3

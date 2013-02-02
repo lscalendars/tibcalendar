@@ -34,6 +34,7 @@ void mul_lst ( long int res[5], long int lst[5], long int x, long int n0,
                long int n4 );
 void mul_lst_lst ( long int res[5], long int lst1[5], long int lst2[5], long int n0,
                long int n4, unsigned char flag);
+void div_lst_lst ( long int res[5], long int lst1[5], long int lst2[5], long int n4);
 void add_lst ( long int a1[5], long int a2[5], long int a3[5], long int n0,
                long int n4);
 void sub_lst ( long int a1[5], long int a2[5], long int a3[5], long int n0,
