@@ -34,7 +34,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "astrology.h"
 #include<jd.h>
 #include<tbday.h>
-#include<tbcal.h>
 #include "printcalendar.h"
 
 int

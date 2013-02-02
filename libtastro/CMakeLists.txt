@@ -18,4 +18,3 @@ add_library(
 	tbstructures.c
 	tbstructures.h
 	)
-    
