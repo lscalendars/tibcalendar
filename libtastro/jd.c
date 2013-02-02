@@ -35,15 +35,16 @@ wd_to_jd (int day, int month, int year)
 // In change from Julian to Gregorian calendars, in 1582, Oct 4th was followed
 // by Oct 15th
 
-  if (year>1582 || (year==1582 && (month > 10 || (month ==10 && day >=15))))
+  if (year > 1582
+      || (year == 1582 && (month > 10 || (month == 10 && day >= 15))))
     {
       // - the following is from ESAA, 1992, p. 604.
       return (long int) day +
 	(1461L * ((long int) year + 4800L + ((long int) month - 14L) / 12L)) /
 	4L + (367L * ((long int) month - 2L -
-	  12L * (((long int) month - 14L) / 12L))) / 12L -
+		      12L * (((long int) month - 14L) / 12L))) / 12L -
 	(3L * (((long int) year + 4900L +
-	   ((long int) month - 14) / 12L) / 100L)) / 4L - 32075L;
+		((long int) month - 14) / 12L) / 100L)) / 4L - 32075L;
     }
   else				// Julian:
     {
@@ -55,7 +56,8 @@ wd_to_jd (int day, int month, int year)
 }
 
 // takes a julian day and returns the day of week
-int jd_to_dow(long int jd)
+int
+jd_to_dow (long int jd)
 {
   int doweek = (int) (jd - 7L * ((jd + 1L) / 7L) + 2L);
   if (doweek == 7)
@@ -78,15 +80,15 @@ jd_to_wd (long int jd, int *day, int *month, int *year, int *dow)
 // by Oct 15th
 
 // First, get day of week:
-  *dow = jd_to_dow(jd);
+  *dow = jd_to_dow (jd);
 
   if (jd >= 2299161L)		// Gregorian calendar:
     {
-    // This has been tested between March 1, 1600 and Jan 31, 2100
+      // This has been tested between March 1, 1600 and Jan 31, 2100
       l = jd + 68569L;
       n = (4L * l) / 146097L;
       l = l - (146097L * n + 3L) / 4L;
-      
+
       // maximum value for l : 2305843009213693, which will be after the death of the sun...
       wy = (long int) (4000LL * ((long long int) l + 1LL) / 1461001LL);
 

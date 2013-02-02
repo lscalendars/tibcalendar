@@ -22,63 +22,66 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE S
 OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ************************************************************************************/
 
-#include <stdio.h> // for printf, currently used for errors, but should be changed...
+#include <stdio.h>		// for printf, currently used for errors, but should be changed...
 #include "tbday.h"
 #include "tbmonth.h"
 #include "utils.h"
 #include "jd.h"			// for jd_to_wd
-#include "system.h" // for epoch
+#include "system.h"		// for epoch
 #include "tbstructures.h"
-#include "astrology.h" // when we want a next day or month, we need to update the astrology linked to it if any
+#include "astrology.h"		// when we want a next day or month, we need to update the astrology linked to it if any
 
 /* Function giving informations on the next month of a given tib_month */
 // it supposes that month->type and month->asked_month is well filled
 void
-tib_month_next (tib_month* month, astro_system *asys)
+tib_month_next (tib_month * month, astro_system * asys)
 {
   long int adj_mth;
-  if ( !month->zero_month_flag )   // if zeromthfg == 1, we just call adj_zla for a second time with the same values, else:
-      {
+  if (!month->zero_month_flag)	// if zeromthfg == 1, we just call adj_zla for a second time with the same values, else:
+    {
       next_zla_dag (month->true_month);
-            // when we've reached the last month, month->asked_month should return to 1
+      // when we've reached the last month, month->asked_month should return to 1
       if (month->month == 12 && month->type != FIRST_OF_DOUBLE)
-        {
-        // a bit subtle: if it's the last month of year:
-        //   - if asked_month = 12, then it should be 1
-        //   - if asked_month = 13, this means that the adjusted month will be asked_month -1
-        //     and thus if we call adj_zla with asked_month = 1, the result will be 12 and thus an
-        //     an infinite loop, so it should be 2
-        month->asked_month = month->asked_month - 11; 
-          }
+	{
+	  // a bit subtle: if it's the last month of year:
+	  //   - if asked_month = 12, then it should be 1
+	  //   - if asked_month = 13, this means that the adjusted month will be asked_month -1
+	  //     and thus if we call adj_zla with asked_month = 1, the result will be 12 and thus an
+	  //     an infinite loop, so it should be 2
+	  month->asked_month = month->asked_month - 11;
+	}
       else
-        {
-        month->asked_month = (month->asked_month + 1);
-        if (month->asked_month == 15)
-          month->asked_month = 1;
-        }
-      }
-  adj_mth = adj_zla (month->asked_month, month->true_month, &(month->zero_month_flag), asys);
-  get_month_data (asys, month->true_month[0], month->rilcha, month->nyidru, month->gzadru);
+	{
+	  month->asked_month = (month->asked_month + 1);
+	  if (month->asked_month == 15)
+	    month->asked_month = 1;
+	}
+    }
+  adj_mth =
+    adj_zla (month->asked_month, month->true_month, &(month->zero_month_flag),
+	     asys);
+  get_month_data (asys, month->true_month[0], month->rilcha, month->nyidru,
+		  month->gzadru);
   if (month->type == SECOND_OF_DOUBLE)
-      month->type = NORMAL;
+    month->type = NORMAL;
   if (month->type == FIRST_OF_DOUBLE)
-      month->type = SECOND_OF_DOUBLE;
+    month->type = SECOND_OF_DOUBLE;
   if (adj_mth < 0L)
     {
       month->type = FIRST_OF_DOUBLE;
       month->month = -adj_mth;
     }
   else
-     month->month = adj_mth;
-  if (month->month == 1 && month->type != SECOND_OF_DOUBLE)  // new year
+    month->month = adj_mth;
+  if (month->month == 1 && month->type != SECOND_OF_DOUBLE)	// new year
     {
-    month->year->year = month->year->year + 1;
-    if (month->year->astro_data)
-      get_year_astro_data(month->year);
+      month->year->year = month->year->year + 1;
+      if (month->year->astro_data)
+	get_year_astro_data (month->year);
     }
- // finally, we update the astrology linked to it, if any
- if (month->astro_data)
-   get_month_astro_data(month, asys);
+  // finally, we update the astrology linked to it, if any
+  if (month->astro_data)
+    get_month_astro_data (month, asys);
 }
 
 /* Function to calculate true month, "zla ba rnam par dag pa" from a tibetan date
@@ -94,7 +97,7 @@ tib_month_next (tib_month* month, astro_system *asys)
  * operation is first getting M, then M*1;2 + 0;55 (65)
  */
 void
-zla_dag (const epoch *epch, long int y, long int m, long int zd[2])
+zla_dag (const epoch * epch, long int y, long int m, long int zd[2])
 {
   long int yr, a, b;
   yr = y - epch->year;
@@ -111,7 +114,7 @@ next_zla_dag (long int zd[2])
   //equivalent to add_lst_2(zd[2], {1,2}, 65);
   long int r = zd[1] + 2;
   zd[1] = r % 65;
-  zd[0] = zd[0] + 1 + r/65;
+  zd[0] = zd[0] + 1 + r / 65;
 }
 
 /* In the following functions, some variable represent always the same things:
@@ -174,7 +177,7 @@ tm here is precisely month->expected month
  */
 long int
 complex_adj_zla (long int tm, long int zd[2], long int zlasho,
-		unsigned char *zeromthfg)
+		 unsigned char *zeromthfg)
 {
   long int adj_mth;
   if (zd[1] == zlasho || zd[1] == zlasho + 1)
@@ -208,46 +211,46 @@ complex_adj_zla (long int tm, long int zd[2], long int zlasho,
 		}
 	    }
 	  else			// Arrive here if 1 < zladag[1] < zlasho
-	      adj_mth = tm;
+	    adj_mth = tm;
 	}
     }
-	  if (adj_mth == 0)
-	      adj_mth = 12;
+  if (adj_mth == 0)
+    adj_mth = 12;
   return adj_mth;
 }
 
 /* This is a more simple function, used in Tsurphu
  */
 long int
-simple_adj_zla (long int tm, long int zd[2],
-		unsigned char *zeromthfg)
+simple_adj_zla (long int tm, long int zd[2], unsigned char *zeromthfg)
 {
-      if ( zd[1] == 0 || zd[1] == 1 )
-      {
-         if (!*zeromthfg)
-          {
-           *zeromthfg = 1;
-            zd[0] = zd[0] - 1;
-            return -tm;
-          }
-        else
-          {
-            *zeromthfg = 0;
-            zd[0] = zd[0] + 1;
-          }
-      }
+  if (zd[1] == 0 || zd[1] == 1)
+    {
+      if (!*zeromthfg)
+	{
+	  *zeromthfg = 1;
+	  zd[0] = zd[0] - 1;
+	  return -tm;
+	}
+      else
+	{
+	  *zeromthfg = 0;
+	  zd[0] = zd[0] + 1;
+	}
+    }
   return tm;
 }
 
 /* Chapeau function to call the above two (TODO: should be moved elsewhere later maybe) */
 // do not forget this can modify zd[0]
-long int adj_zla (long int tm, long int zd[2],
-		unsigned char *zeromthfg, astro_system *sys)
+long int
+adj_zla (long int tm, long int zd[2],
+	 unsigned char *zeromthfg, astro_system * sys)
 {
-	    if (sys->zlasho != -1)
-        return complex_adj_zla (tm, zd, sys->zlasho, zeromthfg);
-      else
-        return simple_adj_zla (tm, zd, zeromthfg);
+  if (sys->zlasho != -1)
+    return complex_adj_zla (tm, zd, sys->zlasho, zeromthfg);
+  else
+    return simple_adj_zla (tm, zd, zeromthfg);
 }
 
 /*
@@ -269,10 +272,10 @@ long int adj_zla (long int tm, long int zd[2],
  */
 // TODO; modify it to use tib_month_next
 void
-find_month_and_year (long int jd, astro_system *sys, tib_month *month)
+find_month_and_year (long int jd, astro_system * sys, tib_month * month)
 {
-  long int tm, ty, adj_mth, gd, hld_tm; 
-  int wd, wm, wy, wdow; 
+  long int tm, ty, adj_mth, gd, hld_tm;
+  int wd, wm, wy, wdow;
   // a flag to take the zeroth month into account twice
   unsigned char zeromthfg = 0;
   unsigned char done = 0;
@@ -280,7 +283,7 @@ find_month_and_year (long int jd, astro_system *sys, tib_month *month)
   long int nyibar[6] = { 0, 0, 0, 0, 0, 0 };	// mean solar longitude
   long int nyidag[6] = { 0, 0, 0, 0, 0, 0 };	// true solar longitude
   long int gzadag[6] = { 0, 0, 0, 0, 0, 0 };	// true weekday
-  
+
   jd_to_wd (jd, &wd, &wm, &wy, &wdow);
   tm = (long int) wm - 3;
   ty = (long int) wy;
@@ -289,7 +292,7 @@ find_month_and_year (long int jd, astro_system *sys, tib_month *month)
       ty = ty - 1;
       tm = tm + 12;
     }
-  
+
   while (!done)
     {
       if (!zeromthfg)		// We need to use the same data, twice.
@@ -302,8 +305,11 @@ find_month_and_year (long int jd, astro_system *sys, tib_month *month)
 
       // here the lunar day is 0 thus we don't need the corrections that
       // apply to other lunar days (KTC 23).
-      get_month_data (sys, zd[0], month->rilcha, month->nyidru, month->gzadru);
-      gd = get_tt_data (sys, zd[0], month->gzadru, month->nyidru, month->rilcha, 0, nyidag, gzadag, nyibar);
+      get_month_data (sys, zd[0], month->rilcha, month->nyidru,
+		      month->gzadru);
+      gd =
+	get_tt_data (sys, zd[0], month->gzadru, month->nyidru, month->rilcha,
+		     0, nyidag, gzadag, nyibar);
 
       // Now, have we gone far enough? We first find the true new Moon date 
       // immediately after or equal to our target date (only for coming back
@@ -313,7 +319,7 @@ find_month_and_year (long int jd, astro_system *sys, tib_month *month)
       else
 	{
 	  month->year->year = ty;
-    hld_tm = tm;
+	  hld_tm = tm;
 	  month->month = adj_mth;
 	  month->true_month[0] = zd[0];
 	  month->true_month[1] = zd[1];
@@ -331,17 +337,23 @@ find_month_and_year (long int jd, astro_system *sys, tib_month *month)
   // adjusting the year so that it is really the tibetan year
   if (month->month == 12 && hld_tm == 1)
     month->year->year = month->year->year - 1;
-  if ( month->month < 0L ) // Intercalary
+  if (month->month < 0L)	// Intercalary
     {
       month->type = FIRST_OF_DOUBLE;
       month->month = -month->month;
     }
   // TODO: review the code, see if it should be done with zermomthfg...
   // for the Phugpa system, delayed month are month with zd[1] equal to 50 or 51, for tsurphu it's 0 or 1
-  else if ((sys->zlasho != -1 && (month->true_month[1] == (sys->zlasho) + 2 || month->true_month[1] == (sys->zlasho) + 3 ) ) || (sys->zlasho == -1 && (month->true_month[1] == 0 || month->true_month[1] == 1 ) ))
+  else
+    if ((sys->zlasho != -1
+	 && (month->true_month[1] == (sys->zlasho) + 2
+	     || month->true_month[1] == (sys->zlasho) + 3))
+	|| (sys->zlasho == -1
+	    && (month->true_month[1] == 0 || month->true_month[1] == 1)))
     month->type = SECOND_OF_DOUBLE;
   // we need to get the rilcha, nyidru and gzadru for the month
-  get_month_data (sys, month->true_month[0], month->rilcha, month->nyidru, month->gzadru);
+  get_month_data (sys, month->true_month[0], month->rilcha, month->nyidru,
+		  month->gzadru);
 }
 
 /* Function to calculate month mean Sun, "nyi ma'i dhru ba" at new moon
@@ -350,10 +362,11 @@ find_month_and_year (long int jd, astro_system *sys, tib_month *month)
  * See KTC p. 21 for details
  */
 void
-get_month_data (astro_system *asys, long int zd0, long int rilcha[2], long int nyidru[6], long int gzadru[6])
+get_month_data (astro_system * asys, long int zd0, long int rilcha[2],
+		long int nyidru[6], long int gzadru[6])
 {
   long int a, b;
-  static long int gza_drup_const[5] = { 1, 31, 50, 0, 480 } ;
+  static long int gza_drup_const[5] = { 1, 31, 50, 0, 480 };
   // first we compute rilcha
   b = zd0 + asys->epoch->ril_b;
   a = 2 * zd0 + asys->epoch->ril_a + b / 126;

@@ -26,9 +26,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <stdlib.h>
 #include <string.h>
 #include "system-priv.h"
-#include "utils.h" // for copy_list
+#include "utils.h"		// for copy_list
 
-astro_system *new_system()
+astro_system *
+new_system ()
 {
   astro_system *sys = malloc (sizeof (astro_system));
   //epoch *epch = malloc (sizeof (epoch));

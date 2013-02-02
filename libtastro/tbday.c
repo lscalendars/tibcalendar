@@ -22,14 +22,14 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE S
 OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ************************************************************************************/
 
-#include <stdio.h> // for printf, currently used for errors, but should be changed...
+#include <stdio.h>		// for printf, currently used for errors, but should be changed...
 #include "tbday.h"
 #include "tbmonth.h"
 #include "utils.h"
 #include "jd.h"			// for jd_to_wd
-#include "system.h" // for epoch
+#include "system.h"		// for epoch
 #include "tbstructures.h"
-#include "astrology.h" // when we want a next day or month, we need to update the astrology linked to it if any
+#include "astrology.h"		// when we want a next day or month, we need to update the astrology linked to it if any
 
 /* Function returning the tib_day of a given tibetan date:
  * inputs:
@@ -40,67 +40,72 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  * Warning: this function can return an ommited day, in this case, you can call get_next_day
  */
-tib_day*
-get_tib_day_from_tib_date (int y, int m, int d, astro_system *asys, unsigned char m_f_o_s, unsigned char d_f_o_s)
- {
+tib_day *
+get_tib_day_from_tib_date (int y, int m, int d, astro_system * asys,
+			   unsigned char m_f_o_s, unsigned char d_f_o_s)
+{
   tib_day *td;
   tib_month *month;
- long int tt, ty, tm; // not necessary but make the code much clearer
- unsigned char zeromthfg; // just to record the zeromonthflag
- long int adj_mth;
- long int prv_gd, nxt_gd, prv2_gd;
- long int zd0rec; // used to cancel the potential effects on zd[0] of adj_zla
+  long int tt, ty, tm;		// not necessary but make the code much clearer
+  unsigned char zeromthfg;	// just to record the zeromonthflag
+  long int adj_mth;
+  long int prv_gd, nxt_gd, prv2_gd;
+  long int zd0rec;		// used to cancel the potential effects on zd[0] of adj_zla
   long int nyibar[6] = { 0, 0, 0, 0, 0, 0 };	// mean solar longitude
   long int nyidag[6] = { 0, 0, 0, 0, 0, 0 };	// true solar longitude
   long int gzadag[6] = { 0, 0, 0, 0, 0, 0 };	// true weekday
-  
-td = new_tib_day();
-month = td->month; // TODO: remove?
+
+  td = new_tib_day ();
+  month = td->month;		// TODO: remove?
 // this is always true
-month->year->year = (long int) y;
-month->month = (long int) m;
-td->tt = d;
-ty = (long int) y;
-tm = (long int) m;
-tt = (long int) d;
- /*    Finding the month   */
- // the idea here is to get the data for 1 month of the year, directly in Tibetan date, not passing
- // through julian date
+  month->year->year = (long int) y;
+  month->month = (long int) m;
+  td->tt = d;
+  ty = (long int) y;
+  tm = (long int) m;
+  tt = (long int) d;
+  /*    Finding the month   */
+  // the idea here is to get the data for 1 month of the year, directly in Tibetan date, not passing
+  // through julian date
 // so first we get the true month for this month:
-zla_dag (asys->epoch, ty, tm, month->true_month);
-zd0rec = month->true_month[0]; // we remember the true month main part
-zeromthfg = month->zero_month_flag;
+  zla_dag (asys->epoch, ty, tm, month->true_month);
+  zd0rec = month->true_month[0];	// we remember the true month main part
+  zeromthfg = month->zero_month_flag;
 // we adjust the month:
-adj_mth = adj_zla (tm, month->true_month, &(month->zero_month_flag), asys);
+  adj_mth = adj_zla (tm, month->true_month, &(month->zero_month_flag), asys);
 // now zd is set, we check if there are some subltelties with double month
 // if adj_mth is the month before the one we are looking for, we take the following one
-if ( adj_mth == tm -1 || (tm ==1L && adj_mth == 12L) )
-      {
-          if (!zeromthfg)
-          {
-          tm = tm + 1;
-          next_zla_dag(month->true_month);
-          }
-          adj_mth = adj_zla (tm, month->true_month, &(month->zero_month_flag), asys);
-      }
-month->asked_month = tm; // TODO: test...
-    // if we are at the first month of a double month, we cancel the changes brought by adj_mth because we are not yet in a loop
-    if ( adj_mth == -month->month && m_f_o_s == FIRST) // no else before the if, who knows...
-      {
-        month->true_month[0] = zd0rec;
-        month->zero_month_flag = zeromthfg;
-        month->type = FIRST_OF_DOUBLE;
-      }
-      else if ( adj_mth == -month->month && m_f_o_s == SECOND)
-       {
-       month->type = SECOND_OF_DOUBLE; // TODO: test if something else is needed
-       }
-      // now we can fill a few more fields
-	   get_month_data (asys, month->true_month[0], month->rilcha, month->nyidru, month->gzadru);
-     // Test the day loop for Phugpa 1/1/1977: first day is ommited
-    // now we look for the day
-     td->gd = get_tt_data (asys, month->true_month[0], month->gzadru, month->nyidru, month->rilcha, tt, td->nyidag, td->gzadag, td->nyibar);
-     // we have our day
+  if (adj_mth == tm - 1 || (tm == 1L && adj_mth == 12L))
+    {
+      if (!zeromthfg)
+	{
+	  tm = tm + 1;
+	  next_zla_dag (month->true_month);
+	}
+      adj_mth =
+	adj_zla (tm, month->true_month, &(month->zero_month_flag), asys);
+    }
+  month->asked_month = tm;	// TODO: test...
+  // if we are at the first month of a double month, we cancel the changes brought by adj_mth because we are not yet in a loop
+  if (adj_mth == -month->month && m_f_o_s == FIRST)	// no else before the if, who knows...
+    {
+      month->true_month[0] = zd0rec;
+      month->zero_month_flag = zeromthfg;
+      month->type = FIRST_OF_DOUBLE;
+    }
+  else if (adj_mth == -month->month && m_f_o_s == SECOND)
+    {
+      month->type = SECOND_OF_DOUBLE;	// TODO: test if something else is needed
+    }
+  // now we can fill a few more fields
+  get_month_data (asys, month->true_month[0], month->rilcha, month->nyidru,
+		  month->gzadru);
+  // Test the day loop for Phugpa 1/1/1977: first day is ommited
+  // now we look for the day
+  td->gd =
+    get_tt_data (asys, month->true_month[0], month->gzadru, month->nyidru,
+		 month->rilcha, tt, td->nyidag, td->gzadag, td->nyibar);
+  // we have our day
   // td->ommited and td->duplicated are the only variables that are not set, we
   // must give them a default value
   td->ommited = NORMAL;
@@ -108,36 +113,48 @@ month->asked_month = tm; // TODO: test...
 // We now have data for the current lunar day and both the one before and following.    
 // we can set the type of day
 // we can compute for the previous lunar day even if tt = 1 (cf. KTC23 ?)
-  prv_gd = get_tt_data (asys, month->true_month[0], month->gzadru, month->nyidru, month->rilcha, tt-1L, nyidag, gzadag, nyibar);
+  prv_gd =
+    get_tt_data (asys, month->true_month[0], month->gzadru, month->nyidru,
+		 month->rilcha, tt - 1L, nyidag, gzadag, nyibar);
   // we compute nxt_gd if the next lunar day is in the same month
   if (tt < 30L)
-  nxt_gd = get_tt_data (asys, month->true_month[0], month->gzadru, month->nyidru, month->rilcha, tt+1L, nyidag, gzadag, nyibar);
+    nxt_gd =
+      get_tt_data (asys, month->true_month[0], month->gzadru, month->nyidru,
+		   month->rilcha, tt + 1L, nyidag, gzadag, nyibar);
   else
-  nxt_gd = 0L;
+    nxt_gd = 0L;
   // we compute prv2_gd if tt>1, otherwise it would change the month
-  if (tt >1L)
-    prv2_gd = get_tt_data (asys, month->true_month[0], month->gzadru, month->nyidru, month->rilcha, tt-2L, nyidag, gzadag, nyibar);
+  if (tt > 1L)
+    prv2_gd =
+      get_tt_data (asys, month->true_month[0], month->gzadru, month->nyidru,
+		   month->rilcha, tt - 2L, nyidag, gzadag, nyibar);
   else
     prv2_gd = 0L;
-  if (prv_gd == td->gd) // means that the lunar date is ommited, we go to the next one
+  if (prv_gd == td->gd)		// means that the lunar date is ommited, we go to the next one
     {
-      td->ommited=OMMITED; // TODO: in this case, what should be td->gd?
+      td->ommited = OMMITED;	// TODO: in this case, what should be td->gd?
     }
-  else if (td->gd - prv_gd == 2) // means that the lunar date is duplicated
-   {
-   if (d_f_o_s == FIRST)
-   {
-   // in case we take the first one:
-   td->duplicated=FIRST_OF_DUPLICATED;
-   //TODO: useful? should be moved to the printing function?
-   td->gzadag[0] = (td->gzadag[0]+6)%7;
-   td->gzadag[1] = 60L; td->gzadag[2] = 0L; td->gzadag[3] = 0L; td->gzadag[4] = 0L; td->gzadag[5] = 0L;
-   td->gd = td->gd - 1; //TODO: ?
-   } else { //d_f_o_s == SECOND
-   td->duplicated=SECOND_OF_DUPLICATED;
-   } 
-   }
-  if (nxt_gd && nxt_gd == td->gd)		// Few tested, all working properly
+  else if (td->gd - prv_gd == 2)	// means that the lunar date is duplicated
+    {
+      if (d_f_o_s == FIRST)
+	{
+	  // in case we take the first one:
+	  td->duplicated = FIRST_OF_DUPLICATED;
+	  //TODO: useful? should be moved to the printing function?
+	  td->gzadag[0] = (td->gzadag[0] + 6) % 7;
+	  td->gzadag[1] = 60L;
+	  td->gzadag[2] = 0L;
+	  td->gzadag[3] = 0L;
+	  td->gzadag[4] = 0L;
+	  td->gzadag[5] = 0L;
+	  td->gd = td->gd - 1;	//TODO: ?
+	}
+      else
+	{			//d_f_o_s == SECOND
+	  td->duplicated = SECOND_OF_DUPLICATED;
+	}
+    }
+  if (nxt_gd && nxt_gd == td->gd)	// Few tested, all working properly
     {
       td->ommited = NEXT_OMMITED;
     }
@@ -145,15 +162,16 @@ month->asked_month = tm; // TODO: test...
     {
       td->ommited = PREVIOUS_OMMITED;
     }
-    return td;
- }
+  return td;
+}
 
 // a function to fill the duplicated and ommited fields of tib_day
 // updateflg is 1 if the fields are correctly set for previous day
 // warning: this function does work only inside a month
 // TODO: do it and use it! it could factorize quite a lot of lines...
 void
-tib_day_find_duplicated_ommited(tib_day *td, astro_system *asys, unsigned char updateflg)
+tib_day_find_duplicated_ommited (tib_day * td, astro_system * asys,
+				 unsigned char updateflg)
 {
 
 }
@@ -164,73 +182,86 @@ tib_day_find_duplicated_ommited(tib_day *td, astro_system *asys, unsigned char u
  * interesting tests: 6/9/1457 : second of duplicated and next is ommited (TODO)
  */
 void
-tib_day_next (tib_day *td, astro_system *asys)
+tib_day_next (tib_day * td, astro_system * asys)
 {
-  long int prv_gd, nxt_gd=0L;
-    long int nyibar[6] = { 0, 0, 0, 0, 0, 0 };	// mean solar longitude
+  long int prv_gd, nxt_gd = 0L;
+  long int nyibar[6] = { 0, 0, 0, 0, 0, 0 };	// mean solar longitude
   long int nyidag[6] = { 0, 0, 0, 0, 0, 0 };	// true solar longitude
   long int gzadag[6] = { 0, 0, 0, 0, 0, 0 };	// true weekday
   if (td->duplicated == FIRST_OF_DUPLICATED)
-      {
-       // if we want day after a first of duplicated, almost nothing change:
-       td->duplicated = SECOND_OF_DUPLICATED;
-       // we have to recompute gzadag
-       // TODO: this could be optimized a lot!
-       td->gd = get_tt_data (asys, td->month->true_month[0], td->month->gzadru, td->month->nyidru, td->month->rilcha, td->tt, td->nyidag, td->gzadag, td->nyibar);
-       if (td->astro_data)
-          get_day_astro_data(td, asys, 1);
-       //if (td->planet_data)
-        //  get_day_planet_data(td, asys); TODO: uncomment when it's good
-       return;
-       }
-       td->duplicated = NORMAL; // if we were on a second of duplicated, we just cancel td->duplicated
-  switch(td->ommited)
-  {
-    case NEXT_OMMITED: // this can never happen on 30th
-       td->ommited = OMMITED;
-       td->tt = td->tt+1;
-       if (td->astro_data)
-          get_day_astro_data(td, asys, 1);
-       return;
-       break;
+    {
+      // if we want day after a first of duplicated, almost nothing change:
+      td->duplicated = SECOND_OF_DUPLICATED;
+      // we have to recompute gzadag
+      // TODO: this could be optimized a lot!
+      td->gd =
+	get_tt_data (asys, td->month->true_month[0], td->month->gzadru,
+		     td->month->nyidru, td->month->rilcha, td->tt, td->nyidag,
+		     td->gzadag, td->nyibar);
+      if (td->astro_data)
+	get_day_astro_data (td, asys, 1);
+      //if (td->planet_data)
+      //  get_day_planet_data(td, asys); TODO: uncomment when it's good
+      return;
+    }
+  td->duplicated = NORMAL;	// if we were on a second of duplicated, we just cancel td->duplicated
+  switch (td->ommited)
+    {
+    case NEXT_OMMITED:		// this can never happen on 30th
+      td->ommited = OMMITED;
+      td->tt = td->tt + 1;
+      if (td->astro_data)
+	get_day_astro_data (td, asys, 1);
+      return;
+      break;
     case OMMITED:
-       td->ommited = PREVIOUS_OMMITED;
-       break;
+      td->ommited = PREVIOUS_OMMITED;
+      break;
     default:
       td->ommited = NORMAL;
       break;
-  }
+    }
   // now ommited and duplicated are set for what concerns the day before
   // and we compute things thinking we are already on the next day
   // if we are the second of a duplicated day, the tt doesn't change, else yes
-       td->tt = td->tt+1;
-       if (td->tt > 30)
-         {
-           tib_month_next(td->month, asys);
-           td->tt = 1;
-         }
+  td->tt = td->tt + 1;
+  if (td->tt > 30)
+    {
+      tib_month_next (td->month, asys);
+      td->tt = 1;
+    }
 
-          prv_gd = td->gd; // we set prv_gd in all cases (think about a duplicated 1st lunar date
-  
-  td->gd = get_tt_data (asys, td->month->true_month[0], td->month->gzadru, td->month->nyidru, td->month->rilcha, td->tt, td->nyidag, td->gzadag, td->nyibar);
-    if(prv_gd == td->gd)
-     td->ommited = OMMITED;
+  prv_gd = td->gd;		// we set prv_gd in all cases (think about a duplicated 1st lunar date
+
+  td->gd =
+    get_tt_data (asys, td->month->true_month[0], td->month->gzadru,
+		 td->month->nyidru, td->month->rilcha, td->tt, td->nyidag,
+		 td->gzadag, td->nyibar);
+  if (prv_gd == td->gd)
+    td->ommited = OMMITED;
   if (td->tt < 30)
-    nxt_gd = get_tt_data (asys, td->month->true_month[0], td->month->gzadru, td->month->nyidru, td->month->rilcha, td->tt + 1, nyidag, gzadag, nyibar);
-  if (nxt_gd && nxt_gd == td->gd)		// Few tested, all working properly
-      td->ommited = NEXT_OMMITED;
-  if (td->gd - prv_gd == 2) // means that the lunar date is duplicated
-   {
-   // in case we take the first one:
-   td->duplicated=FIRST_OF_DUPLICATED;
-   //TODO: useful? should be moved to the printing function?
-   td->gzadag[0] = (td->gzadag[0]+6)%7;
-   td->gzadag[1] = 60L; td->gzadag[2] = 0L; td->gzadag[3] = 0L; td->gzadag[4] = 0L; td->gzadag[5] = 0L;
-   td->gd = td->gd - 1;
-  }
+    nxt_gd =
+      get_tt_data (asys, td->month->true_month[0], td->month->gzadru,
+		   td->month->nyidru, td->month->rilcha, td->tt + 1, nyidag,
+		   gzadag, nyibar);
+  if (nxt_gd && nxt_gd == td->gd)	// Few tested, all working properly
+    td->ommited = NEXT_OMMITED;
+  if (td->gd - prv_gd == 2)	// means that the lunar date is duplicated
+    {
+      // in case we take the first one:
+      td->duplicated = FIRST_OF_DUPLICATED;
+      //TODO: useful? should be moved to the printing function?
+      td->gzadag[0] = (td->gzadag[0] + 6) % 7;
+      td->gzadag[1] = 60L;
+      td->gzadag[2] = 0L;
+      td->gzadag[3] = 0L;
+      td->gzadag[4] = 0L;
+      td->gzadag[5] = 0L;
+      td->gd = td->gd - 1;
+    }
   // here we consider that astro_data was correctly filled...
   if (td->astro_data)
-    get_day_astro_data(td, asys, 1);
+    get_day_astro_data (td, asys, 1);
 }
 
 
@@ -242,12 +273,12 @@ tib_day_next (tib_day *td, astro_system *asys)
  */
  // TODO: modify it to use tib_day_next
 void
-find_day (tib_day *td, long int jd, astro_system *asys)
+find_day (tib_day * td, long int jd, astro_system * asys)
 {
   // month values
-  long int rilcha[2];	// anomaly
-  long int gzadru[6];	// mean weekday (for the month)
-  long int nyidru[6];	// mean solar longitude (for the month)
+  long int rilcha[2];		// anomaly
+  long int gzadru[6];		// mean weekday (for the month)
+  long int nyidru[6];		// mean solar longitude (for the month)
   // mean values for a tt in the month
   long int nyibar[6] = { 0, 0, 0, 0, 0, 0 };	// mean solar longitude (for a precise tt)
   // true values for a tt in the month
@@ -265,12 +296,13 @@ find_day (tib_day *td, long int jd, astro_system *asys)
 
   // first we copy the values for the month in the values we're using
   // inside this function
-  rilcha[0] = td->month->rilcha[0]; rilcha[1] = td->month->rilcha[1];
-  copy_lst(gzadru, td->month->gzadru);
-  copy_lst(nyidru, td->month->nyidru);
+  rilcha[0] = td->month->rilcha[0];
+  rilcha[1] = td->month->rilcha[1];
+  copy_lst (gzadru, td->month->gzadru);
+  copy_lst (nyidru, td->month->nyidru);
   td->gd =
-    get_tt_data (asys, cur_mth, gzadru, nyidru, rilcha, tt, td->nyidag, td->gzadag,
-		 td->nyibar);
+    get_tt_data (asys, cur_mth, gzadru, nyidru, rilcha, tt, td->nyidag,
+		 td->gzadag, td->nyibar);
   // first loop in order to get gd around jd
   // if gd == jd, it should be a normal day, and if gd == jd + 1, it should be a duplicated day
   while (td->gd != jd && td->gd != jd + 1)
@@ -337,7 +369,7 @@ find_day (tib_day *td, long int jd, astro_system *asys)
       // tt is duplicated
       if (td->gd != jd)
 	{
-	  td->duplicated = FIRST_OF_DUPLICATED; 
+	  td->duplicated = FIRST_OF_DUPLICATED;
 	}
       else
 	{
@@ -352,11 +384,11 @@ find_day (tib_day *td, long int jd, astro_system *asys)
  * tibetan years are numbered like western calendar years
  */
 void
-get_td_from_jd (long int jd, tib_day *td, astro_system *sys)
+get_td_from_jd (long int jd, tib_day * td, astro_system * sys)
 {
   if (jd <= sys->epoch->spz_j)
     {
-      printf("error: day asked is before the epoch...\n");
+      printf ("error: day asked is before the epoch...\n");
       return;
     }
   // first we find the month and year
@@ -379,8 +411,8 @@ unsigned int gza_short_flag = 0;	// TODO: let the user choose if he wants it or 
  */
 void
 nyi_dag_and_gza_dag (long int nyibar[6], long int tsebar[6],
-		       long int rilcha[2], long int tt, long int nyidag[6],
-		       long int gzadag[6], long int sun_f)
+		     long int rilcha[2], long int tt, long int nyidag[6],
+		     long int gzadag[6], long int sun_f)
 {
   long int test, tquo, trem, tot, rilpo;
   long int lista[6] = { 0, 0, 0, 0, 0, 0 };	// four temporary values
@@ -508,7 +540,7 @@ nyi_dag_and_gza_dag (long int nyibar[6], long int tsebar[6],
  *  - spi zag
  */
 int
-get_tt_data (astro_system *asys, long int cur_mth, long int gzadru[6],
+get_tt_data (astro_system * asys, long int cur_mth, long int gzadru[6],
 	     long int nyidru[6], long int rilcha[2], long int tt,
 	     long int nyidag[6], long int gzadag[6], long int nyibar[6])
 {
@@ -528,11 +560,13 @@ get_tt_data (astro_system *asys, long int cur_mth, long int gzadru[6],
       mul_lst (nyilon, asys->nyi_long_const, tt, 27, asys->sun_f);
       add_lst (tsebar, gzadru, tsedru, 7, 707);
       add_lst (nyibar, nyidru, nyilon, 27, asys->sun_f);
-      nyi_dag_and_gza_dag (nyibar, tsebar, rilcha, tt, nyidag, gzadag, asys->sun_f);
+      nyi_dag_and_gza_dag (nyibar, tsebar, rilcha, tt, nyidag, gzadag,
+			   asys->sun_f);
     }
   else
     {
-      nyi_dag_and_gza_dag (nyidru, gzadru, rilcha, 0, nyidag, gzadag, asys->sun_f);
+      nyi_dag_and_gza_dag (nyidru, gzadru, rilcha, 0, nyidag, gzadag,
+			   asys->sun_f);
     }
   return spi_zag (asys->epoch, cur_mth, tt, gzadag[0]);
 }
@@ -550,7 +584,7 @@ get_tt_data (astro_system *asys, long int cur_mth, long int gzadru[6],
  * See KTC 46 for details.
  */
 long int
-spi_zag (epoch *epch, long int cur_mth, long int tt, long int sd)
+spi_zag (epoch * epch, long int cur_mth, long int tt, long int sd)
 {
   long int spizag;		// the result
   long int b, c;		// intermediate values
