@@ -373,126 +373,174 @@ long int nxt_lm, long int monlong1 ) // VKP, 1,148
     if ( *pc2 < 0L )
       *pc2 = *pc2 + 28L;
   }
-//
+*/
+
 
 // This function fills the solar term astrological data for a solar day
 // see KTC p.50
 // In this function we work in dbugs (breath, 21600th of day, see KTC p.12). This is basically the same as working with lists
 // but it enables to multiplies one number by another, which we currently cannot do with lists
-// TODO: convert all in terms of lists, would be clearer, if possible?
-int chk_solar_term (tib_day *td)
-  {
-    long int sundb1, sundb2; // Mean sun at daybreak, begin and end
-    long int sunmid;
-    long int x; //, y;
-    long int s1, r, s2, s2t, s2t1, s2t2, s2t3;
-    long int s2long, s2long1, s2long2, s2long3;
-    long int gzadag = ( td->gzadag[1] * 60L + td->gzadag[2] ) * 6L + td->gzadag[3]; // gzadag (with gzadag[0] = 0) converted in dbugs
-    long int nyibar = (( td->nyibar[0] * 60L + td->nyibar[1] ) * 60L + td->nyibar[2] ) * 6L + td->nyibar[3];
-    
-    td->solar_term = 0; // 0? really?
-    if (td->ommited == OMMITED)
-       return;
-       
-   // For Sherab Ling only, TODO: adapt for other systems
-   // A full year is 365;15,31,1,121 (317)
-   // Each year, mean sun moves 27;0,0,0,0
-   // which makes 27;0,0,0,0 / 365;15,31,1,121 (317) per day
-   // = 0;4,26,0,78348 (115787), a fixed value, put to the factor 4815377
-   // it makes 0;4,26,0,3258355 (4815377)
-   // Now we have to multiply it by something that is maximum 0;59,59,5,4815376.
-   // In order to use mul_lst_lst, we have to compute the maximum intermediate
-   // value and see if it's < 2^63 -1. It's not... so we pass 1...
-    
-   // Each day, mean sun moves 21600/360 = 0;4,26,2 = 1598 dbugs // no
-    // copy_lst(sunmid, nyibar);
-    sunmid = sundb1;
-    // the sun has moved gzadag * 1598 since daybreak // no
-    // we set sundb1 to mean sun longitude at day break of current day
-    sundb1 = nyibar - ( gzadag * 1598L ) / 21600L;
-    sundb2 = sundb1 + 1598L;
+void
+chk_solar_term (tib_day * td, astro_system * asys)
+{
+  /*long int sundb1, sundb2; // Mean sun at daybreak, begin and end
+     long int sunmid;
+     long int x; //, y;
+     long int s1, r, s2, s2t, s2t1, s2t2, s2t3;
+     long int s2long, s2long1, s2long2, s2long3;
+     long int gzadag = ( td->gzadag[1] * 60L + td->gzadag[2] ) * 6L + td->gzadag[3]; // gzadag (with gzadag[0] = 0) converted in dbugs
+     long int nyibar = (( td->nyibar[0] * 60L + td->nyibar[1] ) * 60L + td->nyibar[2] ) * 6L + td->nyibar[3];
+   */
+  long int mdsm[5];		// the mean daily solar motion
+  long int gzadag[5];		// a copy of gzadag, but we set gzadag[0] to 0
+  long int sldb_1[5];		// solar longitude at daybreak
+  long int sldb_2[5];		// solar longitude at daybreak for next day
+  long int sldb_1_db, sldb2_db;	// the same things, but expressed in dbugs (see comment of the function)
 
-// Now, find where we are in solar terms. First is actually 3 sgang:
+//    td->solar_term = 0; // 0? really?
+  if (td->ommited == OMMITED)
+    return;
 
-    if ( sundb1 < 11340L )
-      sundb1 = sundb1 + 583200L;
-    x = sundb1 - 11340L;
-    s1 = x / 24300L;
-    r = x - ( s1 * 24300L );
+  // setting gzadag[0] to 0, so that it represents only the hours
+  // at which the lunar day starts in current solar day
+  // TODO: understand what's going on for first of duplicated days
+  copy_lst (td->gzadag, gzadag);
+  gzadag[0] = 0;
 
-//  printf ( "Term index = %ld, remainder = %ld\n", s1, r );
+  // Algorithm is the following:
+  // 1. get solar longitude at daybreak
+  // 2. get solar longitude at daybreak for next day
+  // 3. get solar terms for each solar longitude, if it is the same, nothing to do
+  // 4. if it is not, do the difference between solar longitude of solar term and solar longitude at daybreak
+  // 5. divide it by the mean solar motion, and get the time of day at which it occurs
 
-// If index is zero and remainder positive, we have passed "3 sgang"
-// It appears that the remainder is never zero.
+  // 1. get solar longitude at daybreak
+  // This is actually *never* done in traditional calculations, as it requires to multiply a list by
+  // another, an operation yet to be found in Tibet... computers can do it though...
+  switch (asys->type)
+    {
+    case SHERAB_LING:
+      // A full year is 365;15,31,1,121 (317)
+      // Each year, mean sun moves 27;0,0,0,0
+      // which makes 27;0,0,0,0 / 365;15,31,1,121 (317) per day
+      // = 0;4,26,0,78348 (115787), a given value, put to the factor 4815377
+      // it makes 0;4,26,0,3258355 (4815377)
+      set_lst (mdsm, 0, 4, 26, 0, 3258355L);
+      break;
+    default:
+      // TODO: adapt to other systems
+      return;
+      break;
+    }
+  // We have the mean solar longitude at beginning of lunar day (nyibar) // TODO: understand why we don't take nyidag!
+  // and we have the hours from daybreak for this longitude (gzadag with gzadag[0] = 0)
+  // so we just have to do nyibar - gzadag * mdsm to get solar longitude at daybreak
+  mul_lst_lst (sldb_1, gzadag, mdsm, 27, asys->sun_f);
+  sub_lst (sldb_1, td->nyibar, sldb_1, 27, asys->sun_f);
+  // now we have solar longitude at daybreak for current day
+  // for next day it should be computed with next day's nyibar, just as we did (TODO!!! think about month change), but 
+  // an approximation is to just add mean daily solar motion
+  add_lst (sldb_2, sldb_1, mdsm, 27, asys->sun_f);
 
-    if ( sundb2 < 11340L )
-      sundb2 = sundb2 + 583200L;
-    x = sundb2 - 11340L;
-    s2 = x / 24300L;
-    r = x - ( s2 * 24300L );
+  // The solar longitude is 1;43,30 before the true one 1;43,30 - 1;7,30 = 0;36,0... no... = 12960
 
-//  printf ( "Second term index = %ld, remainder = %ld\n", s2, r );
+  // now solar terms change every 27;0,0,0,0 / 24 = 1;7,30,0,0, so we can now safely work in dbugs (meaning the first three terms of the lists):
+  // one solar term change is thus 1*60*60 + 7*60 + 30 = 4050
+  // we convert sldb_1 and sldb_2:
+  sldb1_db = sldb_1[0] * 60L * 60L + sldb_1[1] * 60L + sldb_1[2];
+  sldb2_db = sldb_2[0] * 60L * 60L + sldb_2[1] * 60L + sldb_2[2];
 
-// Convert to solar terms, "1 dbugs" = 1, etc.
 
-    s1 = s1 + 6L;
-    if ( s1 > 24L )
-      s1 = s1 - 24L;
-    s2 = s2 + 6L;
-    if ( s2 > 24L )
-      s2 = s2 - 24L;
+  /*
+     // Each day, mean sun moves 21600/360 = 0;4,26,2 = 1598 dbugs // no
+     // copy_lst(sunmid, nyibar);
+     sunmid = sundb1;
+     // the sun has moved gzadag * 1598 since daybreak // no
+     // we set sundb1 to mean sun longitude at day break of current day
+     sundb1 = nyibar - ( gzadag * 1598L ) / 21600L;
+     sundb2 = sundb1 + 1598L;
 
-    if ( s1 == s2 )
-      return (0); // No solar term
+     // Now, find where we are in solar terms. First is actually 3 sgang:
 
-// Now, find the time of the term.
-// between each solar term, 24300 "dbugs"
-// Solar daily motion = 1598 dbugs
+     if ( sundb1 < 11340L )
+     sundb1 = sundb1 + 583200L;
+     x = sundb1 - 11340L;
+     s1 = x / 24300L;
+     r = x - ( s1 * 24300L );
 
-    s2long = ( s2 - 6L ) * 24300L + 11340;
-    if ( s2long < 0L )
-      s2long = s2long + 583200L;
-//  printf ( "Step 1, S2long = %ld\n", s2long );
+     //  printf ( "Term index = %ld, remainder = %ld\n", s1, r );
 
-    if ( s2long < 0L )
-      s2long = s2long + 583200L;
-    else if ( s2 == 1L )
-      s2long = s2long + 583200L;
+     // If index is zero and remainder positive, we have passed "3 sgang"
+     // It appears that the remainder is never zero.
 
-    if ( sundb1 > s2long ) // It must have been incremented, so do the same:
-      s2long = s2long + 583200L;
+     if ( sundb2 < 11340L )
+     sundb2 = sundb2 + 583200L;
+     x = sundb2 - 11340L;
+     s2 = x / 24300L;
+     r = x - ( s2 * 24300L );
 
-    s2t = ( 21600L * ( s2long - sundb1 ))/ 1598L;
-    s2t2 = s2t / 6L;
-    s2t3 = s2t - s2t2 * 6L;
-    s2t1 = s2t2 / 60L;
-    s2t2 = s2t2 - s2t1 * 60L;
+     //  printf ( "Second term index = %ld, remainder = %ld\n", s2, r );
 
-// solar_term_str[60];
+     // Convert to solar terms, "1 dbugs" = 1, etc.
 
-    if ( s2long < 0L )
-      s2long = s2long + 583200L;
-    s2long = ( s2long + 3L ) / 6L;
-    s2long2 = s2long / 60L;
-    s2long3 = s2long % 60L;
-    s2long1 = s2long2 / 60L;
-    s2long2 = s2long2 % 60L;
+     s1 = s1 + 6L;
+     if ( s1 > 24L )
+     s1 = s1 - 24L;
+     s2 = s2 + 6L;
+     if ( s2 > 24L )
+     s2 = s2 - 24L;
 
-    x = ( 1L + s2 ) / 2L;
+     if ( s1 == s2 )
+     return (0); // No solar term
 
-    if ( s2 % 2L ) // If index odd, then "dbugs"
-      {
-        sprintf ( solar_term_str, "%ld,%ld,%ld %ld dbugs %ld;%ld,%ld",
-                  s2t1, s2t2, s2t3, x, s2long1, s2long2, s2long3 );
-      }
-    else // "sgang"
-      {
-        sprintf ( solar_term_str, "%ld,%ld,%ld %ld sgang %ld;%ld,%ld",
-                  s2t1, s2t2, s2t3, x, s2long1, s2long2, s2long3 );
-      }
-    return (1); // solar term found
-  } // chk_solar_term
-*/
+     // Now, find the time of the term.
+     // between each solar term, 24300 "dbugs"
+     // Solar daily motion = 1598 dbugs
+
+     s2long = ( s2 - 6L ) * 24300L + 11340;
+     if ( s2long < 0L )
+     s2long = s2long + 583200L;
+     //  printf ( "Step 1, S2long = %ld\n", s2long );
+
+     if ( s2long < 0L )
+     s2long = s2long + 583200L;
+     else if ( s2 == 1L )
+     s2long = s2long + 583200L;
+
+     if ( sundb1 > s2long ) // It must have been incremented, so do the same:
+     s2long = s2long + 583200L;
+
+     s2t = ( 21600L * ( s2long - sundb1 ))/ 1598L;
+     s2t2 = s2t / 6L;
+     s2t3 = s2t - s2t2 * 6L;
+     s2t1 = s2t2 / 60L;
+     s2t2 = s2t2 - s2t1 * 60L;
+
+     // solar_term_str[60];
+
+     if ( s2long < 0L )
+     s2long = s2long + 583200L;
+     s2long = ( s2long + 3L ) / 6L;
+     s2long2 = s2long / 60L;
+     s2long3 = s2long % 60L;
+     s2long1 = s2long2 / 60L;
+     s2long2 = s2long2 % 60L;
+
+     x = ( 1L + s2 ) / 2L;
+
+     if ( s2 % 2L ) // If index odd, then "dbugs"
+     {
+     sprintf ( solar_term_str, "%ld,%ld,%ld %ld dbugs %ld;%ld,%ld",
+     s2t1, s2t2, s2t3, x, s2long1, s2long2, s2long3 );
+     }
+     else // "sgang"
+     {
+     sprintf ( solar_term_str, "%ld,%ld,%ld %ld sgang %ld;%ld,%ld",
+     s2t1, s2t2, s2t3, x, s2long1, s2long2, s2long3 );
+     }
+     return (1); // solar term found
+   */
+}				// chk_solar_term
 
 
 /*
@@ -529,38 +577,13 @@ check_sadag (unsigned char m, unsigned char t, tib_day_astro_data * tda)
 
 // Now, "zin phung": These data are taken from Mongolian data in VKP2.DOC TODO: ?
   if (((m == 1 || m == 2 || m == 3)
-       && (t == 1 || t == 7 || t == 13 || t == 19 || t == 25)) || ((m == 4
-								    || m == 5
-								    || m == 6)
-								   && (t == 6
-								       || t ==
-								       12
-								       || t ==
-								       18
-								       || t ==
-								       24
-								       || t ==
-								       30))
+       && (t == 1 || t == 7 || t == 13 || t == 19 || t == 25))
+      || ((m == 4 || m == 5 || m == 6)
+	  && (t == 6 || t == 12 || t == 18 || t == 24 || t == 30))
       || ((m == 7 || m == 8 || m == 9)
-	  && (t == 3 || t == 9 || t == 15 || t == 21 || t == 27)) || ((m == 10
-								       || m ==
-								       11
-								       || m ==
-								       12)
-								      && (t ==
-									  4
-									  || t
-									  ==
-									  10
-									  || t
-									  ==
-									  16
-									  || t
-									  ==
-									  22
-									  || t
-									  ==
-									  28)))
+	  && (t == 3 || t == 9 || t == 15 || t == 21 || t == 27))
+      || ((m == 10 || m == 11 || m == 12)
+	  && (t == 4 || t == 10 || t == 16 || t == 22 || t == 28)))
     tda->zph = 1;
 
 // Now, "klu bzlog":
