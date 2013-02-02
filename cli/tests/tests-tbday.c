@@ -48,7 +48,7 @@ check_tibday_phugpa_individuals ()
   int res;
   tib_day *td1 = new_tib_day ();
   tib_day *td2 = new_tib_day ();
-  astro_system *sys = get_astro_system(PHUGPA);
+  astro_system *sys = get_astro_system (PHUGPA);
   res = check_tibday_phugpa_individual (1, 2000487L, td1, td2, sys);
   if (!res)
     {
@@ -65,7 +65,7 @@ check_tibday_phugpa_individuals ()
     }
   free_tib_day (td1);
   free_tib_day (td2);
-  free(sys);
+  free (sys);
   return 1;
 }
 
@@ -74,7 +74,7 @@ check_tibday_phugpa_individuals ()
 // td1 and td2: two tibetan days to play with
 int
 check_tibday_phugpa_individual (int i, long int jd, tib_day * td1,
-				tib_day * td2, astro_system *sys)
+				tib_day * td2, astro_system * sys)
 {
   get_tibday_const (i, td1);
   get_td_from_jd (jd, td2, sys);
@@ -113,8 +113,7 @@ int
 compare_tib_month (tib_month * tm1, tib_month * tm2)
 {
   if (tm1->year->year != tm2->year->year || tm1->month != tm2->month
-      || tm1->type != tm2->type
-      || tm1->start_gd != tm2->start_gd)
+      || tm1->type != tm2->type || tm1->start_gd != tm2->start_gd)
     return 0;
   if (!compare_lst (tm1->rilcha, tm2->rilcha, 2)
       || !compare_lst (tm1->true_month, tm2->true_month, 2)
@@ -147,7 +146,7 @@ get_tibday_const (int i, tib_day * td)
     {
     case 1:
       // 13 january 765: duplicated day followed by ommited day  
-      td->month->year->year = 765; // TODO: fix it!
+      td->month->year->year = 765;	// TODO: fix it!
       td->month->month = 1;
       td->month->type = FIRST_OF_DOUBLE;
       aux_set_lst_2 (td->month->true_month, 21829, 48);
@@ -166,7 +165,7 @@ get_tibday_const (int i, tib_day * td)
       break;
     case 2:
       // 2455738: second of a duplicated day
-      td->month->year->year = 2011; // TODO: fix it!
+      td->month->year->year = 2011;	// TODO: fix it!
       td->month->month = 4;
       aux_set_lst_2 (td->month->true_month, 37245, 60);
       td->month->zero_month_flag = 0;

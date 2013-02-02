@@ -43,100 +43,101 @@ main ()
   tib_day *td;
   astro_system *sys;
   //td = new_tib_day();
-  init_ui();
+  init_ui ();
   //run_tests();
   //get_tpdata(2449719L); // 1/1/1995
   //get_tpdata(2449719L, td);
   //print_tib_day(td);
-  sys = get_astro_system(PHUGPA);
+  sys = get_astro_system (PHUGPA);
   //get_day_data(2449749L, td, sys);
   //print_tib_day(td);
   //free(td);
-  td = get_tib_day_from_tib_date(1977, 1,1, sys, FIRST, FIRST);
-  get_day_astro_data(td, sys, 0);
+  td = get_tib_day_from_tib_date (1977, 1, 1, sys, FIRST, FIRST);
+  get_day_astro_data (td, sys, 0);
   if (!td->month->astro_data)
-    get_month_astro_data(td->month, sys);
+    get_month_astro_data (td->month, sys);
   //print_tib_day_r(td);
-  print_calendar(stdout, 1457, sys);
-  free(sys);
+  print_calendar (stdout, 1457, sys);
+  free (sys);
   //main_menu();
-  end_ui();
+  end_ui ();
   return 0;
 }
 
-void main_menu()
+void
+main_menu ()
 {
   char c;
-  ui_print("\nWelcome in tibastro:\n");
-  ui_print("  1. get tibetan calendar data for a date\n");
-  ui_print("  2. run tests\n");
-  ui_print("  3. exit\n");
+  ui_print ("\nWelcome in tibastro:\n");
+  ui_print ("  1. get tibetan calendar data for a date\n");
+  ui_print ("  2. run tests\n");
+  ui_print ("  3. exit\n");
   c = 0;
-  while (c < '1' || c>'3')
+  while (c < '1' || c > '3')
     {
-      c = ui_getchar();
-      switch(c)
-        {
-          case '1':
-            get_tibdata_for_date();
-            break;
-          case '2':
-            run_tests();
-            break;
-          case '3':
-            return;
-            break;
-          default:
-            break;
-        }
+      c = ui_getchar ();
+      switch (c)
+	{
+	case '1':
+	  get_tibdata_for_date ();
+	  break;
+	case '2':
+	  run_tests ();
+	  break;
+	case '3':
+	  return;
+	  break;
+	default:
+	  break;
+	}
     }
   return;
 }
 
-void run_tests()
+void
+run_tests ()
 {
   int res;
-  res = check_jd();
+  res = check_jd ();
   if (res == 0)
     {
-      ui_print("Tests for julian to western date conversion: FAILED!\n\n");
+      ui_print ("Tests for julian to western date conversion: FAILED!\n\n");
     }
   else
     {
-      ui_print("Tests for julian to western date conversion: OK!\n\n");
+      ui_print ("Tests for julian to western date conversion: OK!\n\n");
     }
-  res = check_tibday();
+  res = check_tibday ();
   if (res == 0)
     {
-      ui_print("Tests for julian to tibetan date conversion: FAILED!\n\n");
+      ui_print ("Tests for julian to tibetan date conversion: FAILED!\n\n");
     }
   else
     {
-      ui_print("Tests for julian to tibetan date conversion: OK!\n\n");
+      ui_print ("Tests for julian to tibetan date conversion: OK!\n\n");
     }
-  main_menu();
+  main_menu ();
   return;
 }
 
-void get_tibdata_for_date()
+void
+get_tibdata_for_date ()
 {
   astro_system *sys;
-  sys = get_astro_system(PHUGPA);
+  sys = get_astro_system (PHUGPA);
   long int day, month, year;
   long int jd;
   tib_day *td;
-  ui_print("Enter western date (dd mm yyyy): ");
+  ui_print ("Enter western date (dd mm yyyy): ");
   scanf ("%ld %ld %ld", &day, &month, &year);
-  ui_print("\n");
-  jd = wd_to_jd(day, month, year);
-  ui_print("jd: %ld\n", jd);
-  td = new_tib_day();
-  get_td_from_jd(jd, td, sys);
-  print_tib_day_r(td);
-  free(td);
-  free(sys);
-  main_menu();
+  ui_print ("\n");
+  jd = wd_to_jd (day, month, year);
+  ui_print ("jd: %ld\n", jd);
+  td = new_tib_day ();
+  get_td_from_jd (jd, td, sys);
+  print_tib_day_r (td);
+  free (td);
+  free (sys);
+  main_menu ();
   return;
 }
-
-
