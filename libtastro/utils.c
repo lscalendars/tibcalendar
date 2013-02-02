@@ -217,85 +217,93 @@ void mul_lst_6 ( long int res[6], long int lst[6], long int x, long int n4,
  * Warning: we assume that n0 is not above 27
  */
 
-void 
-mul_lst_lst ( long int res[5], long int lst1[5], long int lst2[5], long int n0,
-               long int n4, unsigned char flag)
+void
+mul_lst_lst (long int res[5], long int lst1[5], long int lst2[5], long int n0,
+	     long int n4)
 {
-  long long int lst1_frac;
-  long long int r; // a temporary result
+  long long int lst1_frac, r;
   long int tmp;
   mpz_t gmp_r, gmp_lst2_frac, gmp_lst1_frac, gmp_n4;
-  
-  // now we have to decide if we can work with long long int or if we need to use gmp
-    if (n4 < 5206) // sqrt((2^63−1)÷(27×60×60×6)^2) = 5206, the max value authorized if we consider n0 to be 27
-    {
-  // for this, long long int are enough
-  lst1_frac = (long long int) lst1[4] 
-        + (long long int) n4 * (long long int) lst1[3]
-        + 6LL * (long long int) n4 * (long long int) lst1[2]
-        + 60LL * 6LL * (long long int) n4 * (long long int) lst1[1]
-        + 60LL * 60LL * 6LL * (long long int) n4 * (long long int) lst1[0];
 
-  // res is the result, basically it's just lst1_frac * lst2_frac (where lst2_frac is computed
-  // the same way lst1_frac was
-  r =   lst1_frac * ((long long int) lst2[4] 
-        + (long long int) n4 * (long long int) lst2[3]
-        + 6LL * (long long int) n4 * (long long int) lst2[2]
-        + 60LL * 6LL * (long long int) n4 * (long long int) lst2[1]
-        + 60LL * 60LL * 6LL * (long long int) n4 * (long long int) lst2[0]);
-  
-    r = r / (6LL * 60LL * 60LL* (long long int) n4);
-  // now something to be more efficient (we mod by a full circle)
-  r = r % (6LL * 60LL * 60LL* (long long int) n4 * (long long int) n0);
-  
-  res[4] = (long int) (r % ((long long int) n4));
-  r = r / ((long long int) n4 );
-  res[3] = (long int) (r % (6LL));
-  r = r / (6LL);
-  res[2] = (long int) (r % (60LL));
-  r = r / (60LL);
-  res[1] = (long int) (r % (60LL));
-  res[0] = ((long int) r / (60L)) % n0; // we don't need to mod by n0, we already mod by a full circle
-    }
-   else
+  // now we have to decide if we can work with long long int or if we need to use gmp
+  if (n4 < 5206)		// sqrt((2^63−1)÷(27×60×60×6)^2) = 5206, the max value authorized if we consider n0 to be 27
     {
-        // We need to know the highest number of bits, for one value it's 26;59,59,5,4815376 (4815377), lower than 2^42
-      mpz_init_set_ui(gmp_n4, n4);
-      mpz_init2(gmp_lst1_frac, 42);
-      mpz_init2(gmp_lst2_frac, 42);
-      mpz_init2(gmp_r,83); // highest value imaginable is 83 bits long
+      // for this, long long int are enough
+      lst1_frac = (long long int) lst1[4]
+	+ (long long int) n4 *(long long int) lst1[3]
+	+ 6LL * (long long int) n4 *(long long int) lst1[2]
+	+ 60LL * 6LL * (long long int) n4 *(long long int) lst1[1]
+	+ 60LL * 60LL * 6LL * (long long int) n4 *(long long int) lst1[0];
+
+      // res is the result, basically it's just lst1_frac * lst2_frac (where lst2_frac is computed
+      // the same way lst1_frac was
+      r = lst1_frac * ((long long int) lst2[4]
+		       + (long long int) n4 * (long long int) lst2[3]
+		       + 6LL * (long long int) n4 * (long long int) lst2[2]
+		       +
+		       60LL * 6LL * (long long int) n4 *
+		       (long long int) lst2[1] +
+		       60LL * 60LL * 6LL * (long long int) n4 *
+		       (long long int) lst2[0]);
+
+      // as we have mutliplied everything to calculate with lowest fractional part, we have to
+      // divide : for example if, to multiply 2,3 by 3,2 we reduce to 1/10th: 23x32 = 736, we have to 
+      // divide by 100 to get the result! Here it's as if we were first dividing by 10, and then the other
+      // division will be by filling the result list.
+      r = r / (6LL * 60LL * 60LL * (long long int) n4);
+      // now something to be more efficient (we mod by a full circle)
+      r = r % (6LL * 60LL * 60LL * (long long int) n4 * (long long int) n0);
+
+      res[4] = (long int) (r % ((long long int) n4));
+      r = r / ((long long int) n4);
+      res[3] = (long int) (r % (6LL));
+      r = r / (6LL);
+      res[2] = (long int) (r % (60LL));
+      r = r / (60LL);
+      res[1] = (long int) (r % (60LL));
+      res[0] = ((long int) r / (60L));	// we don't need to mod by n0, we already mod by a full circle
+    }
+  else
+    {
+      // We need to know the highest number of bits, for one value it's 26;59,59,5,4815376 (4815377), lower than 2^42
+      mpz_init_set_ui (gmp_n4, (unsigned long int) n4);
+      mpz_init2 (gmp_lst1_frac, 42);
+      mpz_init2 (gmp_lst2_frac, 42);
+      mpz_init2 (gmp_r, 83);	// highest value imaginable is 83 bits long
       // in order to set them to the correct value, we use a shortcut
-      // not that we cannot assign a long long int into a mpz_t
-      tmp = lst1[3] + 6L * lst1[2] + 60L * 6L * lst1[1] + 60L * 60L * 6L  * lst1[0]; // here we can use long, no problem
-      mpz_set_si(gmp_lst1_frac, tmp);
-      mpz_mul(gmp_lst1_frac, gmp_lst1_frac, gmp_n4);
-      mpz_add_ui(gmp_lst1_frac, gmp_lst1_frac, (unsigned long int) lst1[4]);
+      // note that we cannot assign a long long int into a mpz_t
+      tmp = lst1[3] + 6L * lst1[2] + 60L * 6L * lst1[1] + 60L * 60L * 6L * lst1[0];	// here we can use long, no problem
+      mpz_set_si (gmp_lst1_frac, tmp);
+      mpz_mul (gmp_lst1_frac, gmp_lst1_frac, gmp_n4);
+      mpz_add_ui (gmp_lst1_frac, gmp_lst1_frac, (unsigned long int) lst1[4]);
       // now we have gmp_lst1 set, we do the same for gmp_lst2
-      tmp = lst2[3] + 6L * lst2[2] + 60L * 6L * lst2[1] + 60L * 60L * 6L  * lst2[0];
-      mpz_set_si(gmp_lst2_frac, tmp);
-      mpz_mul(gmp_lst2_frac, gmp_lst2_frac, gmp_n4);
-      mpz_add_ui(gmp_lst2_frac, gmp_lst2_frac, (unsigned long int) lst2[4]);
+      tmp =
+	lst2[3] + 6L * lst2[2] + 60L * 6L * lst2[1] +
+	60L * 60L * 6L * lst2[0];
+      mpz_set_si (gmp_lst2_frac, tmp);
+      mpz_mul (gmp_lst2_frac, gmp_lst2_frac, gmp_n4);
+      mpz_add_ui (gmp_lst2_frac, gmp_lst2_frac, (unsigned long int) lst2[4]);
       // now gmp_lst1 and gmp_lst2 are set, we multiply them
       mpz_mul (gmp_r, gmp_lst1_frac, gmp_lst2_frac);
       // we divide by the ratio
-      mpz_set_si(gmp_lst1_frac, 60L*60L*6L);
-      mpz_mul(gmp_lst1_frac, gmp_lst1_frac, gmp_n4);
-      mpz_div(gmp_r, gmp_r, gmp_lst1_frac);
+      mpz_set_si (gmp_lst1_frac, 60L * 60L * 6L);
+      mpz_mul (gmp_lst1_frac, gmp_lst1_frac, gmp_n4);
+      mpz_div (gmp_r, gmp_r, gmp_lst1_frac);
       // we mod by a full circle
-      mpz_mul_ui(gmp_lst1_frac, gmp_lst1_frac, (unsigned long int) n0);
-      mpz_mod(gmp_r, gmp_r, gmp_lst1_frac);
+      mpz_mul_ui (gmp_lst1_frac, gmp_lst1_frac, (unsigned long int) n0);
+      mpz_mod (gmp_r, gmp_r, gmp_lst1_frac);
       // now we set res[4], using gmp_lst1 as temporary value
-      mpz_fdiv_qr(gmp_r, gmp_lst1_frac, gmp_r, gmp_n4);
+      mpz_fdiv_qr (gmp_r, gmp_lst1_frac, gmp_r, gmp_n4);
       //gmp_r is quotient and gmp_lst1 is mod
-      res[4] = mpz_get_si(gmp_lst1_frac);
+      res[4] = mpz_get_si (gmp_lst1_frac);
       // max value is now 27*60*60*6 = 583200 < 2^32, so we can safely come back to just long ints!
-      tmp = mpz_get_si(gmp_r);
+      tmp = mpz_get_si (gmp_r);
       res[3] = tmp % 6L;
       tmp = tmp / 6L;
-      res[2] =  tmp % 60L;
+      res[2] = tmp % 60L;
       tmp = tmp / 60L;
       res[1] = tmp % 60L;
-      res[0] = (tmp / 60L); // we don't have to %n0 as we already have mod by a full circle
+      res[0] = (tmp / 60L);
     }
 }
 
