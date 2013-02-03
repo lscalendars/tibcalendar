@@ -86,8 +86,10 @@ typedef struct tib_day_astro_data
   long int moonlong_db[6]; // lunar mansion at daybreak
   long int yoga[6]; // yoga, see KTC p.42
   unsigned char karana; // Karanas are numbered from 0 to 7 for the changing karanas, and from 7 to
-  unsigned char solar_term; // if a solar term is passed in this day, we record it here
   unsigned char sideral_day[3]; // the zodiacal sign (month), day and nadi for the mean solar longitude
+  unsigned char solar_term; // if there is a change of solar term during a day, we put the new solar term here
+  // the numbering of solar terms is the same as in KTC p. 355
+  long int  st_ct[5]; // the time of solar term change
   unsigned char anniversary; // could be better or even thrown out of libtastro, but we'll see... currently it's just one of the values listed below.
   // 10 for the fixed ones, see KTC p.43
   // now the Earth-lords:

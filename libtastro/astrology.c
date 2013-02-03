@@ -378,24 +378,18 @@ long int nxt_lm, long int monlong1 ) // VKP, 1,148
 
 // This function fills the solar term astrological data for a solar day
 // see KTC p.50
-// In this function we work in dbugs (breath, 21600th of day, see KTC p.12). This is basically the same as working with lists
-// but it enables to multiplies one number by another, which we currently cannot do with lists
+// In a part of this function we work in panipalas (3600th of unit). This is basically the same as working with lists
+// but it makes calculations simpler...
 void
 chk_solar_term (tib_day * td, astro_system * asys)
 {
-  /*long int sundb1, sundb2; // Mean sun at daybreak, begin and end
-     long int sunmid;
-     long int x; //, y;
-     long int s1, r, s2, s2t, s2t1, s2t2, s2t3;
-     long int s2long, s2long1, s2long2, s2long3;
-     long int gzadag = ( td->gzadag[1] * 60L + td->gzadag[2] ) * 6L + td->gzadag[3]; // gzadag (with gzadag[0] = 0) converted in dbugs
-     long int nyibar = (( td->nyibar[0] * 60L + td->nyibar[1] ) * 60L + td->nyibar[2] ) * 6L + td->nyibar[3];
-   */
   long int mdsm[5];		// the mean daily solar motion
   long int gzadag[5];		// a copy of gzadag, but we set gzadag[0] to 0
   long int sldb_1[5];		// solar longitude at daybreak
   long int sldb_2[5];		// solar longitude at daybreak for next day
-  long int sldb_1_db, sldb2_db;	// the same things, but expressed in dbugs (see comment of the function)
+  long int sldb_1_db, sldb_2_db;	// the same things, but expressed in dbugs (see comment of the function)
+  long int fstl; // the first solar term longitude, in panipalas
+  long int sun_f = asys->sun_f; // by default, but we change the value for some systems
 
 //    td->solar_term = 0; // 0? really?
   if (td->ommited == OMMITED)
@@ -407,6 +401,18 @@ chk_solar_term (tib_day * td, astro_system * asys)
   copy_lst (td->gzadag, gzadag);
   gzadag[0] = 0;
 
+  // Comment on the numbering of solar terms:
+  // * each solar term is 27;0,0,0,0 / 24 = 1;7,30,0,0 (this is why we just have to work with 360th of unit: the two last are 0)
+  // * the numbering of the solar terms are 1 dbugs, 2 sgang, 2 dbugs, 3 sgang (the one which is at 0°), etc.
+  // * the numbering we use here does not start with 0 but with 1 (so at the end, if the number is 0, we make it 24)
+  // * first solar term (1 dbugs) starts at 345° = 23,37,30 in a tropical zodiac (see KTC p. 355)
+  // * in order to have directly a good numbering (starting at 0), we should consider 0th (=last) solar term, it starts at 22,30,0
+  // * the longitude used by tibetans for solar terms is the "normal" longitude minus 1;43,30, see KTC p. 51
+  // * for Sherab Ling they use 1;39,0, a value given by them (TODO: understand it...)
+  // * we call this value (of 1;43,30 or 1;39,0)  long_shift
+  // * the 0th solar term (1 dbugs) starts at 22;30,0 - long_shift (we call it fstl)
+  // * thus, if we want the solar term we are in for a certain longitude L we can do L / (fstl)
+  
   // Algorithm is the following:
   // 1. get solar longitude at daybreak
   // 2. get solar longitude at daybreak for next day
@@ -414,41 +420,52 @@ chk_solar_term (tib_day * td, astro_system * asys)
   // 4. if it is not, do the difference between solar longitude of solar term and solar longitude at daybreak
   // 5. divide it by the mean solar motion, and get the time of day at which it occurs
 
-  // 1. get solar longitude at daybreak
-  // This is actually *never* done in traditional calculations, as it requires to multiply a list by
-  // another, an operation yet to be found in Tibet... computers can do it though...
   switch (asys->type)
     {
     case SHERAB_LING:
       // A full year is 365;15,31,1,121 (317)
       // Each year, mean sun moves 27;0,0,0,0
       // which makes 27;0,0,0,0 / 365;15,31,1,121 (317) per day
-      // = 0;4,26,0,78348 (115787), a given value, put to the factor 4815377
+      // = 0;4,26,0,78348 (115787), a given value, that we put to the factor 4815377
+      // (78348/115787)*4815377 = 3258355,06 , we safely round it to 3258355
       // it makes 0;4,26,0,3258355 (4815377)
+      // we don't have to change sun_f
+      // TODO: here we suppose sun_f is 4815377, might not always be the case...
       set_lst (mdsm, 0, 4, 26, 0, 3258355L);
+      // here what we take is 22;30,0 - 1;39,0 = 20;51,0 = 20*60*60 + 51 *60 = 75060 panipalas
+      fstl = 75060;
       break;
-    default:
-      // TODO: adapt to other systems
+    default: // we consider all other systems to be the same
+      // for sun daily motion, what we use in planet calculation (see KTC p.64) is 0;4,26,0,93156 (149209)
+      // if we put to a factor of 67, (93156/149209) *48 it makes 41,8... so it won't be a good approximation
+      // instead we put gzadag to the factor 149209, in order to have a round value:
+      gzadag[4] = gzadag[4] * 2227; // 149209/67 = 2227
+      set_lst (mdsm, 0, 4, 26, 0, 93156L);
+      sun_f = 149209;
+      // here what we take is 22;30,0 - 1;43,30 = 20;46,30 = 74790 panipalas
+      fstl = 75060;
       return;
       break;
     }
-  // We have the mean solar longitude at beginning of lunar day (nyibar) // TODO: understand why we don't take nyidag!
+    
+  // 1. get solar longitude at daybreak
+  // This is actually *never* done in traditional calculations, as it requires to multiply a list by
+  // another, an operation yet to be found in Tibet... computers can do it though...
+  // We have the mean solar longitude at beginning of lunar day (nyibar)
   // and we have the hours from daybreak for this longitude (gzadag with gzadag[0] = 0)
   // so we just have to do nyibar - gzadag * mdsm to get solar longitude at daybreak
-  mul_lst_lst (sldb_1, gzadag, mdsm, 27, asys->sun_f);
-  sub_lst (sldb_1, td->nyibar, sldb_1, 27, asys->sun_f);
+  mul_lst_lst (sldb_1, gzadag, mdsm, 27, sun_f);
+  sub_lst (sldb_1, td->nyibar, sldb_1, 27, sun_f);
   // now we have solar longitude at daybreak for current day
   // for next day it should be computed with next day's nyibar, just as we did (TODO!!! think about month change), but 
   // an approximation is to just add mean daily solar motion
   add_lst (sldb_2, sldb_1, mdsm, 27, asys->sun_f);
 
-  // The solar longitude is 1;43,30 before the true one 1;43,30 - 1;7,30 = 0;36,0... no... = 12960
-
   // now solar terms change every 27;0,0,0,0 / 24 = 1;7,30,0,0, so we can now safely work in dbugs (meaning the first three terms of the lists):
   // one solar term change is thus 1*60*60 + 7*60 + 30 = 4050
   // we convert sldb_1 and sldb_2:
-  sldb1_db = sldb_1[0] * 60L * 60L + sldb_1[1] * 60L + sldb_1[2];
-  sldb2_db = sldb_2[0] * 60L * 60L + sldb_2[1] * 60L + sldb_2[2];
+  sldb_1_db = sldb_1[0] * 60L * 60L + sldb_1[1] * 60L + sldb_1[2];
+  sldb_2_db = sldb_2[0] * 60L * 60L + sldb_2[1] * 60L + sldb_2[2];
 
 
   /*
