@@ -63,7 +63,7 @@ main ()
   //print_calendar(stdout, 1457, sys);
   //ui_print_lst(lst2,5);
   //printf("\n");
-  
+  check_astrology();
   free(sys);
   //main_menu();
   end_ui();

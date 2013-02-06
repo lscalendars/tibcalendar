@@ -399,7 +399,7 @@ get_solar_term (tib_day * td, astro_system * asys)
 
   // setting gzadag[0] to 0, so that it represents only the hours
   // at which the lunar day starts in current solar day
-  copy_lst (td->gzadag, gzadag);
+  copy_lst (gzadag, td->gzadag);
   gzadag[0] = 0;
 
   // Comment on the numbering of solar terms:

@@ -10,10 +10,10 @@ add_executable(
 	gettext.h
 	printcalendar.h
 	printcalendar.c
+	tests/tests.h
 	tests/tests-jd.c
-	tests/tests-jd.h
 	tests/tests-tbday.c
-	tests/tests-tbday.h
+	tests/tests-astrology.c
 	)
 
 target_link_libraries (tibastro libtastro)
