@@ -382,7 +382,7 @@ long int nxt_lm, long int monlong1 ) // VKP, 1,148
 // as working with lists with two 0 at the end, but it makes calculations simpler...
 // remember that solar terms are computed for the *mean*sun, not the true sun, so calculations are simple
 void
-chk_solar_term (tib_day * td, astro_system * asys)
+get_solar_term (tib_day * td, astro_system * asys)
 {
   long int mdsm[5];		// the mean daily solar motion
   long int gzadag[5];		// a copy of gzadag, but we set gzadag[0] to 0
@@ -392,7 +392,6 @@ chk_solar_term (tib_day * td, astro_system * asys)
   long int fstl; // the first solar term longitude, in panipalas
   long int sun_f = asys->sun_f; // by default, but we change the value for some systems
   unsigned char st1, st2;
-  long int time_of_st;
 
   td->astro_data->solar_term = 0; // if there is no solar term change, we just put 0
   if (td->ommited == OMMITED)

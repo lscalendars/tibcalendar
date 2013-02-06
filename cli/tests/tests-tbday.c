@@ -22,7 +22,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE S
 OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ************************************************************************************/
 
-#include"tests-tbday.h"
+#include"tests.h"
 #include"tbday.h"
 #include "tbstructures.h"
 #include"../ui.h"

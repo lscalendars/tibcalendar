@@ -36,6 +36,7 @@ void check_sadag (unsigned char m, unsigned char t, tib_day_astro_data *tda);
 void check_anniversary (unsigned char m, unsigned char t, tib_day *td, astro_system *asys );
 unsigned char get_lunar_mansion_element (unsigned char lm);
 unsigned char get_dow_element (unsigned char dow);
+void get_solar_term (tib_day * td, astro_system * asys);
 
 // The four elements
 #define FOUR_EARTH 0

@@ -22,7 +22,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE S
 OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ************************************************************************************/
 
-#include"tests-jd.h"
+#include"tests.h"
 #include<jd.h>
 #include<stdlib.h>
 #include<stdio.h>
