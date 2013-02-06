@@ -378,8 +378,9 @@ long int nxt_lm, long int monlong1 ) // VKP, 1,148
 
 // This function fills the solar term astrological data for a solar day
 // see KTC p.50
-// In a part of this function we work in panipalas (3600th of unit). This is basically the same as working with lists
-// but it makes calculations simpler...
+// In a part of this function we work in panipalas (3600th of unit). This is basically the same
+// as working with lists with two 0 at the end, but it makes calculations simpler...
+// remember that solar terms are computed for the *mean*sun, not the true sun, so calculations are simple
 void
 chk_solar_term (tib_day * td, astro_system * asys)
 {
@@ -387,17 +388,18 @@ chk_solar_term (tib_day * td, astro_system * asys)
   long int gzadag[5];		// a copy of gzadag, but we set gzadag[0] to 0
   long int sldb_1[5];		// solar longitude at daybreak
   long int sldb_2[5];		// solar longitude at daybreak for next day
-  long int sldb_1_db, sldb_2_db;	// the same things, but expressed in dbugs (see comment of the function)
+  long int sldb_1_p, sldb_2_p;	// the same things, but expressed in panipala
   long int fstl; // the first solar term longitude, in panipalas
   long int sun_f = asys->sun_f; // by default, but we change the value for some systems
+  unsigned char st1, st2;
+  long int time_of_st;
 
-//    td->solar_term = 0; // 0? really?
+  td->astro_data->solar_term = 0; // if there is no solar term change, we just put 0
   if (td->ommited == OMMITED)
     return;
 
   // setting gzadag[0] to 0, so that it represents only the hours
   // at which the lunar day starts in current solar day
-  // TODO: understand what's going on for first of duplicated days
   copy_lst (td->gzadag, gzadag);
   gzadag[0] = 0;
 
@@ -414,11 +416,10 @@ chk_solar_term (tib_day * td, astro_system * asys)
   // * thus, if we want the solar term we are in for a certain longitude L we can do L / (fstl)
   
   // Algorithm is the following:
-  // 1. get solar longitude at daybreak
-  // 2. get solar longitude at daybreak for next day
-  // 3. get solar terms for each solar longitude, if it is the same, nothing to do
-  // 4. if it is not, do the difference between solar longitude of solar term and solar longitude at daybreak
-  // 5. divide it by the mean solar motion, and get the time of day at which it occurs
+  // 1. get solar longitude at daybreak and next daybreak
+  // 2. get solar terms for each solar longitude, if it is the same, nothing to do
+  // 3. if it is not, do the difference between solar longitude of solar term and solar longitude at daybreak
+  // 4. divide it by the mean solar motion, and get the time of day at which it occurs
 
   switch (asys->type)
     {
@@ -430,20 +431,20 @@ chk_solar_term (tib_day * td, astro_system * asys)
       // (78348/115787)*4815377 = 3258355,06 , we safely round it to 3258355
       // it makes 0;4,26,0,3258355 (4815377)
       // we don't have to change sun_f
-      // TODO: here we suppose sun_f is 4815377, might not always be the case...
+      // TODO: here we suppose sun_f is 4815377, might not always be the case?...
       set_lst (mdsm, 0, 4, 26, 0, 3258355L);
       // here what we take is 22;30,0 - 1;39,0 = 20;51,0 = 20*60*60 + 51 *60 = 75060 panipalas
       fstl = 75060;
       break;
     default: // we consider all other systems to be the same
       // for sun daily motion, what we use in planet calculation (see KTC p.64) is 0;4,26,0,93156 (149209)
-      // if we put to a factor of 67, (93156/149209) *48 it makes 41,8... so it won't be a good approximation
+      // if we put to a factor of 67, (93156/149209) *48 = 41,8... so it won't be a good approximation
       // instead we put gzadag to the factor 149209, in order to have a round value:
-      gzadag[4] = gzadag[4] * 2227; // 149209/67 = 2227
+      gzadag[4] = gzadag[4] * 2227; // 149209 = 2227 * 67
       set_lst (mdsm, 0, 4, 26, 0, 93156L);
       sun_f = 149209;
       // here what we take is 22;30,0 - 1;43,30 = 20;46,30 = 74790 panipalas
-      fstl = 75060;
+      fstl = 74790;
       return;
       break;
     }
@@ -456,108 +457,71 @@ chk_solar_term (tib_day * td, astro_system * asys)
   // so we just have to do nyibar - gzadag * mdsm to get solar longitude at daybreak
   mul_lst_lst (sldb_1, gzadag, mdsm, 27, sun_f);
   sub_lst (sldb_1, td->nyibar, sldb_1, 27, sun_f);
-  // now we have solar longitude at daybreak for current day
-  // for next day it should be computed with next day's nyibar, just as we did (TODO!!! think about month change), but 
-  // an approximation is to just add mean daily solar motion
-  add_lst (sldb_2, sldb_1, mdsm, 27, asys->sun_f);
+  
+  // For first of duplicated days, td->gzadag and td->nyibar are set for the second day
+  // so the solar longitude at daybreak is actually less by mdsm, and solar longitude at daybreak
+  // of next day is the result we just found!
+  if (td->duplicated == FIRST_OF_DUPLICATED)
+    {
+      copy_lst(sldb_2, sldb_1);
+      sub_lst(sldb_1, sldb_1, mdsm, 27, sun_f);
+    }
+  else
+    {
+      // now we have solar longitude at daybreak for current day
+      // we just add the mean solar motion and we get solar mean longitude for next day
+      add_lst (sldb_2, sldb_1, mdsm, 27, sun_f);
+    }
 
-  // now solar terms change every 27;0,0,0,0 / 24 = 1;7,30,0,0, so we can now safely work in dbugs (meaning the first three terms of the lists):
-  // one solar term change is thus 1*60*60 + 7*60 + 30 = 4050
+  // now we start to work in panipalas:
   // we convert sldb_1 and sldb_2:
-  sldb_1_db = sldb_1[0] * 60L * 60L + sldb_1[1] * 60L + sldb_1[2];
-  sldb_2_db = sldb_2[0] * 60L * 60L + sldb_2[1] * 60L + sldb_2[2];
+  sldb_1_p = sldb_1[0] * 60L * 60L + sldb_1[1] * 60L + sldb_1[2];
+  sldb_2_p = sldb_2[0] * 60L * 60L + sldb_2[1] * 60L + sldb_2[2];
 
+  // 2. get solar terms for each solar longitude, if it is the same, nothing to do
+  // to get the solar term for a longitude, the first step is to do longitude - first solar term longitude
+  // which gives the longitude after 0th solar term
+  sldb_1_p = sldb_1_p - fstl;
+  if (sldb_1_p < 0)
+     sldb_1_p = sldb_1_p + 97200;
+  sldb_2_p = sldb_2_p - fstl;
+  if (sldb_2_p < 0)
+     sldb_2_p = sldb_2_p + 97200;
+  
+  // one solar term longitude interval is 1*60*60 + 7*60 + 30 = 4050
+  // then we can just divide by the longitude of a solar term interval in order to have the solar term for the longitude:
+  st1 = (unsigned char) (sldb_1_p / 4050);
+  st2 = (unsigned char) (sldb_2_p / 4050);
+  
+  if (st1 == st2) // the two longitudes are in the same solar term, so there is no solar term change
+    return;
 
-  /*
-     // Each day, mean sun moves 21600/360 = 0;4,26,2 = 1598 dbugs // no
-     // copy_lst(sunmid, nyibar);
-     sunmid = sundb1;
-     // the sun has moved gzadag * 1598 since daybreak // no
-     // we set sundb1 to mean sun longitude at day break of current day
-     sundb1 = nyibar - ( gzadag * 1598L ) / 21600L;
-     sundb2 = sundb1 + 1598L;
+    // 3. if it is not, do the difference between solar longitude of (new) solar term and first solar longitude at daybreak
+    // the solar term longitude is st2 *4050
+    // we use sldb_2 and sldb_2_p to store the value of the difference of longitude
+    // first we compute the longitude of solar term
+    sldb_2_p = st2*4050 + fstl; 
+    if (sldb_2_p > 97200)
+       sldb_2_p = sldb_2_p - 97200;
+    // we make it a whole list
+    sldb_2[2] = sldb_2_p % 60;
+    sldb_2_p = sldb_2_p / 60;
+    sldb_2[1] = sldb_2_p % 60;
+    sldb_2[0] = sldb_2_p / 60;
+    sldb_2[3] = 0; sldb_2[4] = 0;
+    // and we substract the solar longitude at daybreak
+    sub_lst(sldb_2, sldb_2, sldb_1, 27, sun_f);
+    // now sldb_2 is the difference of longitudes between solar term and mean solar longitude at daybreak
+    
+    // 4. divide it by the mean solar motion, and get the time of day at which it occurs
+    // we just have to divide it by mean daily solar motion in order to get the time it took from daybreak to solar term
+    div_lst_lst(td->astro_data->st_ct, sldb_2, mdsm, sun_f);
 
-     // Now, find where we are in solar terms. First is actually 3 sgang:
-
-     if ( sundb1 < 11340L )
-     sundb1 = sundb1 + 583200L;
-     x = sundb1 - 11340L;
-     s1 = x / 24300L;
-     r = x - ( s1 * 24300L );
-
-     //  printf ( "Term index = %ld, remainder = %ld\n", s1, r );
-
-     // If index is zero and remainder positive, we have passed "3 sgang"
-     // It appears that the remainder is never zero.
-
-     if ( sundb2 < 11340L )
-     sundb2 = sundb2 + 583200L;
-     x = sundb2 - 11340L;
-     s2 = x / 24300L;
-     r = x - ( s2 * 24300L );
-
-     //  printf ( "Second term index = %ld, remainder = %ld\n", s2, r );
-
-     // Convert to solar terms, "1 dbugs" = 1, etc.
-
-     s1 = s1 + 6L;
-     if ( s1 > 24L )
-     s1 = s1 - 24L;
-     s2 = s2 + 6L;
-     if ( s2 > 24L )
-     s2 = s2 - 24L;
-
-     if ( s1 == s2 )
-     return (0); // No solar term
-
-     // Now, find the time of the term.
-     // between each solar term, 24300 "dbugs"
-     // Solar daily motion = 1598 dbugs
-
-     s2long = ( s2 - 6L ) * 24300L + 11340;
-     if ( s2long < 0L )
-     s2long = s2long + 583200L;
-     //  printf ( "Step 1, S2long = %ld\n", s2long );
-
-     if ( s2long < 0L )
-     s2long = s2long + 583200L;
-     else if ( s2 == 1L )
-     s2long = s2long + 583200L;
-
-     if ( sundb1 > s2long ) // It must have been incremented, so do the same:
-     s2long = s2long + 583200L;
-
-     s2t = ( 21600L * ( s2long - sundb1 ))/ 1598L;
-     s2t2 = s2t / 6L;
-     s2t3 = s2t - s2t2 * 6L;
-     s2t1 = s2t2 / 60L;
-     s2t2 = s2t2 - s2t1 * 60L;
-
-     // solar_term_str[60];
-
-     if ( s2long < 0L )
-     s2long = s2long + 583200L;
-     s2long = ( s2long + 3L ) / 6L;
-     s2long2 = s2long / 60L;
-     s2long3 = s2long % 60L;
-     s2long1 = s2long2 / 60L;
-     s2long2 = s2long2 % 60L;
-
-     x = ( 1L + s2 ) / 2L;
-
-     if ( s2 % 2L ) // If index odd, then "dbugs"
-     {
-     sprintf ( solar_term_str, "%ld,%ld,%ld %ld dbugs %ld;%ld,%ld",
-     s2t1, s2t2, s2t3, x, s2long1, s2long2, s2long3 );
-     }
-     else // "sgang"
-     {
-     sprintf ( solar_term_str, "%ld,%ld,%ld %ld sgang %ld;%ld,%ld",
-     s2t1, s2t2, s2t3, x, s2long1, s2long2, s2long3 );
-     }
-     return (1); // solar term found
-   */
-}				// chk_solar_term
+    // now we have the time, let's just set the solar term:
+    if (st2==0)
+       st2 = 24;
+    td->astro_data->solar_term = st2;
+}
 
 
 /*

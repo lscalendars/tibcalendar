@@ -193,11 +193,14 @@ tib_day_next (tib_day * td, astro_system * asys)
       // if we want day after a first of duplicated, almost nothing change:
       td->duplicated = SECOND_OF_DUPLICATED;
       // we have to recompute gzadag
-      // TODO: this could be optimized a lot!
+      // a little optimization
+      /*
       td->gd =
 	get_tt_data (asys, td->month->true_month[0], td->month->gzadru,
 		     td->month->nyidru, td->month->rilcha, td->tt, td->nyidag,
 		     td->gzadag, td->nyibar);
+		   */
+		  td->gd = td->gd + 1;
       if (td->astro_data)
 	get_day_astro_data (td, asys, 1);
       //if (td->planet_data)
@@ -250,13 +253,15 @@ tib_day_next (tib_day * td, astro_system * asys)
     {
       // in case we take the first one:
       td->duplicated = FIRST_OF_DUPLICATED;
-      //TODO: useful? should be moved to the printing function?
+      //moved to the printing functions (warning!)
+      /*
       td->gzadag[0] = (td->gzadag[0] + 6) % 7;
       td->gzadag[1] = 60L;
       td->gzadag[2] = 0L;
       td->gzadag[3] = 0L;
       td->gzadag[4] = 0L;
       td->gzadag[5] = 0L;
+      */
       td->gd = td->gd - 1;
     }
   // here we consider that astro_data was correctly filled...

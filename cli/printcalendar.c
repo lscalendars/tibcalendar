@@ -139,6 +139,7 @@ void
 print_day_info (FILE * f, tib_day * td, astro_system * asys)
 {
   int dow, wday, wmonth, wyear;	// in order to compute the western date
+  long int gzadag0;
   // First special case: the case of ommited days:
   if (td->ommited == OMMITED)	// This is for omitted lunar day
     {
@@ -148,11 +149,17 @@ print_day_info (FILE * f, tib_day * td, astro_system * asys)
 	       cycparT[td->astro_data->l_trigram], td->astro_data->l_sme_ba);
       return;
     }
+  // In the case of the first of a duplicated day, gzadag0 is td->gzadag[0]-1, and we have
+  // to print gzadag0;60,0 instead of td->gzadag[0];td->gzadag[1],td->gzadag[2]
+  if (td->duplicated == FIRST_OF_DUPLICATED)
+    gzadag0 = (td->gzadag[0] + 6) % 7;
+  else
+    gzadag0 = td->gzadag[0];
   jd_to_wd (td->gd, &wday, &wmonth, &wyear, &dow);
   // Line 1
   fprintf (f, "%ld: %s. %s. %s-%s; %d %s %d\n",
 	   td->tt,
-	   dayoweek[td->gzadag[0]],
+	   dayoweek[gzadag0],
 	   lunmanT[td->astro_data->moonlong_db[0]],
 	   get_element_4_str (get_dow_element (dow)),
 	   get_element_4_str (get_lunar_mansion_element
@@ -166,8 +173,15 @@ print_day_info (FILE * f, tib_day * td, astro_system * asys)
 	     get_animal_str (td->astro_data->l_animal),
 	     cycparT[td->astro_data->l_trigram], td->astro_data->l_sme_ba);
   // Line 3
-  fprintf (f, "\x20\x20%ld;%ld,%ld %ld;%ld,%ld %ld;%ld,%ld %ld;%ld,%ld",
-	   td->gzadag[0], td->gzadag[1], td->gzadag[2],
+  if (td->duplicated == FIRST_OF_DUPLICATED)
+    {
+      // in this case, we should print gzadag[0]-1;60,0 instead of gzadag
+      //TODO: understand why 60...
+      fprintf(f, "\x20\x20%ld;60,0",  gzadag0);
+    }
+  else
+      fprintf (f, "\x20\x20%ld;%ld,%ld",td->gzadag[0], td->gzadag[1], td->gzadag[2]);
+  fprintf (f, " %ld;%ld,%ld %ld;%ld,%ld %ld;%ld,%ld",
 	   td->astro_data->moonlong_db[0], td->astro_data->moonlong_db[1],
 	   td->astro_data->moonlong_db[2], td->nyidag[0], td->nyidag[1],
 	   td->nyidag[2], td->astro_data->yoga[0], td->astro_data->yoga[1],
