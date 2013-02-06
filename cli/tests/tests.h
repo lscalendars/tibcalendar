@@ -22,6 +22,8 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE S
 OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ************************************************************************************/
 
+#ifndef TESTS_H
+#define TESTS_H
 //   //get_tpdata(2455740L, td); // 27/6/2011
   //get_tpdata(2455738L, td); // 27/6/2011
   //get_tpdata(2000487L, td); // 13/01/765, duplicated day followed by ommited day
@@ -37,3 +39,9 @@ int check_tibday();
 void aux_set_lst_5(long int lst[5], long int n0, long int n1, long int n2, long int n3, long int n4);
 void aux_set_lst_2(long int lst[2], long int n0, long int n1);
 int check_tibday_phugpa_individual(int i, long int jd, tib_day *td1, tib_day *tb2, astro_system *sys);
+
+int check_jd_to_wd_conv ();
+int check_jd();
+int check_jd_to_wd_individual ();
+
+#endif

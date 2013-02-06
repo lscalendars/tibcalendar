@@ -26,8 +26,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include<stdio.h>
 #include<stdlib.h>
-#include"tests/tests-jd.h"
-#include"tests/tests-tbday.h"
+#include"tests/tests.h"
 #include"ui.h"
 #include"tibastro.h"
 #include "system.h"
@@ -51,7 +50,7 @@ main ()
   //get_tpdata(2449719L, td);
   //print_tib_day(td);
   sys = get_astro_system(PHUGPA);
-  mul_lst(lst2, lst1,11135,27,67);
+ // mul_lst(lst2, lst1,11135,27,67);
   //sub_lst(lst2, lst1,lst2,27,67);
   //get_day_data(2449749L, td, sys);
   //print_tib_day(td);
@@ -62,8 +61,9 @@ main ()
   //  get_month_astro_data(td->month, sys);
   //print_tib_day_r(td);
   //print_calendar(stdout, 1457, sys);
-  ui_print_lst(lst2,5);
-  printf("\n");
+  //ui_print_lst(lst2,5);
+  //printf("\n");
+  
   free(sys);
   //main_menu();
   end_ui();
