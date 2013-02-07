@@ -67,8 +67,8 @@ test_solar_term ()
      free (sys_sl);
      return 0;
      }
-  set_lst(td->nyibar, 20,51,50,0,0);
-  set_lst(td->gzadag, 0,10,0,0,0);
+  set_lst(td->nyibar, 20,50,0,0,0);
+  set_lst(td->gzadag, 0,0,0,0,0);
   get_solar_term(td, sys_sl);
   if (td->astro_data->solar_term != 24)
      {

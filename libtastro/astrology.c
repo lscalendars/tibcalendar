@@ -515,6 +515,10 @@ get_solar_term (tib_day * td, astro_system * asys)
     // 4. divide it by the mean solar motion, and get the time of day at which it occurs
     // we just have to divide it by mean daily solar motion in order to get the time it took from daybreak to solar term
     div_lst_lst(td->astro_data->st_ct, sldb_2, mdsm, sun_f);
+  
+   // if the system is not SHERAB LING, we set the last term to the good factor (67 instead of 149209)
+   if (asys->type != SHERAB_LING)
+     td->astro_data->st_ct[4] = td->astro_data->st_ct[4] / 2227;
 
     // now we have the time, let's just set the solar term:
     if (st2==0)

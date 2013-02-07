@@ -43,6 +43,7 @@ main ()
   long int lst3[6] = {27,0,0,0,0,0};
   tib_day *td;
   astro_system *sys;
+  int res;
   //td = new_tib_day();
   init_ui();
   //run_tests();
@@ -63,7 +64,8 @@ main ()
   //print_calendar(stdout, 1457, sys);
   //ui_print_lst(lst2,5);
   //printf("\n");
-  check_astrology();
+  res = check_astrology();
+  printf("%d\n", res);
   free(sys);
   //main_menu();
   end_ui();
