@@ -614,11 +614,18 @@ check_sadag (unsigned char m, unsigned char t, tib_day_astro_data * tda)
     tda->nn = 1;
 }
 
-// Routine to check for special anniversaries linked with the life of the Buddha.
-// At the end, some commentaries show more anniversaries.
-// It simply fills the td->astro_data->anniversary field
-// Month numbers would currently be wrong for Error Correction system. (?)
-// TODO: what about feasts falling in ommited days? ex: 1/1/1977 Phugpa
+/* Routine to check for special anniversaries linked with the life of the Buddha.
+ * At the end, some commentaries show more anniversaries.
+ * It simply fills the td->astro_data->anniversary field
+ * Month numbers would currently be wrong for Error Correction system. (?)
+ * Note p. 17 of Rigpa Calendar for 2013:
+ * " According to Men Tsee Khang, the Tibetan Medical and Astrological Institute, if a
+ * " day is missing, then any special event for that day will fall on the next day. However,
+ * " some do celebrate on the day before.
+ * " If a day is doubled, then any anniversary or special event will fall on the first day.
+ * TODO: modify according to this?
+ * Example of anniversary falling on an ommited day: 1/1/1977 Phugpa
+ */
 void
 check_anniversary (unsigned char m, unsigned char t, tib_day * td,
 		   astro_system * asys)
