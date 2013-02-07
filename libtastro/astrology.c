@@ -618,13 +618,28 @@ check_sadag (unsigned char m, unsigned char t, tib_day_astro_data * tda)
  * At the end, some commentaries show more anniversaries.
  * It simply fills the td->astro_data->anniversary field
  * Month numbers would currently be wrong for Error Correction system. (?)
+ *
  * Note p. 17 of Rigpa Calendar for 2013:
  * " According to Men Tsee Khang, the Tibetan Medical and Astrological Institute, if a
  * " day is missing, then any special event for that day will fall on the next day. However,
  * " some do celebrate on the day before.
  * " If a day is doubled, then any anniversary or special event will fall on the first day.
- * TODO: modify according to this?
+ * 
+ * Counter Argument of Edward Henning (in a personal mail, 7/2/2013):
+ * " For omitted days, in my view it should be the day (date)
+ * " before - it makes no sense at all to use the day after. For example,
+ * " if you want the full moon day, the 15th, let's sayd the Monday is the
+ * " I4th and Tuesday is the 16th, with the 15th omitted. The actual 15the
+ * " lunar day starts very early on the Monday, and finish very late on
+ * " that same day, shortly before the Tuesday begins. 
+ *
  * Example of anniversary falling on an ommited day: 1/1/1977 Phugpa
+ * Example of anniversary falling on duplicated day: 15/3/1451 Phugpa
+ *
+ * TODO: update the code
+ * TODO: build a system for monthly rituals
+ * TODO: build a system to add other anniversaries in options
+ * TODO: make a system for anniversaries in western dates
  */
 void
 check_anniversary (unsigned char m, unsigned char t, tib_day * td,
@@ -672,7 +687,9 @@ check_anniversary (unsigned char m, unsigned char t, tib_day * td,
 // 2-26 : Anniversary of Taranatha.
 // 3-3 : Anniversary of Karma Pakshi.
 // 4-29 : Anniversary of Mipham.
-// 5-10 : Birth of Guru Rinpoche.
+// 5-10 : Birth of Guru Rinpoche. 
+// Note in Rigpa Calendar for 2013 (p. 42): According to the vision of Guru Chöwang and the tradition of Mindroling Monastery, the anniversary of Guru Rinpoche's birth is celebrated on the 10th day of the 5th month
+// Note in Rigpa Calendar for 2013 (p. 46): According to those who follow the tradition of Sangyé Lingpa and his terma revelation, the Lama Gongdü, Guru Rinpoche's birth is celebrated on the 10th day of the 6th month.
 // 5-15 : World Local Deities Day.
 // 8-19 : Anniversary of Dilgo Khyentse Rinpoche.
 // 8-23 : Anniversary of Karmapa Mikyo Dorje.
