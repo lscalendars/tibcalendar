@@ -646,10 +646,12 @@ check_anniversary (unsigned char m, unsigned char t, tib_day * td,
 		   astro_system * asys)
 {
   td->astro_data->anniversary = 0;
-  // if the month is delayed, or the day is the first of a double, there is not feast
+  // if the month is delayed, or the day is the second of a double, there is not feast
+  // change this if you want the same behaviour as in EH's calendars (as of february 2013)
   if (td->month->type == SECOND_OF_DOUBLE
-      || td->duplicated == FIRST_OF_DUPLICATED)
+      || td->duplicated == SECOND_OF_DUPLICATED)
     return;
+    
   switch (m)
     {
     case 1:
