@@ -25,6 +25,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef UTILS_H
 #define UTILS_H
 
+// see comments of get_approx function
+#define TRUCATE 0
+#define APPROX 1
+
 // first a useful list:
 extern long int zerolst[5];
 
@@ -50,5 +54,7 @@ void copy_lst_6 ( long int dest[6], long int src[6]);
 
 void set_lst(long int lst[5], long int lst0, long int lst1, long int lst2, long int lst3, long int lst4);
 void set_lst_6(long int lst[5], long int lst0, long int lst1, long int lst2, long int lst3, long int lst4, long int lst5);
+
+void get_approx (long int lst[5], long int * a0, long int * a1, long int * a2, long int n0, unsigned char trucate);
 
 #endif

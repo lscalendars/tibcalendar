@@ -617,3 +617,59 @@ set_lst_6 (long int lst[5], long int lst0, long int lst1, long int lst2,
   lst[4] = lst4;
   lst[4] = lst5;
 }
+
+/* A function to get the 3 "digits" to print on a calendar or almanach
+  * given a complete list of 5 "digits". Here digits are numbers parts.
+  * There are two options to this function: you can just truncate the list to three
+  * or you can get the best approximation, as in the following examples:
+  *  - 3;4,5,4,40 -> 3;4,6
+  *  - 3;5,59,4,40 -> 3;6,0
+  *  - 26;59,59,5,40 -> 0,0,0
+  * For this approximation, as the 4th digit is on 6, it always depends on it, never 
+  * on the 5th part:
+  *  - 3;4,5,3,x -> 3;4,6 for any x
+  *  - 3;4,5,2,x -> 3;4,5 for any x
+  * thus we don't need to know the factor of the last element of the list, but we need to
+  * know the first factor (27 or 7), for cases like the 3rd example above.
+  * 
+  * Here trucate can be TRUCATE (0) or APPROX (1).
+  * 
+  * The function sets a0, a1 and a2 to the approximation (or truncate) of the number...
+  * 
+  * There is a discussion on wether this is traditional or not. It seems that some almanach
+  * makers take the best approximation, while some do not. According to EH (private mail
+  * in january 2013), Sherab Ling don't do approximation.
+  *
+  */
+
+void
+get_approx (long int lst[5], long int *a0, long int *a1, long int *a2,
+	    long int n0, unsigned char trucate)
+{
+  *a0 = lst[0];
+  *a1 = lst[1];
+  *a2 = lst[2];
+
+  // first the easiest case
+  if (trucate == TRUCATE || lst[3] < 3)
+    return;
+
+  // now things get more complicated
+  *a2 = *a2 + 1;
+  if (*a2 < 60)			// then it's ok
+    return;
+
+  // now we are in the case of x;y,59,5 -> x;y+1,0
+  *a2 = 0;
+  *a1 = *a1 + 1;
+  if (*a1 < 60)			// then it's ok
+    return;
+
+  // now we are in the case of 26;59,59,5 -> 0;0,0
+  *a1 = 0;
+  *a0 = *a0 + 1;
+  if (*a0 < n0)			// then it's ok
+    return;
+  else
+    *a0 = 0;
+}
