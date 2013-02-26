@@ -1,0 +1,51 @@
+This file is a description of the developpment and coding standards of the 
+project.
+
+Using GNU Indent on .c files with only -l80 option.
+
+Long long int are needed for calculations. The standard to follow is thus C99.
+
+Respect the GNU coding standards as much as possible:
+http://www.gnu.org/prep/standards/standards.html
+
+Respect the IEC 61508 and MISRA standards as much as possible.
+
+Use sonar to statically check the code.
+
+For the library, all code must compile under a POSIX system and on 32 and 64-bit
+Windows systems. Everything must be portable, and compilable under Windows with
+MSVC if possible (this is the system originally used by the first code).
+
+Code rewriting must be avoided at all costs. For this reason, the use of 
+standard libraries or code has to be the priority, but portability has to be
+kept at all costs, so code integration seems a good option, for instance:
+ - use of CuTest for unitary testing
+ - use of gnulibs for portability issues
+ - use of mini-gmp.c for users using a Windows compiler
+
+Bindings will be written with SWIG, with a particular attention to GUILE
+bindings, in order for it to be used in GNU applications.
+
+The code has to be reentrant.
+
+No use of goto, : ?, continue, break, goto. Make functions have only one return
+point (no return in conditionals or loops).
+
+Comments in English, all in /* */ syntax, citing the books where the information
+comes from. Use Wylie to write Tibetan, limit as much as possible non-ASCII
+characters.
+
+Moving to Doxygen comments in order to document the API automatically.
+
+CMake is used as the building machinery. At the beginning is has been chosen
+to try it, and for its ability to generate MSVC Makefiles. Apart from this
+it brings more problems than it solves (no support for gettext, very difficult
+documentation, etc.). Coming back to automake is certainly a good option for
+the future, especially for guile and gnulibs integration.
+
+The choice has been made to make a small and efficient brick of (library)
+software that can then be used by other bigger softwares. The library has thus
+to be as small and standard as possible. The philosophy here is the Unix
+Philosophy (http://www.faqs.org/docs/artu/ch01s06.html), it will also apply on
+interfaces. Big idea is "do one thing and do it well".
+
