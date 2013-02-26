@@ -60,6 +60,13 @@ if (GETTEXT_FOUND AND ENABLENLS)
  	add_subdirectory(po)
 endif (GETTEXT_FOUND AND ENABLENLS)
 
+
+enable_testing ()
+add_executable (test-tibastro test/_lib.c ${SOURCES})
+set_target_properties (test_lib PROPERTIES LINK_FLAGS -Wl,-lcunit)
+
+add_test (test_lib ${EXECUTABLE_OUTPUT_PATH}/test_lib)
+
 # configure a header file to pass some of the CMake settings
 # to the source code
 configure_file (
