@@ -31,6 +31,10 @@ The code has to be reentrant.
 No use of goto, : ?, continue, break, goto. Make functions have only one return
 point (no return in conditionals or loops).
 
+All public functions should be prefixed by tbastro_ prefix.
+
+Function, structure and variable names are with _ word separator, no camel case.
+
 Comments in English, all in /* */ syntax, citing the books where the information
 comes from. Use Wylie to write Tibetan, limit as much as possible non-ASCII
 characters.
