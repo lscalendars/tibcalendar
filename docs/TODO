@@ -9,7 +9,7 @@ Code standards improvement
 - compile option for very light version (calendar only)
 - adding asserts
 - handle errors (naming conventions in the Gnu Code Standards = GCS)
-- add license, changelog and author files (as in the GCS)
+- add changelog file (as in the GCS)
 - think about a version convention
 
 General development
