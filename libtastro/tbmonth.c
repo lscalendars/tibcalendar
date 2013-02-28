@@ -25,7 +25,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <stdio.h>		// for printf, currently used for errors, but should be changed...
 #include "tbday.h"
 #include "tbmonth.h"
-#include "utils.h"
+#include "tbmonth.h"
 #include "jd.h"			// for jd_to_wd
 #include "system.h"		// for epoch
 #include "tbstructures.h"

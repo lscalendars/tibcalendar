@@ -61,9 +61,9 @@ if (GETTEXT_FOUND AND ENABLENLS)
 endif (GETTEXT_FOUND AND ENABLENLS)
 
 
-enable_testing ()
-add_executable (test-tibastro test/_lib.c ${SOURCES})
-set_target_properties (test_lib PROPERTIES LINK_FLAGS -Wl,-lcunit)
+#enable_testing ()
+#add_executable (test-tibastro test/_lib.c ${SOURCES})
+#set_target_properties (test_lib PROPERTIES LINK_FLAGS -Wl,-lcunit)
 
 add_test (test_lib ${EXECUTABLE_OUTPUT_PATH}/test_lib)
 

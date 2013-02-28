@@ -26,7 +26,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <stdlib.h>
 #include <string.h>
 #include "system-priv.h"
-#include "utils.h"		// for copy_list
+#include "tbmath.h"		// for copy_list
 
 astro_system *
 new_system ()

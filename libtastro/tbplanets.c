@@ -23,7 +23,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "tbplanets.h"
-#include "utils.h"
+#include "tbmath.h"
 #include "tbstructures.h"
 
 static long int merbye1[14] =

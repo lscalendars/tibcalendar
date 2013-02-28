@@ -25,7 +25,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include"tests.h"
 #include"tbday.h"
 #include "tbstructures.h"
-#include"utils.h"
+#include"tbmath.h"
 #include"system.h"
 #include"astrology.h"
 #include <stdlib.h>

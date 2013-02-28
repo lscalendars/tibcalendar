@@ -6,8 +6,8 @@ add_library(
 	tbday.h
 	tbmonth.c
 	tbmonth.h
-	utils.c
-	utils.h
+	tbmath.c
+	tbmath.h
 	tbplanets.c
 	tbplanets.h
 	astrology.c
