@@ -1,0 +1,35 @@
+This file is a list of things that have to be done, this should be integrated
+in a project management system.
+
+Code standards improvement
+==========================
+- doxygen documentation
+- static code validation against MISRA
+- pass //comments into /* standard C syntax */
+- compile option for very light version (calendar only)
+- adding asserts
+- handle errors (naming conventions in the Gnu Code Standards = GCS)
+- add license, changelog and author files (as in the GCS)
+- think about a version convention
+
+General development
+===================
+- Swig/guile bindings
+- make a good API for a very basic calendar application (like lunar-applet?)
+- mini-gmp vs. gmp compile option
+- build a test system based on CuTest
+- make a good, portable (native Windows + Unix shell!) keyboard-driven console 
+  interface
+- make a command-line interface (with just options)
+- add some gnulibs file for portability
+- get back to autoconf
+
+Specific developments
+=====================
+- modify the gzadag system for bhutanese calendar
+- make a general option system
+- rebuild the feast system
+- finish Sherab Ling calculations integration
+- add the possibility to have several epochs to choose from for one system
+- add the possibility to shift timezone (by modifying the epoch)
+- add all the calculations for Kalacakra Calendar
