@@ -53,3 +53,7 @@ to be as small and standard as possible. The philosophy here is the Unix
 Philosophy (http://www.faqs.org/docs/artu/ch01s06.html), it will also apply on
 interfaces. Big idea is "do one thing and do it well".
 
+The idea of the software is to be a source for people interested in
+calculations, the ideal would be that it could be read like a book. All the
+algorithms must be fully documented with all possible traditional sources.
+Litterate programming (with noweb or cweb) seems an interesting idea to inspect.

@@ -11,6 +11,8 @@ Code standards improvement
 - handle errors (naming conventions in the Gnu Code Standards = GCS)
 - add changelog file (as in the GCS)
 - think about a version convention
+- study noweb or CWEB possibility
+- complete the bibliography
 
 General development
 ===================

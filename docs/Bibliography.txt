@@ -1,0 +1,12 @@
+This files contains the references of the sources used in the comments of the
+source files.
+
+We follow the convention used in [KTC], as it is the best reference.
+
+[KTC]: Kalacakra and the Tibetan Calendar, Edward Henning, 2007. The main
+       reference in the domain.
+[Baidkar]: Phug lugs rtsis kyi legs bshad mkhas pa'i mgul rgyan bai DUr dkar
+           po'i do shal dpyod ldan snying nor, sDe srid sangs rgyas rgya mtsho.
+           Otherwise known as the White Beryl, by Sangyé Gyamtso.
+[TEDP]: Tibetan Elemental Divination Paintings, Gyurme Dorje, 2001. A
+        translation of a part of [Baidkar] in a beautiful edition.
