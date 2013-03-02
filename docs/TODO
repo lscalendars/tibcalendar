@@ -25,6 +25,8 @@ General development
 - make a command-line interface (with just options)
 - add some gnulibs file for portability
 - get back to autoconf
+- add a cache system with a default cache from 1900 to 2100 that can be 
+  loaded. This would speed up calculations, especially with modern astronomy.
 
 Specific developments
 =====================
@@ -35,3 +37,4 @@ Specific developments
 - add the possibility to have several epochs to choose from for one system
 - add the possibility to shift timezone (by modifying the epoch)
 - add all the calculations for Kalacakra Calendar
+- add an acurate chinese month calculation based on an accurate chinese calendar
