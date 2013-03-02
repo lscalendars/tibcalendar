@@ -23,6 +23,7 @@ General development
 - make a good, portable (native Windows + Unix shell!) keyboard-driven console 
   interface
 - make a command-line interface (with just options)
+- make a small GTK calendar application for integration into Gnome
 - add some gnulibs file for portability
 - get back to autoconf
 - add a cache system with a default cache from 1900 to 2100 that can be 
