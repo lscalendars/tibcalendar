@@ -129,8 +129,8 @@ typedef struct tib_day
   tib_month *month;
   long int gd; // the general day (spi zag), in our case it is the julian day
   long int tt; // the lunar day
-  long int ommited; // can be : OMMITED if the lunar day is ommited, NEXT_OMMITED if the next lunar day is ommited or PREVIOUS_OMMITED (works only in the same month)
-  long int duplicated; // idem, for duplicated
+  unsigned char ommited; // can be : OMMITED if the lunar day is ommited, NEXT_OMMITED if the next lunar day is ommited or PREVIOUS_OMMITED (works only in the same month)
+  unsigned char duplicated; // idem, for duplicated
   long int nyibar[6]; // mean solar longitude
   long int nyidag[6]; // true solar longitude
   long int gzadag[6]; // true weekday
