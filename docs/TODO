@@ -4,6 +4,7 @@ in a project management system.
 Code standards improvement
 ==========================
 - doxygen documentation
+- renaming almost all functions and structures
 - static code validation against MISRA
 - pass //comments into /* standard C syntax */
 - compile option for very light version (calendar only)
@@ -24,18 +25,41 @@ General development
   interface
 - make a command-line interface (with just options)
 - make a small GTK calendar application for integration into Gnome
+- make an interface for gcal and BSD 'cal' (contact them soon?)
+- make an interface for gnome clock ? (doesn't look like their priority to
+  integrate new calendars)
+- make an interface for KdeLibs and KDE calendar (they might be interested, see
+  http://community.kde.org/KDE_Core/Astronomical_Calendars)
 - add some gnulibs file for portability
 - get back to autoconf
+- rebuild structures with three levels for almanach data:
+    * very simple calendar (with an option for festival and solar element day)
+    * almanach data (quite complete, with all possible calendar astrology)
+    * planetary data (maybe two levels, one for daily, one for monthly?)
+  and two choices:
+    * just one day, with all necessary data to write the date, for softwares
+      like Emacs?
+    * a structure describing a whole year, with all month and days, in order
+      to make something suitable for GUI 
+- think about a standard structure for all calendars?
 - add a cache system with a default cache from 1900 to 2100 that can be 
   loaded. This would speed up calculations, especially with modern astronomy.
 
 Specific developments
 =====================
 - modify the gzadag system for bhutanese calendar
+- make a system with a default calendar (Phugpa or Kalacakra?)
+- add the Error correction system
 - make a general option system
 - rebuild the feast system
 - finish Sherab Ling calculations integration
 - add the possibility to have several epochs to choose from for one system
 - add the possibility to shift timezone (by modifying the epoch)
+- add accurate astrnomy for Kalacakra Calendar (use libnova?)
 - add all the calculations for Kalacakra Calendar
 - add an acurate chinese month calculation based on an accurate chinese calendar
+  it can be based on ccal software (http://ccal.chinesebay.com/), the author
+  agreed to this (and it is under GPL). Other options are to use the code in
+  gcal's find_chinese_leap_month function in hd-use.c or the code of ICU's
+  implementation (http://bugs.icu-project.org/trac/browser/icu/trunk/source/i18n
+  /chnsecal.cpp).
