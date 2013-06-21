@@ -29,8 +29,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /*
  * Very simple function to calculate yearly informations in indian and chinese
  * astrology. See KTC p. 142.
- * Takes a month as input, and fills its rabjung, yor, year_animal, year_element
- * and year_gender fields.
+ * Takes a tib_year as input, and fills its rabjung, yor, animal, element
+ * and gender fields.
  */
 
 void
