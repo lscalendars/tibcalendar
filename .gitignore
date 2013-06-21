@@ -1,5 +1,8 @@
+# Sonar files
 sonar-project.properties
 .sonar
+
+# Backup from gedit
 *~
 
 # Object files
@@ -19,3 +22,10 @@ sonar-project.properties
 *.exe
 *.out
 *.app
+
+# CMake files
+CMakeCache.txt
+CMakeFiles
+Makefile
+cmake_install.cmake
+install_manifest.txt
