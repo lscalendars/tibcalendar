@@ -21,6 +21,6 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE S
 OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ************************************************************************************/
 
-int get_mod_new_year(int asked_year, float longitude);
+int get_mod_new_year(int asked_year, double longitude);
 double get_tithi ( double tgtelong, double juldat, double sun_longitude, double moon_longitude );
 void get_new_moon ( double * NM_jdat, double * NM_sol, double juldat, double moon_elongation );

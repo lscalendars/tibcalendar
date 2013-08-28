@@ -66,9 +66,9 @@ void get_new_moon ( double * NM_jdat, double * NM_sol, double juldat, double moo
     *NM_sol = sun_longitude;
   } // END - get_new_moon
 
-unsigned char intercalfollows = 0; // TODO: make it a global option
+static unsigned char intercalfollows = 0; // TODO: make it a global option
 
-int get_mod_new_year(int asked_year, float longitude)
+int get_mod_new_year(int asked_year, double longitude)
 {
     unsigned char mnth12_found = 0;
     unsigned char first_new_year_found = 0;
@@ -94,6 +94,7 @@ int get_mod_new_year(int asked_year, float longitude)
     int last_mnth_flag = 0;
 
     juldatf = (double) (wd_to_jd (1, 1, asked_year)) - 0.5 + jul_factor;
+    //printf("juldatf : %f\n", juldatf);
     // wd_to_jd - 0.5 is the beginning of UT day
     // jul_factor adds the timezone factor
     // juldatf is now equivalent to 5am LMST on our target meridian
@@ -164,7 +165,7 @@ int get_mod_new_year(int asked_year, float longitude)
                     newmon[hit].delaymth = 1;                    
                     if ( hit > 1 ) // Flag for repeated month - the next is intercalary
                       newmon[hit-2].nxtintercal = 1;
-                    printf ( "Intercalary month: %d\n", newmon[hit-1].mnthnumK );
+                    //printf ( "Intercalary month: %d\n", newmon[hit-1].mnthnumK );
                     if ( hit < 3 && newmon[hit-1].mnthnumK == 12 ) // FOR
                                                                // TESTING
                       mnth12_found = 1;
@@ -193,7 +194,7 @@ int get_mod_new_year(int asked_year, float longitude)
               }
             if ( first_new_year_found == 0 )
               {
-                if ( newmon[hit-1].mnthnumK == 1 )
+                if ( hit > 0 && newmon[hit-1].mnthnumK == 1 )
                   {
                     first_Kmnth_flag = hit - 1;
                     first_new_year_found = 1;
@@ -208,13 +209,13 @@ int get_mod_new_year(int asked_year, float longitude)
 //                  first_new_year_found = 1;
 //                  }
               }
-            if ( second_new_year_found == 0 && newmon[hit-1].mnthnumK == 1 )
+            else if ( second_new_year_found == 0 && newmon[hit-1].mnthnumK == 1 )
               {
                 last_mnth_flag = hit - 2;
                 second_new_year_found = 1;
                 finish = 1;
               }
-            ++hit;
+            hit = hit + 1;
           }
 // Do another day:
         last_moon_elong = moon_elong; // warning: we must not take here the value
@@ -234,7 +235,6 @@ int get_mod_new_year(int asked_year, float longitude)
     if ( !mnth12_found )  // Keep this as an error check.
       {
         printf ( "Twelfth month not found\n" );
-        //getch ();
       }
       return newmon[first_Kmnth_flag].jd;
 }
