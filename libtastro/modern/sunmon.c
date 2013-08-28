@@ -123,7 +123,8 @@ double getmeanSunmeannewMoon ( double juld )
           if ( D < 0.00001 && D > -0.00001 ) // order of thousandths of a second!
             more = 0;
           else
-            juld = juld - D * ( 29.5 / 360.0 ); 
+            // was 29.5 in EH's code, this value comes from Wikipedia
+            juld = juld - D * ( 29.530589 / 360.0 ); 
         } while ( more );
     SunL = getmeanSun ( juld );
     return ( SunL );
@@ -209,7 +210,7 @@ double get_deltaT ( double JDate )
         t4 = t2 * t2;
         t5 = t2 * t3;
         dT = 7.62 + 0.5737 * t - 0.251754 * t2 + 0.01680668 * t3
-                - 0.0004473624 * t4 + t5 / 233174;
+                - 0.0004473624 * t4 + t5 / 233174.0;
       }
     else if ( y >= 1900.0 && y < 1920.0 )
       {
@@ -284,14 +285,24 @@ void sun_mon ( double jd, double *sol, double *mol)
 
 // First, do Sun:
 
+    // this gives the earth heliocentric rectangular coordinates
     clc_earrct ( T / 10.0 ); // Needs Julian millenia
 
 // Correct for light-time and aberration together: (Meeus 225)
 
+    // DeltaD is the distance from Earth to Sun
     DeltaD = sqrt ( EarHX * EarHX + EarHY * EarHY + EarHZ * EarHZ );
+    // 0.0057755183 is the time (in days) taken by light to travel 1 Astronomical
+    // Unit (1 AU = 149.597.871 km)
+    // Tau is the time light takes to travel from Sun to Earth, 
     Tau = DeltaD * 0.0057755183;
+    // Tau_T is the same time expressed in julian years
     Tau_T = Tau / 36525.0;
-    EarHL = clc_earlon ( (T-Tau_T) / 10.0 );
+    // T - Tau_T is the time at which the event we see on Earth happened (due to light speed)
+    // EarHL is the Earth longitude as seen from the sun, expressed in rad
+    EarHL = clc_earlon ( (T-Tau_T) / 10.0 ); // expressed in millenia too
+    // EarHL * 360 / TwoPi is EarHL in degrees (EarHLd)
+    // EarHLd + 180 = EarHLd -180 = the longitude of the Sun (a little drawing might help)
     *sol = EarHL * 360.0 / TwoPi + 180.0;
     if ( *sol > 360.0 )
       *sol = *sol - 360.0;
@@ -303,7 +314,7 @@ void sun_mon ( double jd, double *sol, double *mol)
       *mol = *mol - 360.0;
   } // END - sun_mon ()
 
-// Earth longitude
+// Earth longitude, expressed in rad
 double clc_earlon ( double t ) // t is Julian millenia, ET.
   {
     double SL;
@@ -312,7 +323,7 @@ double clc_earlon ( double t ) // t is Julian millenia, ET.
     double R0, R1, R2, R3, R4, R5;
     double D, Alpha, t2, t3, t4, t5;
     int i;
-    double EarHL, EarHB;
+    double EarHL/*, EarHB*/;
 
     t2 = t * t;
     t3 = t * t2;
@@ -389,6 +400,8 @@ double clc_earlon ( double t ) // t is Julian millenia, ET.
     EarHL = modfeh ( EarHL, TwoPi );
     if ( EarHL < 0.0 )
       EarHL = EarHL + TwoPi;
+
+/*
 
 // Now, latitude:
 
@@ -507,6 +520,8 @@ double clc_earlon ( double t ) // t is Julian millenia, ET.
       }
     R5 = SL;
     EarHR = R0 + R1 * t + R2 * t2 + R3 * t3 + R4 * t4 + R5 * t5;
+    
+    */
     
     return EarHL;
   } // END - clc_earlon ()
@@ -689,6 +704,7 @@ void clc_earrct ( double t )  // t is Julian millenia
     EarHZ = Z0 + Z1 * t + Z2 * t2 + Z3 * t3 + Z4 * t4;
   } // END - clc_earrct ()
 
+// this is x % y for double
 double modfeh ( double x, double y )
   {
     double N;
@@ -710,6 +726,7 @@ double clc_monlon ( double T)
   {
     double t[5], v[6], x, y, xp, yp;
     int n, k, iv;
+    
     double mon;
 
     if ( !datadone )
@@ -721,6 +738,7 @@ double clc_monlon ( double T)
     t[3] = t[2] * t[1];
     t[4] = t[3] * t[1];
 
+    // TODO: do it at initialization
     for ( iv = 0; iv < 3; iv++ )
       {  
         v[iv] = 0.0;
