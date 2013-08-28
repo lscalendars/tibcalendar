@@ -62,6 +62,7 @@ jd_to_dow (long int jd)
   int doweek = (int) (jd - 7L * ((jd + 1L) / 7L) + 2L);
   if (doweek == 7)
     doweek = 0;
+  return doweek;
 }
 
 // takes julian day, and sets day, month, year and day of week accordingly
