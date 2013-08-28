@@ -17,4 +17,17 @@ add_library(
 	system-priv.h
 	tbstructures.c
 	tbstructures.h
+	modern/modmonth.c
+	modern/modmonth.h
+	modern/sunmon.c
+	modern/sunmon.h
+	modern/cmpb.c
+	modern/cper.c
+	modern/earthc.c
+	modern/earthd.c
+	modern/fmpb.c
+	modern/fper.c
+	modern/pmoon.c
+	modern/pmoonnd.c
+	modern/pmoonpg.c
 	)
