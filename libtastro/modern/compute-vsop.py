@@ -62,33 +62,66 @@ def main():
     f = open(sys.argv[1])
     # we get the planet it is for
     planet = fecor[sys.argv[1].split(".")[-1]]
+    vsop_letter = sys.argv[1][6].lower()
+    fout = open("vsop87-%c-%s.c" % (vsop_letter, planet), "w")
     lines = f.readlines()
     previous_numbers = None
+    functionnumber = 0
     for line in lines:
       # First the case of a "normal" line
       # we don't care about things before column 48
       m = vsoplineregex.match(line,48)
       if m:
         if (previous_numbers):
-          print "  twoops(_(%s), _(%s), _(%s)\n         _(%s), _(%s), _(%s));" % (previous_numbers[0], previous_numbers[1], previous_numbers[2], m.group(1), m.group(2), m.group(3))
+          fout.write("  twoops(_(%s), _(%s), _(%s)\n         _(%s), _(%s), _(%s));\n" % (previous_numbers[0], previous_numbers[1], previous_numbers[2], m.group(1), m.group(2), m.group(3)))
           previous_numbers = None
         else:
           previous_numbers = [m.group(1), m.group(2), m.group(3)]
       #else, it should be a head line, the only interesting thing is the 42nd and 60th character:
       elif len(line) > 60:
+        previousfunctionnumber = functionnumber
         functionnumber = int(line[59])
         variablenumber = int(line[41])
+        print "fun : %d, var : %d" % (functionnumber, variablenumber)
         if (previous_numbers):
-          print "  oneop( _(%s), _(%s), _(%s));" % (previous_numbers[0], previous_numbers[1], previous_numbers[2])
-        if (functionnumber != 0 or variablenumber != 0):
-          print("  end();\n}\n")
-        print "\ncoord_t vsop87_c_%s_%d_%d (time_t t) {\n  initialize();" % (planet, variablenumber, functionnumber)
+          fout.write("  oneop( _(%s), _(%s), _(%s));\n" % (previous_numbers[0], previous_numbers[1], previous_numbers[2]))
+        if (functionnumber != 0 or variablenumber != 1):
+          fout.write("  end();\n}\n")
+        if (variablenumber != 1 and functionnumber == 0):
+          print_sum_function(previousfunctionnumber, variablenumber -1, planet, vsop_letter, fout)
+        fout.write("\ncoord_t vsop87_%c_%s_%d_%d (time_t t) {\n  initialize();\n" % (vsop_letter, planet, variablenumber, functionnumber))
       # if it's none of the two, we just ignore the line  
     if (previous_numbers):
-      print "  oneop( _(%s), _(%s), _(%s));" % (previous_numbers[0], previous_numbers[1], previous_numbers[2])
-    print("  end();\n}\n\n")
+      fout.write("  oneop( _(%s), _(%s), _(%s));\n" % (previous_numbers[0], previous_numbers[1], previous_numbers[2]))
+    fout.write("  end();\n}\n")
+    print_sum_function(functionnumber, 3, planet, vsop_letter, fout)
     f.close()
+    fout.close()
   except IOError:
     print "Error: cannot open file %s" % sys.argv[1]
+
+def print_sum_function(factor, variable_number, planet, vsop_letter, fout):
+  common_str = "vsop87_%c_%s_%d" % (vsop_letter, planet, variable_number)
+  if factor == 5:
+    fout.write("""
+coord_t %s (time_t t) {
+  return ((((%s_5(t) *t + %s_4(t)) * t + %s_3(t)) *t + %s_2(t)) * t + %s_1(t)) *t + %s_0(t);
+}
+""" % (common_str, common_str, common_str, common_str, common_str, common_str, common_str))
+  elif factor == 4:
+    fout.write("""
+coord_t %s (time_t t) {
+  return (((%s_4(t) * t + %s_3(t)) *t + %s_2(t)) * t + %s_1(t)) *t + %s_0(t);
+}
+""" % (common_str, common_str, common_str, common_str, common_str, common_str))
+  elif factor == 3:
+    fout.write("""
+coord_t %s (time_t t) {
+  return ((%s_3(t) *t + %s_2(t)) * t + %s_1(t)) *t + %s_0(t);
+}
+""" % (common_str, common_str, common_str, common_str, common_str))
+  else:
+    print "error!!! Factor %d not taken into account" % factor
+    exit(1)
 
 main()
