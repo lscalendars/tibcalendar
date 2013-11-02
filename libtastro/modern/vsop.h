@@ -27,9 +27,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <math.h>
 
 /* First a macro to define if we use long double or double (by default double).
- * We assume T is always double.
  */
-#define USE_LONG 0
+#if !defined USE_LONG
+#  define USE_LONG 0
+#endif
 
 /* Here we define the type of the numbers we use, and append L or not to the
  * literal through macro _()
@@ -71,12 +72,12 @@ typedef double double64x2_t __attribute__ ((vector_size(16)));
      double64x2_t x = (double64x2_t){0, 0};\
      double64x2_t T = (double64x2_t){t, t};\
      double64x2_t tmp = (double64x2_t){0, 0}
-#  define cosvec(tmp) \
-     tmp[0] = cos(tmp[0]);\
-     tmp[1] = cos(tmp[1])
+#  define initial_value(a) \
+     res = a
 #  define twoops(a1,b1,c1,a2,b2,c2) \
      tmp = (double64x2_t){b1, b2} + ((double64x2_t){c1, c2} * T);\
-     cosvec(tmp);\
+     tmp[0] = cos(tmp[0]);\
+     tmp[1] = cos(tmp[1]);\
      x = x + (tmp * (double64x2_t){a1, a2})
 #  define oneop(a,b,c) \
      res += a * cos(b+c*t)
@@ -85,7 +86,10 @@ typedef double double64x2_t __attribute__ ((vector_size(16)));
      return res
 #else // we don't use vectors here, so it's failry simple
 #  define initialize() \
-     coord_t x = 0
+     coord_t x = 0;\
+     int i = 0
+#  define initial_value(a) \
+     x = a
 #  if USE_LONG == 0
 #    define vsopcos cos
 #  else
@@ -94,9 +98,10 @@ typedef double double64x2_t __attribute__ ((vector_size(16)));
 #  define twoops(a1,b1,c1,a2,b2,c2) \
      x += a1 * vsopcos(b1+c1*t);\
      x += a2 * vsopcos(b2+c2*t)
-#  define twoops(a,b,c) \
+#  define oneop(a,b,c) \
      x += a * vsopcos(b+c*t)
 #  define end()\
+     printf("lastx: %.15Lf\n",x);\
      return x
 #endif
 
@@ -106,6 +111,10 @@ typedef double double64x2_t __attribute__ ((vector_size(16)));
 coord_t vsop87_c_earth_1 (time_t t);
 coord_t vsop87_c_earth_2 (time_t t);
 coord_t vsop87_c_earth_3 (time_t t);
+
+coord_t vsop87_d_earth_1 (time_t t);
+coord_t vsop87_d_earth_2 (time_t t);
+coord_t vsop87_d_earth_3 (time_t t);
 
 #endif
 
