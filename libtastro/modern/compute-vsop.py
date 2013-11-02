@@ -39,7 +39,7 @@ import re
 import sys
 
 # regexp to match a normal line, to be searched or matched starting at 48th char
-vsoplineregex = re.compile("\s?(-?\d+\.\d+)\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)")
+vsoplineregex = re.compile("\s?-?\d+\.\d+\s+-?\d+\.\d+\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)")
 
 # correspondance between file extensions and planet:
 fecor = {"ear":"earth", 
@@ -67,13 +67,14 @@ def main():
     lines = f.readlines()
     previous_numbers = None
     functionnumber = 0
+    fout.write("#include \"vsop.h\"\n")
     for line in lines:
       # First the case of a "normal" line
       # we don't care about things before column 48
       m = vsoplineregex.match(line,48)
       if m:
         if (previous_numbers):
-          fout.write("  twoops(_(%s), _(%s), _(%s)\n         _(%s), _(%s), _(%s));\n" % (previous_numbers[0], previous_numbers[1], previous_numbers[2], m.group(1), m.group(2), m.group(3)))
+          fout.write("  twoops(_(%s), _(%s), _(%s),\n         _(%s), _(%s), _(%s));\n" % (previous_numbers[0], previous_numbers[1], previous_numbers[2], m.group(1), m.group(2), m.group(3)))
           previous_numbers = None
         else:
           previous_numbers = [m.group(1), m.group(2), m.group(3)]
