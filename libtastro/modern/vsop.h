@@ -24,6 +24,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #if !defined __VSOP_H
 #define __VSOP_H
 
+#include <math.h>
+
 /* First a macro to define if we use long double or double (by default double).
  * We assume T is always double.
  */
@@ -32,7 +34,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /* Here we define the type of the numbers we use, and append L or not to the
  * literal through macro _()
  */
-#if USE_LONG == 1
+#if USE_LONG == 0
 typedef double coord_t;
 typedef double time_t;
 #  define _(x) x
@@ -54,7 +56,7 @@ typedef long double coord_t;
 #define USE_DOUBLE_VECTOR 0
 #ifdef __GNUC__ // we are on GCC
 #  include <features.h>
-#  if __GNUC_PREREQ(4,0)  //      If  gcc_version >= 4.7
+#  if __GNUC_PREREQ(4,0)  //      If  gcc_version >= 4.0
 #    if USE_LONG == 0
 #      define USE_DOUBLE_VECTOR 1
 #    endif
@@ -65,17 +67,17 @@ typedef long double coord_t;
 // this is the vector variable type
 typedef double double64x2_t __attribute__ ((vector_size(16)));
 #  define initialize() \
-     coordtype res = 0;\
-     double64x2_t x = {0,0};\
-     double64x2_t t = {T,T};\
-     double64x2_t tmp = {0,0}
-#  define cosvec(x) \
-     x[0] = cos(x[0]);\
-     x[1] = cos(x[1])
+     coord_t res = 0;\
+     double64x2_t x = (double64x2_t){0, 0};\
+     double64x2_t T = (double64x2_t){t, t};\
+     double64x2_t tmp = (double64x2_t){0, 0}
+#  define cosvec(tmp) \
+     tmp[0] = cos(tmp[0]);\
+     tmp[1] = cos(tmp[1])
 #  define twoops(a1,b1,c1,a2,b2,c2) \
-     tmp = {b1, b2} + ({c1,c2} * T);\
+     tmp = (double64x2_t){b1, b2} + ((double64x2_t){c1, c2} * T);\
      cosvec(tmp);\
-     x = x + (tmp * {a1, a1})
+     x = x + (tmp * (double64x2_t){a1, a2})
 #  define oneop(a,b,c) \
      res += a * cos(b+c*t)
 #  define end()\
@@ -83,16 +85,27 @@ typedef double double64x2_t __attribute__ ((vector_size(16)));
      return res
 #else // we don't use vectors here, so it's failry simple
 #  define initialize() \
-     coordtype x = 0
+     coord_t x = 0
+#  if USE_LONG == 0
+#    define vsopcos cos
+#  else
+#    define vsopcos cosl
+#  endif
 #  define twoops(a1,b1,c1,a2,b2,c2) \
-     x += a1 * cos(b1+c1*t);\
-     x += a2 * cos(b2+c2*t)
+     x += a1 * vsopcos(b1+c1*t);\
+     x += a2 * vsopcos(b2+c2*t)
 #  define twoops(a,b,c) \
-     x += a * cos(b+c*t)
+     x += a * vsopcos(b+c*t)
 #  define end()\
      return x
 #endif
 
+/* Next are the declarations of the main functions:
+ */
+
+coord_t vsop87_c_earth_1 (time_t t);
+coord_t vsop87_c_earth_2 (time_t t);
+coord_t vsop87_c_earth_3 (time_t t);
 
 #endif
 
