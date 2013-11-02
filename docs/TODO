@@ -14,7 +14,6 @@ Code standards improvement
 - think about a version convention
 - study noweb or CWEB possibility
 - complete the bibliography
-- make a .indent.pro option with all necessary options (inclution list of -T)
 - see if it's possible to make it LGPLv2 (or v3) instead of GPL using different
   libs...
 - still in the licensing options, why not making contributors sign a 
