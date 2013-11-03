@@ -1,8 +1,86 @@
 #include "astronomy.h"
 #include "vsop.h"
 
-// Find delta T, returns number of seconds
-// Method from: http://eclipse.gsfc.nasa.gov/SEcat5/deltatpoly.html
+/****************************************
+ *** General introduction: timescales ***
+ ****************************************
+ *
+ * This explanation is bad and might contain errors due to my very limited
+ * knowledge on the topic, but I think it might yet be useful. If you want to
+ * go further, please read the articles given in the links. 
+ *
+ * First it's important to consider some definitions:
+ *
+ *  - Atomic time: the time measured by the atomic clocks, in other words
+ *      the highly constant "tick" of all non-relativistic timescales (the
+ *      second unit is defined by this atomic time). TAI is an atomic timescale
+ *      which means it doesn't depend on the length of the day or anything
+ *      related to our experience.
+ *
+ *  - Earth Rotation time: the time of our experience of the time on Earth,
+ *      with days, sunrises, sunsets, etc. In this time, two timescales are very
+ *      important: 
+ *       * UT1, the "natural" time that varies according to some highly complex
+ *         mechanisms and that we can only measure and interpolate, not predict
+ *         with high precision.
+ *       * UTC, the time you have on your computer, which is the TAI corrected
+ *         by leap seconds so that |UT1-UTC|<0.9s. Leap seconds are thus added
+ *         or removed according to day length duration, with limited
+ *         predictability.
+ *
+ *  - Dynamical time: it are approximations of the "absolute" time in which the
+ *      Physics formulae occur. This takes into account many things I don't
+ *      understand about relativity. A famous one was called ET (Ephemeris Time)
+ *      but has been replaced by TDB (Barycentric Dynamical Time). This topic is
+ *      simply too complex, and, as we'll see below, is not that important for
+ *      calendrical calculations.
+ *
+ * Now, what is the time we are using? For the Calendrical calculations (Tibetan
+ * but not only), Local Mean Solar Time (LMST) is used. Though UT1 went through
+ * several definitions and is now disconnected from the sun [1], its use as LMST
+ * is still relevant, and this is what we will do. So all our data will
+ * be in UT1 timescale. It is important here to notice that there is a small
+ * discrepancy of maximum 0.9s between UTC and UT1, so computations made
+ * with UTC (for instance real time) will be less precise. You can
+ * find some functions in the SOFA software[2] to get conversion between the two.
+ *
+ * Internally, we will do some ephemeris calculations, and ephemeris algorithms
+ * (at least the ones we use) are made to work with TDB, so we should have a
+ * function to convert UT1 from TDB. The problem here is that there is no 
+ * function to convert an unpredictable time to a relativistic time! The first
+ * solution to this is to consider that we are not computing high-precision
+ * ephemeris for outer system bodies, and thus we can approximate TDB by TAI + a
+ * constant. This is what is advised by the authors of VSOP2013[3, p.4]. So the
+ * main problem is to get an apprxomation of the difference between UT1 and TAI
+ * (a value called Delta T). The NASA has done it for us by interpolating the
+ * measures of UT1 discrepancy[4][5]. This is what this function is doing.
+ *
+ * To have a better explanation about timescales, see:
+ *  - http://stjarnhimlen.se/comp/time.html
+ *  - http://www.ucolick.org/~sla/leapsecs/timescales.html
+ *  - http://www.jstor.org/stable/10.1086/655938
+ * 
+ * And about DeltaT:
+ *  - http://www.ucolick.org/~sla/leapsecs/deltat.html
+ *  - http://user.online.be/felixverbelen/dt.htm
+ * 
+ * [1]: http://www.ucolick.org/~sla/leapsecs/dutc.html#UT1
+ * [2]: http://www.iausofa.org/
+ * [3]: ftp://ftp.imcce.fr/pub/ephem/planets/vsop2013/solution/README.pdf
+ * [4]: http://eclipse.gsfc.nasa.gov/SEcat5/deltat.html
+ * [5]: http://eclipse.gsfc.nasa.gov/SEcat5/deltatpoly.html
+ *
+ *********************
+ *** This function ***
+ *********************
+ *
+ * This function computed the Delta T value for a julian day, and gives the 
+ * result in seconds. It is a C implementation of [5]. Note that this function
+ * is rather time consuming (though not as much as ephemeris calculations) and
+ * gives a result according to the day; so you can save time by calling this
+ * function only once for each day where you do ephemeris calculations.
+ *
+ */
 double get_deltaT ( double JDate )
   {
     double y;
