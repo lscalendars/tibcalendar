@@ -31,9 +31,11 @@
  *  - Dynamical time: it are approximations of the "absolute" time in which the
  *      Physics formulae occur. This takes into account many things I don't
  *      understand about relativity. A famous one was called ET (Ephemeris Time)
- *      but has been replaced by TDB (Barycentric Dynamical Time). This topic is
- *      simply too complex, and, as we'll see below, is not that important for
- *      calendrical calculations.
+ *      but has been replaced by TDB (Barycentric Dynamical Time). TDT
+ *      (Terrestial Dynamical Time) is same as TDB but viewed from the Earth,
+ *      it differs from TDB by at most a few miliseconds.
+ *      This topic is simply too complex, and, as we'll see below, is not that
+ *      important for calendrical calculations.
  *
  * Now, what is the time we are using? For the Calendrical calculations (Tibetan
  * but not only), Local Mean Solar Time (LMST) is used. Though UT1 went through
@@ -50,10 +52,11 @@
  * function to convert an unpredictable time to a relativistic time! The first
  * solution to this is to consider that we are not computing high-precision
  * ephemeris for outer system bodies, and thus we can approximate TDB by TAI + a
- * constant. This is what is advised by the authors of VSOP2013[3, p.4]. So the
- * main problem is to get an apprxomation of the difference between UT1 and TAI
- * (a value called Delta T). The NASA has done it for us by interpolating the
- * measures of UT1 discrepancy[4][5]. This is what this function is doing.
+ * constant (32.184s). This is what is advised by the authors of
+ * VSOP2013[3, p.4]. So the main problem is to get an apprxomation of the
+ * difference between UT1 and approximate TDT/TDB (a value called Delta T).
+ * The NASA has done it for us by interpolating the measures of UT1
+ * discrepancy[4][5]. This is what this function is doing.
  *
  * To have a better explanation about timescales, see:
  *  - http://stjarnhimlen.se/comp/time.html
@@ -81,143 +84,98 @@
  * function only once for each day where you do ephemeris calculations.
  *
  */
-double get_deltaT ( double JDate )
-  {
-    double y;
-    double u, u2, u3, u4, u5, u6;
-    double dT;
-    double t, t2, t3, t4, t5, t6, t7;
+double get_deltaT ( double jd )
+{
+  double dT;
+  double y;
 
-    int wy, wm, wd, wdow;
+  int wy, wm, wd, wdow;
+  // retrieving gregorian calendar date
+  jd_to_wd ((long int) floor(jd + 0.5), &wd, &wm, &wy, &wdow);
 
-    // deltaT could be a little more precise if we substract jd_factor, but it seems
-    // totally unnecessary
+  // y is in fraction of year, for interpolation
+  y = (double) wy + ((double) ( wm - 1 ) )/ 12.0 + ((double) (wd - 1 ))/ 360.0;
+  
+  // deltaT could be a little more precise if we substract jd_factor, but it seems
+  // totally unnecessary
 
-    jd_to_wd ((long int) floor(JDate + 0.5), &wd, &wm, &wy, &wdow);
-    
-    y = (double) wy + ((double) ( wm - 1 ) )/ 12.0 + ((double) (wd - 1 ))/ 360.0;
-
-    if ( y < -500.0 )
-      {
-        u = (y - 1820.0 )/100.0;
-        dT = -20.0 + 32.0 * u * u;
-      }
-    else if ( y >= -500.0 && y < 500.0 )
-      {
-        u = y / 100.0;
-        u2 = u * u;
-        u3 = u2 * u;
-        u4 = u2 * u2;
-        u5 = u2 * u3;
-        u6 = u3 * u3;
-        dT = 10583.6 - 1014.41 * u + 33.78311 * u2 - 5.952053 * u3
-              - 0.1798452 * u4 + 0.022174192 * u5 + 0.0090316521 * u6;
-      }
-    else if ( y >= 500.0 && y < 1600.0 )
-      {
-        u = ( y - 1000.0 ) / 100.0;
-        u2 = u * u;
-        u3 = u2 * u;
-        u4 = u2 * u2;
-        u5 = u2 * u3;
-        u6 = u3 * u3;
-        dT = 1574.2 - 556.01 * u + 71.23472 * u2 + 0.319781 * u3
-             - 0.8503463 * u4 - 0.005050998 * u5 + 0.0083572073 * u6;
-      }
-    else if ( y >= 1600.0 && y < 1700.0 )
-      {
-        t = y - 1600.0;
-        t2 = t * t;
-        t3 = t * t2;
-        dT = 120.0 - 0.9808 * t - 0.01532 * t2 + t3 / 7129.0;
-      }
-    else if ( y >= 1700.0 && y < 1800.0 )
-      {
-        t = y - 1700.0;
-        t2 = t * t;
-        t3 = t * t2;
-        t4 = t2 * t2;        
-        dT = 8.83 + 0.1603 * t - 0.0059285 * t2 + 0.00013336 * t3 - t4 / 1174000.0;
-      }
-    else if ( y >= 1800.0 && y < 1860.0 )
-      {
-        t = y - 1800.0;
-        t2 = t * t;
-        t3 = t2 * t;
-        t4 = t2 * t2;
-        t5 = t2 * t3;
-        t6 = t3 * t3;
-        t7 = t3 * t4;
-        dT = 13.72 - 0.332447 * t + 0.0068612 * t2 + 0.0041116 * t3 - 0.00037436
-             * t4 + 0.0000121272 * t5 - 0.0000001699 * t6 + 0.000000000875 * t7;
-      }
-    else if ( y >= 1860.0 && y < 1900.0 )
-      {
-        t = y - 1860.0;
-        t2 = t * t;
-        t3 = t2 * t;
-        t4 = t2 * t2;
-        t5 = t2 * t3;
-        dT = 7.62 + 0.5737 * t - 0.251754 * t2 + 0.01680668 * t3
-                - 0.0004473624 * t4 + t5 / 233174.0;
-      }
-    else if ( y >= 1900.0 && y < 1920.0 )
-      {
-        t = y - 1900.0;
-        t2 = t * t;
-        t3 = t2 * t;
-        t4 = t2 * t2;
-        dT = -2.79 + 1.494119 * t - 0.0598939 * t2 + 0.0061966 * t3 - 0.000197 * t4;
-      }
-    else if ( y >= 1920.0 && y < 1941.0 )
-      {
-        t = y - 1920.0;
-        t2 = t * t;
-        t3 = t2 * t;
-        dT = 21.20 + 0.84493 * t - 0.076100 * t2 + 0.0020936 * t3;
-      }
-    else if ( y >= 1941.0 && y < 1961.0 )
-      {
-        t = y - 1950.0;
-        t2 = t * t;
-        t3 = t2 * t;
-        dT = 29.07 + 0.407 * t - t2 / 233.0 + t3 / 2547.0;
-      }
-    else if ( y >= 1961.0 && y < 1986.0 )
-      {
-        t = y - 1975.0;
-        t2 = t * t;
-        t3 = t2 * t;
-        dT = 45.45 + 1.067 * t - t2 / 260.0 - t3 / 718.0;
-      }
-    else if ( y >= 1986.0 && y < 2005.0 )
-      {
-        t = y - 2000.0;
-        t2 = t * t;
-        t3 = t2 * t;
-        t4 = t2 * t2;
-        t5 = t2 * t3;
-        dT = 63.86 + 0.3345 * t - 0.060374 * t2 + 0.0017275 * t3 +
-             0.000651814 * t4 + 0.00002373599 * t5;
-      }
-    else if ( y >= 2005.0 && y < 2050.0 )
-      {
-        t = y - 2000.0;
-        t2 = t * t;
-        dT = 62.92 + 0.32217 * t + 0.005589 * t2;
-      }
-    else if ( y >= 2050.0 && y < 2150.0 )
-      {
-        dT = -20.0 + 32.0 * ((y-1820.0)/100.0) * ((y-1820.0)/100.0)
-             - 0.5628 * (2150.0 - y);
-      }
-    else if ( y >= 2150.0 )
-      {
-        u = ( y - 1820.0 ) / 100.0;
-        dT = -20 + 32 * u * u;
-      }
-    return (dT);
-  } // END - get_deltaT
+  if ( y < -500.0 )
+    {
+      y = (y - 1820.0 )/100.0;
+      dT = -20.0 + 32.0 * y * y;
+    }
+  else if ( y >= -500.0 && y < 500.0 )
+    {
+      y = y / 100.0;
+      dT = 10583.6 + y * (-1014.41 + y * (33.78311 + y * (-5.952053 + y * (-0.1798452 + y * (0.022174192 + y * 0.0090316521)))));
+    }
+  else if ( y >= 500.0 && y < 1600.0 )
+    {
+      y = ( y - 1000.0 ) / 100.0;
+      dT = 1574.2 + y * (-556.01 + y * (71.23472 + y * (0.319781 +y * (-0.8503463 +y * (-0.005050998 + y * 0.0083572073)))));
+    }
+  else if ( y >= 1600.0 && y < 1700.0 )
+    {
+      y = y - 1600.0;
+      dT = 120.0 + y * (-0.9808 + y * (-0.01532 + y / 7129.0));
+    }
+  else if ( y >= 1700.0 && y < 1800.0 )
+    {
+      y = y - 1700.0;
+      dT = 8.83 + y * (0.1603 + y * (-0.0059285 + y * (0.00013336 - y / 1174000.0)));
+    }
+  else if ( y >= 1800.0 && y < 1860.0 )
+    {
+      y = y - 1800.0;
+      dT = 13.72 + y * (-0.332447 + y * (0.0068612 + y * (0.0041116 + y * (-0.00037436 + y * (0.0000121272 + y * (-0.0000001699 + y * 0.000000000875))))));
+    }
+  else if ( y >= 1860.0 && y < 1900.0 )
+    {
+      y = y - 1860.0;
+      dT = 7.62 + y * (0.5737 + y * (-0.251754 + y * (0.01680668 + y * (-0.0004473624 + y / 233174.0))));
+    }
+  else if ( y >= 1900.0 && y < 1920.0 )
+    {
+      y = y - 1900.0;
+      dT = -2.79 + y * (1.494119 +y * (-0.0598939 + y * (0.0061966 - y * 0.000197)));
+    }
+  else if ( y >= 1920.0 && y < 1941.0 )
+    {
+      y = y - 1920.0;
+      dT = 21.20 + y * (0.84493 + y * (-0.076100 + y * 0.0020936));
+    }
+  else if ( y >= 1941.0 && y < 1961.0 )
+    {
+      y = y - 1950.0;
+      dT = 29.07 + y * (0.407 + y * (-1.0/233.0 + y / 2547.0));
+    }
+  else if ( y >= 1961.0 && y < 1986.0 )
+    {
+      y = y - 1975.0;
+      dT = 45.45 + y * (1.067 + y * (-1.0/260.0 - y / 718.0));
+    }
+  else if ( y >= 1986.0 && y < 2005.0 )
+    {
+      y = y - 2000.0;
+      dT = 63.86 + y * (0.3345 + y * (-0.060374 + y * (0.0017275 + y * (0.000651814 + y * 0.00002373599))));
+    }
+  else if ( y >= 2005.0 && y < 2050.0 )
+    {
+      y = y - 2000.0;
+      dT = 62.92 + y * (0.32217 + y * 0.005589);
+    }
+  else if ( y >= 2050.0 && y < 2150.0 )
+    {
+      dT = -20.0 + 32.0 * ((y-1820.0)/100.0) * ((y-1820.0)/100.0)
+           - 0.5628 * (2150.0 - y);
+    }
+  else if ( y >= 2150.0 )
+    {
+      y = ( y - 1820.0 ) / 100.0;
+      dT = -20.0 + 32.0 * y * y;
+    }
+  return (dT);
+}
 
 time_t julian_date_to_julian_millenia(double jd) {
     double t;
