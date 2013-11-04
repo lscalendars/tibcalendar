@@ -31,9 +31,9 @@
  *  - Dynamical time: it are approximations of the "absolute" time in which the
  *      Physics formulae occur. This takes into account many things I don't
  *      understand about relativity. A famous one was called ET (Ephemeris Time)
- *      but has been replaced by TDB (Barycentric Dynamical Time). TDT
- *      (Terrestial Dynamical Time) is same as TDB but viewed from the Earth,
- *      it differs from TDB by at most a few miliseconds.
+ *      but has been replaced by TDB (Barycentric Dynamical Time). TT
+ *      (Terrestial Time) is same as TDB but viewed from the Earth,
+ *      it differs from TDB by at most a few miliseconds (see tt_tdb).
  *      This topic is simply too complex, and, as we'll see below, is not that
  *      important for calendrical calculations.
  *
@@ -54,9 +54,9 @@
  * ephemeris for outer system bodies, and thus we can approximate TDB by TAI + a
  * constant (32.184s). This is what is advised by the authors of
  * VSOP2013[3, p.4]. So the main problem is to get an apprxomation of the
- * difference between UT1 and approximate TDT/TDB (a value called Delta T).
+ * difference between UT1 and approximate TT/TDB (a value called Delta T).
  * The NASA has done it for us by interpolating the measures of UT1
- * discrepancy[4][5]. This is what this function is doing.
+ * discrepancy[4][5]. This is what the function ut_ttis doing.
  *
  * To have a better explanation about timescales, see:
  *  - http://stjarnhimlen.se/comp/time.html
@@ -72,19 +72,21 @@
  * [3]: ftp://ftp.imcce.fr/pub/ephem/planets/vsop2013/solution/README.pdf
  * [4]: http://eclipse.gsfc.nasa.gov/SEcat5/deltat.html
  * [5]: http://eclipse.gsfc.nasa.gov/SEcat5/deltatpoly.html
- *
- *********************
- *** This function ***
- *********************
- *
- * This function computed the Delta T value for a julian day, and gives the 
- * result in seconds. It is a C implementation of [5]. Note that this function
- * is rather time consuming (though not as much as ephemeris calculations) and
- * gives a result according to the day; so you can save time by calling this
- * function only once for each day where you do ephemeris calculations.
- *
  */
-double get_deltaT ( double jd )
+
+
+/*************
+ *** ut_tt ***
+ *************
+ *
+ * This function computes the ut_tt difference (most often called Delta T) value
+ * for a julian day, and gives the result in seconds. It is a C implementation
+ * of [5]. Note that this function is rather time consuming (though not as much
+ * as ephemeris calculations) and gives a result according to the day; so you
+ * can save time by calling this function only once for each day where you do
+ * ephemeris calculations.
+ */
+double ut_tt ( double jd )
 {
   double dT;
   double y;
@@ -175,6 +177,20 @@ double get_deltaT ( double jd )
       dT = -20.0 + 32.0 * y * y;
     }
   return (dT);
+}
+
+/**************
+ *** tt_tdb ***
+ **************
+ *
+ * This function computed the difference between TT and TDB. This is an
+ * an approximation of the relativistic effects dilating time between solar
+ * system barycenter and Earth.
+ */
+
+double tt_tdb ( double jd )
+{
+  // TODO
 }
 
 time_t julian_date_to_julian_millenia(double jd) {
