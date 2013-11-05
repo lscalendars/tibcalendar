@@ -1,0 +1,144 @@
+\documentclass[%
+a4paper,% paper size
+pagesize,%
+12pt,% text size
+parskip=off,% inter-paragraph space, automatically sets paragraph indentation
+bibliography=totoc,% bibliography in the table or contents
+numbers=noenddot,%
+DIV=12,% margin settings
+twoside=semi,% right and left difference, but same margins
+headings=small,% small headings
+]{scrartcl}
+
+\usepackage{eroux}
+
+\title{Astronomical calculations in lunisolar calendars}
+\subtitle{Overview of accuracy and optimization possibility}
+\author{Élie Roux \href{mailto:elie.roux@telecom-bretagne.eu}{<elie.roux@telecom-bretagne.eu>}} 
+\date{\today} 
+
+\pagestyle{scrheadings}
+\ifoot[]{} 
+\cehead[]{\textsc{\rightmark}}
+\cohead[]{\textsc{Astronomical calculations in lunisolar calendars}}
+% et enfin le numéro de page dans le pied de page extérieur
+\ofoot[\oldstylenums\thepage]{\oldstylenums\thepage}
+\cfoot[]{}
+\ohead[]{}
+\ihead[]{}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+blabla $x=y$
+\end{abstract}
+
+\tableofcontents
+%\cleardoubleevenemptypage
+%\clearpage
+\newpage
+
+\section{Introduction}
+
+This will be the introduction
+
+\subsection{What it this article?}
+
+\subsection{Genesis of this article}
+
+\subsection{What this article is not}
+
+\subsection{Precision needed in }
+
+\section{The different calculation methods}
+
+\subsection{Variations Séculaires des Orbites Planétaires (VSOP)}
+
+\subsubsection{vsop87}
+
+\subsubsection{vsop2013}
+
+\subsection{ELP/MPP02 and LEA-406}
+
+\subsection{JPL Ephemeris}
+
+%% Timescales
+
+\section{Timescales}
+
+\subsection{Atomic time (TAI)}
+
+\subsection{Earth Rotation Time}
+
+\subsection{Dynamical Time}
+
+\subsubsection{Based on TAI}
+
+\subsubsection{Truely relativistic time}
+
+\subsection{Time used by calendrical calculations}
+
+\subsection{Time used by ephemeris calculations}
+
+\subsection{Time used by calendrical calculations}
+
+\section{Coordinate systems}
+
+\section{Errors due to Time and Coordinate system calculations}
+
+\subsection{Delta T uncertainty}
+
+\subsection{Nutation Effect}
+
+\subsection{Obliquity of the Ecliptic}
+
+\subsection{Earth Rotation Angle (ERA)}
+
+\subsection{Position of the observer}
+
+Calendrical calculations are supposedly made by humans above the sea, not at the geocenter. So the observed longitude of a celestial body 
+
+$R_o$ is the distance of the observer from the geocenter ($R_E+altitude$)
+$D_{E-M}$ is the Earth-Moon distance
+$\Theta$ is the resulting error
+
+The error will be maximized by an observation of the moon when it's $90°$ from vernal equinox and at its perigee (about $D_{E-Mmin}\approx360000km$) made by someone on the top of the Everest ($R_o=R_E+8,848km$) and considering the Everest is on the Ecliptic. In this case we would have:
+
+$$\Theta_{max} = atan(R_o/D_{E-Mmin}) = 3655as$$
+
+% atan(6379.85/360000) = .01771995065419387521rad = 3655s
+
+Which is an error to be avoided by all means!
+
+If we take an observation at sea level, with a $30°$ angle and an average distance (Sun-Earth distance for inner planets and Sun-planet distance for outer ones), we can compute the following table:
+
+\begin{center}
+\sisetup{table-figures-decimal = 1, 
+  table-figures-integer = 4,
+  table-format=4.1,
+  table-space-text-post = \si{mas},
+  table-number-alignment = right,
+  table-unit-alignment = left,
+  table-text-alignment = center,
+%  table-align-text-post = false
+  }
+\begin{tabular}{|l|S|S[table-unit-alignment = left,table-format=4.1]|}
+\hline
+\textbf{Celestial body} & \textbf{$\Theta_{max}$} & \textbf{$\Theta$}  \\\hline
+Sun & \SI{9}{\second} & \SI{4}{\second}\\\hline % min: 147Mkm, mean: 150km
+Moon & \SI{3655}{\second} & \SI{1706}{\second}\\\hline % min: 360kkm, mean: 385kkm
+Mercury & \SI{17}{\second} & \SI{6.7}{\second}\\\hline %  min: 77 Mkm, mean: 100Mkm
+Mars & \SI{24}{\second} & \SI{3}{\second}\\\hline % min: 54.6Mm, mean: 225Mkm
+Venus & \SI{35}{\second} & \SI{4}{\second}\\\hline % min: 38Mkm, mean: 150Mkm
+Jupiter & \SI{2}{mas} & \SI{0.8}{mas} \\\hline % min: 629kMkm, mean: 770kMkm
+Saturn & \SI{1}{\second} & \SI{453}{mas}\\\hline % min  1200Mkm, mean: 1450Mkm
+\end{tabular}
+\end{center}
+
+\section{Other inexact algorithms}
+
+\subsection{iterations in the light tralvel time}
+
+\end{document}

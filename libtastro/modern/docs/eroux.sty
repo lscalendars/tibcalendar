@@ -1,0 +1,109 @@
+% This .sty file contains some personal style I like, don't consider it's
+% under copyright.
+%
+% It will most certainly work only with LuaLaTeX, but should be easily adaptable
+% to XeTeX...
+
+\pdfprotrudechars=2
+\pdfadjustspacing=2
+
+\usepackage[square,sort,comma,numbers]{natbib}
+\usepackage{polyglossia}
+\setmainlanguage{english}
+
+\frenchspacing
+
+\defaultfontfeatures{Ligatures=TeX}
+\newfontfeature{Microtype}{protrusion=default;expansion=default;}
+
+\usepackage[math-style=TeX]{unicode-math}
+
+%% Default character protrusion is too big...
+\directlua{fonts.protrusions.setups.default.factor=0.5}
+
+% font definition
+\setmainfont[
+      Microtype,
+      BoldFont=LinLibertine_RZ,
+      ItalicFont=LinLibertine_RI,
+      BoldItalicFont=LinLibertine_RZI,
+      SlantedFont=LinLibertine_aRL,
+      BoldSlantedFont=LinLibertine_aZL,
+      SmallCapsFont=LinLibertine_R,
+      SmallCapsFeatures={Letters=SmallCaps},
+]{LinLibertine_R}
+
+\setmathfont{XITS Math}
+\setmathfont[
+      range=\mathbfsfit/{greek,Greek,latin,Latin},
+      Script=Latin,
+      BoldFont=LinLibertine_RZ,
+      ItalicFont=LinLibertine_RI,
+      BoldItalicFont=LinLibertine_RZI,
+      SlantedFont=LinLibertine_aRL,
+      BoldSlantedFont=LinLibertine_aZL,
+      SmallCapsFont=LinLibertine_R,
+      SmallCapsFeatures={Letters=SmallCaps},
+]{LinLibertine_R}
+
+\setsansfont[Extension=.otf, Microtype,
+      BoldFont=LinBiolinum_RB,
+      ItalicFont=LinBiolinum_RI,
+      BoldItalicFont=LinBiolinum_RB,% fake
+      SlantedFont=LinBiolinum_aRL,
+      BoldSlantedFont=LinBiolinum_aBL,
+      SmallCapsFont=LinBiolinum_R,
+      SmallCapsFeatures={Letters=SmallCaps},
+      ]{LinBiolinum_R}
+      
+\setmonofont[Extension=.otf, Microtype,
+      BoldFont=LinBiolinum_RB,
+      ItalicFont=LinBiolinum_RI,
+      BoldItalicFont=LinBiolinum_RB,% fake
+      SlantedFont=LinBiolinum_aRL,
+      BoldSlantedFont=LinBiolinum_aBL,
+      SmallCapsFont=LinBiolinum_R,
+      SmallCapsFeatures={Letters=SmallCaps},
+      ]{LinBiolinum_R}
+
+%% Là il s'agit de la famille de police des titres, en utilisant Linux Libertine Display, faite pour.
+\newfontfamily\libertineDisplay[Extension=.otf,
+      BoldFont=LinLibertine_DR,%fake
+      ItalicFont=LinLibertine_DR,%fake
+      BoldItalicFont=LinLibertine_DR,%fake
+      SlantedFont=LinLibertine_aDRL,
+      BoldSlantedFont=LinLibertine_aDRL,%fake
+      ]{LinLibertine_DR}
+
+% Ici on dit à Koma d'utiliser certaines familles de fontes 
+\addtokomafont{disposition}{\rmfamily}
+%\addtokomafont{title}{\rmfamily}
+% on utilise display pour les titres
+\addtokomafont{title}{\libertineDisplay}
+\addtokomafont{part}{\libertineDisplay}
+
+% not sure it's useful
+\KOMAoptions{DIV=last}
+
+% Koma page layout
+\usepackage{scrpage2}
+
+% head and foot separations are not really good with default KOMA options
+%\usepackage{geometry}
+%\geometry{headsep=5mm}
+
+% now widow nor orphaned lines
+\widowpenalty10000 \clubpenalty10000
+
+% no matter what cost is in terms of additional lines, don't make too-long lines
+\sloppy
+
+\usepackage[pdfencoding=auto,unicode, bookmarks, colorlinks=false, pdfborder={0 0 0}]{hyperref}
+\usepackage{siunitx}
+\sisetup{%
+  output-decimal-marker={.},
+  load-configurations=abbreviations,
+  group-separator={\,}
+}
+
+\DeclareSIUnit[number-unit-product = {\;}]{\mas}{mas}
