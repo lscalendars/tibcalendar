@@ -1,0 +1,40 @@
+\mychapter{Introduction}
+
+\mysection{What it this document?}
+
+This article aims at giving an overview of the main inaccuracies encounterable in astronomical calculations when used in calendrical calculations.
+
+\mysection{Genesis}
+
+Working on Tibetan calendar calculations, I realized that there was no documentation on how to use the main astronomical calculations (such as VSOP87) to get the data necessary to build a calendar. These include the different approximations we would naturally make with the result, the induced discrepancy of which I have never seen documented.
+
+I guess many people did these calculations, such as the authors of the main astronomical libraries, but no documentation is available on the global accuracy of their calculations nor on why they would take into account a phenomenon or not.
+
+Instead of redoing these calculations myself, I decided to compute them fully and document them, in order:
+\begin{itemize}
+\item to make the accuracy gain of some considerations documented
+\item to analyze and document the precision of the calculations used in my astronomical library\TODO
+\end{itemize}
+
+This article is made from the point of view of calendrical calculations but will be meaningful with any calculation from the point of view of a human observer on the Earth.
+
+This article will not give a very precise average error for all phenomena, but:
+\begin{itemize}
+\item the maximum error
+\item an error computed with what seems average values
+\item a conclusion on the necessity to take the phenomenon into account according to the desired precision
+\end{itemize}
+
+\mysection{Conventions used in this article}
+
+\mysubsection{Assertions}
+
+In this article, we will consider that latest JPL ephemeris \TODO are fully accurate. 
+
+We consider that all computer calculations are approximated as defined by IEEE 754/784, so calculations are supposed to happen in C99 or Fortran 2003. If you use a non-prehistoric processor and compiler, it should be the case though.
+
+\mysubsection{Notation}
+
+\mysection{License}
+
+This work is under the Creative Commons Attribution-Share Alike 3.0 Unported License. See \cite{CCASA} for details and the complete license.

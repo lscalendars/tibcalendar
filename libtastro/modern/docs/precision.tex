@@ -8,7 +8,7 @@ numbers=noenddot,%
 DIV=12,% margin settings
 twoside=semi,% right and left difference, but same margins
 headings=small,% small headings
-]{scrartcl}
+]{scrbook}
 
 \usepackage{eroux}
 
@@ -27,76 +27,43 @@ headings=small,% small headings
 \ohead[]{}
 \ihead[]{}
 
+\let\mychapter\chapter
+\let\mysection\section
+\let\mysubsection\subsection
+\let\mysubsubsection\subsubsection
+
+\def\TODO{}
+
 \begin{document}
 
 \maketitle
-
-\begin{abstract}
-blabla $x=y$
-\end{abstract}
 
 \tableofcontents
 %\cleardoubleevenemptypage
 %\clearpage
 \newpage
 
-\section{Introduction}
+\include{introduction}
 
-This will be the introduction
+\include{calendricalscales}
 
-\subsection{What it this article?}
+\include{ephemerismethods}
 
-\subsection{Genesis of this article}
+\include{timescales}
 
-\subsection{What this article is not}
+\mychapter{Coordinate systems}
 
-\subsection{Precision needed in }
+\mychapter{Errors due to Time and Coordinate system calculations}
 
-\section{The different calculation methods}
+\mysection{Delta T uncertainty}
 
-\subsection{Variations Séculaires des Orbites Planétaires (VSOP)}
+\mysection{Nutation Effect}
 
-\subsubsection{vsop87}
+\mysection{Obliquity of the Ecliptic}
 
-\subsubsection{vsop2013}
+\mysection{Earth Rotation Angle (ERA)}
 
-\subsection{ELP/MPP02 and LEA-406}
-
-\subsection{JPL Ephemeris}
-
-%% Timescales
-
-\section{Timescales}
-
-\subsection{Atomic time (TAI)}
-
-\subsection{Earth Rotation Time}
-
-\subsection{Dynamical Time}
-
-\subsubsection{Based on TAI}
-
-\subsubsection{Truely relativistic time}
-
-\subsection{Time used by calendrical calculations}
-
-\subsection{Time used by ephemeris calculations}
-
-\subsection{Time used by calendrical calculations}
-
-\section{Coordinate systems}
-
-\section{Errors due to Time and Coordinate system calculations}
-
-\subsection{Delta T uncertainty}
-
-\subsection{Nutation Effect}
-
-\subsection{Obliquity of the Ecliptic}
-
-\subsection{Earth Rotation Angle (ERA)}
-
-\subsection{Position of the observer}
+\mysection{Position of the observer}
 
 Calendrical calculations are supposedly made by humans above the sea, not at the geocenter. So the observed longitude of a celestial body 
 
@@ -115,30 +82,26 @@ Which is an error to be avoided by all means!
 If we take an observation at sea level, with a $30°$ angle and an average distance (Sun-Earth distance for inner planets and Sun-planet distance for outer ones), we can compute the following table:
 
 \begin{center}
-\sisetup{table-figures-decimal = 1, 
-  table-figures-integer = 4,
-  table-format=4.1,
-  table-space-text-post = \si{mas},
-  table-number-alignment = right,
-  table-unit-alignment = left,
-  table-text-alignment = center,
-%  table-align-text-post = false
-  }
-\begin{tabular}{|l|S|S[table-unit-alignment = left,table-format=4.1]|}
+\sisetup{table-figures-exponent = 1}
+\begin{tabular}{|l|S|S|}
 \hline
-\textbf{Celestial body} & \textbf{$\Theta_{max}$} & \textbf{$\Theta$}  \\\hline
-Sun & \SI{9}{\second} & \SI{4}{\second}\\\hline % min: 147Mkm, mean: 150km
-Moon & \SI{3655}{\second} & \SI{1706}{\second}\\\hline % min: 360kkm, mean: 385kkm
-Mercury & \SI{17}{\second} & \SI{6.7}{\second}\\\hline %  min: 77 Mkm, mean: 100Mkm
-Mars & \SI{24}{\second} & \SI{3}{\second}\\\hline % min: 54.6Mm, mean: 225Mkm
-Venus & \SI{35}{\second} & \SI{4}{\second}\\\hline % min: 38Mkm, mean: 150Mkm
-Jupiter & \SI{2}{mas} & \SI{0.8}{mas} \\\hline % min: 629kMkm, mean: 770kMkm
-Saturn & \SI{1}{\second} & \SI{453}{mas}\\\hline % min  1200Mkm, mean: 1450Mkm
+\textbf{Celestial body} & \multicolumn{1}{c|}{\textbf{$\Theta_{max}$}} & \multicolumn{1}{c|}{\textbf{$\Theta$}}  \\\hline
+Sun & 9 & 4\\\hline % min: 147Mkm, mean: 150km
+Moon & 3655 & 1706\\\hline % min: 360kkm, mean: 385kkm
+Mercury & 17 & 7\\\hline %  min: 77 Mkm, mean: 100Mkm
+Mars & 24 & 3\\\hline % min: 54.6Mm, mean: 225Mkm
+Venus & 35 & 4\\\hline % min: 38Mkm, mean: 150Mkm
+Saturn & 1 & 453\\\hline % min  1200Mkm, mean: 1450Mkm
+Jupiter & 2e-3 & 8e-4 \\\hline % min: 629kMkm, mean: 770kMkm
 \end{tabular}
 \end{center}
 
-\section{Other inexact algorithms}
+\mychapter{Other inaccuracies}
 
-\subsection{iterations in the light tralvel time}
+\mysection{iterations in the light tralvel time}
+
+\mysection{Aberration of light}
+
+
 
 \end{document}
