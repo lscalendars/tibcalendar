@@ -25,6 +25,8 @@ This article will not give a very precise average error for all phenomena, but:
 \item a conclusion on the necessity to take the phenomenon into account according to the desired precision
 \end{itemize}
 
+
+
 \mysection{Conventions used in this article}
 
 \mysubsection{Assertions}
@@ -33,7 +35,27 @@ In this article, we will consider that latest JPL ephemeris \TODO are fully accu
 
 We consider that all computer calculations are approximated as defined by IEEE 754/784, so calculations are supposed to happen in C99 or Fortran 2003. If you use a non-prehistoric processor and compiler, it should be the case though.
 
-\mysubsection{Notation}
+\mysubsection{Notation and vocabulary}
+
+\mysubsubsection{Trueness and precision}
+
+This is quite important here to differenciate trueness and precision, both being part of accuracy. These terms are officially defined in \cite{VIM}\footnote{in accordance to ISO-5724\cite{ISO5724}} as closeness of agreement between:
+
+\begin{description}
+\item[trueness] the average of an infinite number of replicate measured quantity values and a reference quantity value
+\item[precision] indications or measured quantity values obtained by replicate measurements on the same or similar objects under specified conditions
+\item[accuracy] a measured quantity value and a true quantity value of a measurand
+\end{description}
+
+It makes sense to translate them to astronomical calculations, taking a calculation as a \emph{measure}. \ref{ATP} is useful to get a better understanding.
+
+\begin{figure}[h]
+\centering
+\def\svgwidth{10cm}
+\input{ATP.pdf_tex}
+\label{ATP}
+\caption{Accuracy, Precision and Trueness of calculations\footnote{This image comes from Wikipedia and is under the same license as this document}}
+\end{figure}
 
 \mysection{License}
 
