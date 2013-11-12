@@ -75,26 +75,28 @@ For instance, as we've seen, no hardware is capable of more than 80-bit calculat
 
 \mysubsubsection{\texttt{double} on FPU}
 
+\let\enumstyle\texttt
+
 \texttt{double} keyword always uses 64-bit representation in memory, but when it comes to representation in (80-bit) FPU registers, two behaviours are possible:
 \begin{enumerate}
-\item[80-bit mode] calculations and intermediate values are made in 80-bit, which improves the precision of the calculations\footnote{but may lead in wrong comparaison results, see \url{http://gcc.gnu.org/wiki/x87note}}
-\item[64-bit mode] the mantissa of intermediate values is rounded to 53 bits (thus giving double precision precision)\footnote{This is what the \texttt{-mpc64} option of gcc or the \texttt{/fp:precise} option of MSVC do, see \url{http://gcc.gnu.org/onlinedocs/gcc/i386-and-x86\_002d64-Options.html} and \url{http://msdn.microsoft.com/en-us/library/e7s85ffb.aspx}.}.
+\item[\enumstyle{80-bit mode}] calculations and intermediate values are made in 80-bit, which improves the precision of the calculations\footnote{but may lead in wrong comparaison results, see \url{http://gcc.gnu.org/wiki/x87note}}
+\item[\enumstyle{64-bit mode}] the mantissa of intermediate values is rounded to 53 bits (thus giving double precision precision)\footnote{This is what the \texttt{-mpc64} option of gcc or the \texttt{/fp:precise} option of MSVC do, see \url{http://gcc.gnu.org/onlinedocs/gcc/i386-and-x86\_002d64-Options.html} and \url{http://msdn.microsoft.com/en-us/library/e7s85ffb.aspx}.}.
 \end{enumerate}
 
 \mysubsubsection{\texttt{long double} on FPU}
 
 \texttt{long double} can have several representations:
 \begin{enumerate}
-\item[64-bit] this is the default on MSVC, \texttt{long double} being a synonym of \texttt{double}\footnote{see \url{http://msdn.microsoft.com/en-us/library/9cx8xs15.aspx}}
-\item[96-bit] this is the default on gcc. In this case, 16 bits are not used in calculations in 80-bit mode.
-\item[128-bit] this is the case on gcc with the \texttt{-m128bit-long-double}\footnote{see \url{http://gcc.gnu.org/onlinedocs/gcc/i386-and-x86\_002d64-Options.html}}. 48 bits are not used in calculations.
+\item[\enumstyle{64-bit}] this is the default on MSVC, \texttt{long double} being a synonym of \texttt{double}\footnote{see \url{http://msdn.microsoft.com/en-us/library/9cx8xs15.aspx}}
+\item[\enumstyle{96-bit}] this is the default on gcc. In this case, 16 bits are not used in calculations in 80-bit mode.
+\item[\enumstyle{128-bit}] this is the case on gcc with the \texttt{-m128bit-long-double}\footnote{see \url{http://gcc.gnu.org/onlinedocs/gcc/i386-and-x86\_002d64-Options.html}}. 48 bits are not used in calculations.
 \end{enumerate}
 
 For the sake of completeness, it's important to notice here that gcc allows \texttt{\_\_float80} type which is 80-bit long, and thus fits perfectly in FPU registers. This can be quite useful if you want to optimize on FPU. The GNU Fortran also has \texttt{KIND=10} option that does the same\footnote{see \url{http://gcc.gnu.org/onlinedocs/gfortran/KIND-Type-Parameters.html}}.
 
 \mysubsubsection{\texttt{long double} on CPU}
 
-The x86\_64 ABI\footnote{\url{}} states that \texttt{long double} has intermediate values and calculations is in extended precision (80-bit), all operations being performed on the FPU; so no CPU (SSE/AVX) code will be used with the keyword \texttt{long double}.
+The x86\_64 ABI\footnote{\url{http://www.x86-64.org/documentation/abi.pdf}} states that \texttt{long double} has intermediate values and calculations is in extended precision (80-bit), all operations being performed on the FPU; so no CPU (SSE/AVX) code will be used with the keyword \texttt{long double}.
 
 The ARM Development Tools\footnote{\url{http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0067d/BABFCGFC.html}} state that \texttt{long double} is 64-bit long, and thus a synonym of double.
 
@@ -117,7 +119,7 @@ Quadruple precision & 128/80 & \texttt{long long} on x86\_64 (computations with 
 
 This table is another view of the same data:
 
-\begin{tabu} to \linewidth{|X|X[c]|X[c]|X[c]|X[c]|X[c]|}
+\begin{tabu} to \linewidth{|X|X[c]|X[c]|X[c]|X[c]|}
 \hline
 \rowfont[c]{\bfseries} C keyword & FPU (64-bit) & FPU (80-bit) & Modern & MSVC
 \\\hline
