@@ -2,15 +2,9 @@
 
 In the process of improving precision in calculations, it is very important to understand the limits of the underlying hardware and software, and the cost of going over them.
 
-\mysection{General introduction}
+\mysection{Different computer representations}
 
-Representing real numbers in a computer is something that is quite challenging and possible only with important limitations. These are documented, but errors due to these limitations are very difficult to compute.
-
-A good introduction to this topic is \cite{Goldberg}, this section describes the general principles described in it.
-
-\mysubsection{Number representation}
-
-\mysubsubsection{Computer representation}
+\mysubsection{General representation}
 
 Real numbers are represented by floating point numbers, that can be schematized as:
 \begin{itemize}
@@ -21,9 +15,176 @@ Real numbers are represented by floating point numbers, that can be schematized 
 
 In arbitrary precision libraries, operations are made in software and thus doesn't depend too much on hardware representation, at the cost of an important speed loss. The system is the same though, but the size of the exponent and the mantissa is given by the user\footnote{Note that the mainstream GMP/MPFR doesn't allow to set truely arbitrary exponent}.
 
-\mysubsubsection{Analytical representation}
+The representation size of a floating point number vary according to hardware architecture and user input. We will take into consideration here the most common types (which should cover 99.99\% of use cases). We describe here the IEEE-754 standard as implemented in C99, but there are strict equivalents in Fortran.
 
-Floating points numbers can be studied as being in the form $d.dd...dd\times\beta^e$, where $d.dd...dd$ is the significand and has p digits, $\beta$ is the base (assumed to be even) and $e$ the exponent.
+\mysubsection{Norms and definitions}
+
+This paragraph describes the most simple description of floats, namely the description of the main types as in the IEEE-754 norm. This can be summarized in the following table:
+
+\begin{center}
+\vspace{\spacearoundtables}
+\begin{tabular}{|l|S|S|S|}
+\hline
+\multicolumn{1}{|c|}{\textbf{name}} & \multicolumn{1}{c|}{\textbf{total}} & \multicolumn{1}{c|}{\textbf{exponent}} & \multicolumn{1}{c|}{\textbf{mantissa}} \\\hline
+Single precision & 32 & 8 & 23 \\\hline
+Double precision & 64 & 11 & 52 \\\hline
+Quadruple precision & 128 & 15 & 112 \\\hline
+\end{tabular}
+\vspace{\spacearoundtables}
+\end{center}
+
+But as we will see, there are some discrepancies between this and reality, due to several implementation choices that we will detail in the next sections.
+
+\mysubsection{Hardware implementation}
+
+There is currently no widespread hardware that can make operations on floating points with more than 80 bits\footnote{though the z/Architecture of IBM Mainstream Servers can compute 128-bit float operations.}, and this limitation tends to be more and more restrictive. This section will explain the different hardware implementations. It is a very important topic to understand as it is non-obvious and implementation choices might seem very strange.
+
+First we can distinguish between two floating point computing hardwares:
+\begin{enumerate}
+\item[FPU]\footnote{\emph{Floating Point Unit}, or x87.} This is the historical hardware introduced by Intel, present in all x86 and x86\_64 computers. This hardware has 80-bits registers and thus cannot make more precise operations.
+\item[SIMD]\footnote{\emph{Single Instruction, Multiple Data}.} Single operations work with at most 64-bit registers and are thus less precise. SIMD offers thought the possibility to make several operations at the same time, hence the trend to prefer it. SSE, AVX, NEON, etc. are all following this architecture. Most complex operations such as trigonometric ones are not implemented and fall back on \emph{FPU}.
+\end{enumerate}
+
+Floating point numbers represented in 80-bit registers follow the \emph{extended precision} of IEEE-754 standards and is composed of a 15-bit exponent and a 64-bits mantissa.
+
+Modern x86 and x86\_64 hardware have both SIMD (SSE or AVX) and FPU.
+
+On decent compilers, it is possible to decide between SIMD, FPU or both\footnote{on \texttt{gcc}, the \texttt{-mfpmath} switch allows this, see \url{http://gcc.gnu.org/onlinedocs/gcc/i386-and-x86_002d64-Options.html} and \url{http://gcc.gnu.org/wiki/Math_Optimization_Flags}}. It is thus necessary to study this topic if you want to work on precision. By default, on x86 processors, the FPU is used, while SIMD is the default on x86\_64 processors and ARM processors.
+
+It is important to note that on ARM processors (present on smartphones, tablets, etc.), floating point operations are sometimes done in a VFP, a kind of modified FPU. This VFP has no clear specification, but it seems not to have 80-bit registers, so smartphones and tablets should be considered to have only 64-bit registers.
+
+Another form of harware implementation was present in PowerPC and SPARC processors, where 128-bit numbers could be encoded in two 64-bit registers with operations combining them. This arithmetic had a precision of about 106-bit.
+
+\mysubsection{Software fallback}
+
+It is possible to make floating point arithmetic with software, at the cost of very significant speed reduction. These implementations are of two types:
+
+\begin{enumerate}
+\item[\enumstyle{Compiler}] Sometimes languages specifications (or extensions) cannot be implemented with hardware, and thus compilers provide a software fallback for some types
+\item[\enumstyle{Libraries}] Some libraries can do arbitrary precision floating point arithmetic. The most famous ones being GMP\footnote{\url{http://gmplib.org/}} and MPFR\footnote{\url{http://www.mpfr.org/}}.
+\end{enumerate}
+
+\mysubsection{C implementation}
+
+This part will describe C99, but anyone using a language for astronomical calculations should get knowledge on this topic for the language he chooses.
+
+The discrepancy between hardware and a naive float approach is naturally also present between the naive approach and the various implementations of compilers. Indeed, compilers tend to stick as close to hardware as possible (which is their role) in order to use as few costy software emulation as possible. 
+
+As we've seen, almost no hardware is capable of more than 80-bit calculations, thus hardware 128-bit calculation is impossible. We can also safely assume that users using the C99 keyword \texttt{long double} don't want software emulation. To solve this dilemma, compilers chose different options, the main things to know being summed up in the next paragraphs.
+
+\mysubsubsection{\texttt{double} on FPU}
+
+\texttt{double} keyword always uses 64-bit representation in memory, but when it comes to representation in (80-bit) FPU registers, two behaviours are possible:
+\begin{enumerate}
+\item[\enumstyle{80-bit mode}] calculations and intermediate values are made in 80-bit, which improves the precision of the calculations\footnote{but may lead in wrong comparaison results, see \url{http://gcc.gnu.org/wiki/x87note}}
+\item[\enumstyle{64-bit mode}] the mantissa of intermediate values is rounded to 53 bits (thus giving double precision precision)\footnote{This is what the \texttt{-mpc64} option of gcc or the \texttt{/fp:precise} option of MSVC do, see \url{http://gcc.gnu.org/onlinedocs/gcc/i386-and-x86\_002d64-Options.html} and \url{http://msdn.microsoft.com/en-us/library/e7s85ffb.aspx}.}.
+\end{enumerate}
+
+In C99, it is possible to know the intermediate rounding of operations with the C99 macro \texttt{FLT\_EVAL\_METHOD}\footnote{\url{http://pubs.opengroup.org/onlinepubs/009695399/basedefs/math.h.html}}.
+
+\mysubsubsection{\texttt{long double} on FPU}
+
+\texttt{long double} can have several representations:
+\begin{enumerate}
+\setlength{\itemsep}{0pt}
+\setlength{\parskip}{0pt}
+\item[\enumstyle{64-bit}] this is the default on MSVC, \texttt{long double} being a synonym of \texttt{double}\footnote{see \url{http://msdn.microsoft.com/en-us/library/9cx8xs15.aspx}}
+\item[\enumstyle{96-bit}] this is the default on gcc. In this case, 16 bits are not used in calculations in 80-bit mode.
+\item[\enumstyle{128-bit}] this is the case on gcc with the \texttt{-m128bit-long-double}\footnote{see \url{http://gcc.gnu.org/onlinedocs/gcc/i386-and-x86\_002d64-Options.html}}. 48 bits are not used in calculations.
+\end{enumerate}
+
+For the sake of completeness, it's important to notice here that gcc allows \texttt{\_\_float80}\footnote{\url{http://gcc.gnu.org/onlinedocs/gcc/Floating-Types.html}} type which is a synonym of \texttt{long double} on x86 and x86\_64 architectures.
+
+\mysubsubsection{\texttt{long double} on SIMD and ARM}
+
+The x86\_64 ABI\footnote{\url{http://www.x86-64.org/documentation/abi.pdf}} states that \texttt{long double} has intermediate values and calculations is in extended precision (80-bit), all operations being performed on the FPU; so no SIMD code will be used with the keyword \texttt{long double}.
+
+The ARM Development Tools\footnote{\url{http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0067d/BABFCGFC.html}} state that \texttt{long double} is 64-bit long, and thus a synonym of \texttt{double}.
+
+\mysubsubsection{Summing up}
+
+We can thus construct the following table summing up the previous paragraphs, giving some name conventions we'll use later. These names are just convenient and (though largely the same) not identical to IEEE-754 standard. The number of bits cells are in the form $x$/$y$, where $x$ is the number of bits used in memory and $y$ the number of bits used in calculations and intermediate values.
+
+\begin{table}[h]
+\begin{tabu} to \linewidth{|X[l]|X[c]|X[c]|X[c]|}
+\hline
+\rowfont[c]{\bfseries} Compiler & SIMD & x86 FPU & x86\_64 FPU
+\\\hline
+\textbf{GCC} & 32/32 & 32/80 & 32/80\\\hline
+\textbf{MSVC} & 32/32 & 32/80 & 32/80\\\hline 
+\end{tabu}
+\caption{\texttt{float} representation}
+\end{table}
+
+\begin{table}[h]
+\begin{tabu} to \linewidth{|X[l]|X[c]|X[c]|X[c]|}
+\hline
+\rowfont[c]{\bfseries} Compiler & SIMD & x86 FPU & x86\_64 FPU
+\\\hline
+\textbf{GCC} & 64/64 & 64/80 & 64/80\\\hline
+\textbf{MSVC} & 64/64 & 64/80 & 64/80\\\hline
+\end{tabu}
+\caption{\texttt{double} representation}
+\end{table}
+
+\begin{table}[h]
+\begin{tabu} to \linewidth{|X[l]|X[c]|X[c]|X[c]|}
+\hline
+\rowfont[c]{\bfseries} Compiler & SIMD & x86 FPU & x86\_64 FPU
+\\\hline
+\textbf{GCC} & 64/64 & 96/80 & 128/80\\\hline
+\textbf{MSVC} & 64/64 & 64/80 & 64/80\\\hline
+\end{tabu}
+\caption{\texttt{long double} representation}
+\end{table}
+
+%\vspace{\spacearoundtables}
+
+%\begin{tabu} to \linewidth{|X[2]|X[c]|X[4]|}
+%\hline
+%\rowfont[c]{\bfseries} Name & Nb. of bits & Name in C
+%\\\hline
+%Simple precision & 32/32 & \texttt{float} in SIMD\\\hline
+%Mixed simple precision & 32/80 & \texttt{float} in FPU\\\hline
+%Double precision & 64/64 & \texttt{double}, \texttt{long double} on ARM and modern instruction sets (SSE, AVX). If on FPU, must be set in 64-bit mode.\\\hline
+%Extended double precision & 80/80 & not available as such (only internal registers) \\\hline
+%Mixed double precision & 64/80 & \texttt{double} in FPU, also \texttt{long double} on MSVC \\\hline
+%Mixed triple precision & 96/80 & \texttt{long double} on x86 FPU\\\hline
+%Quadruple precision & 128/128 & \texttt{\_\_float128} of \texttt{gcc}, software emulation except on a few hardwares\\\hline
+%Mixed quadruple precision & 128/80 & \texttt{long double} on x86\_64 FPU\\\hline
+%\end{tabu}
+
+%\vspace{\spacearoundtables}
+
+%This table is another view of the same data:
+
+%\vspace{\spacearoundtables}
+
+%\begin{tabu} to \linewidth{|X|X[c]|X[c]|X[c]|X[c]|}
+%\hline
+%\rowfont[c]{\bfseries} C keyword & FPU (64-bit) & FPU (80-bit) & SIMC & MSVC
+%\\\hline
+%\texttt{float} & 32/64 & 32/80 & 32/32 & no difference\\\hline
+%\texttt{double} & 64/64 & 64/80 & 64/64 & no difference \\\hline
+%\texttt{long double} & 96/80 or 128/80 & 96/80 or 128/80 & idem \texttt{double} on ARM, mapped to FPU with others & idem \texttt{double} \\\hline
+%\texttt{\_\_float128} & 128/128 & 128/128 or 128/128 & error \\\hline
+%\end{tabu}
+
+%\vspace{\spacearoundtables}
+
+\mysection{Common errors due to floating point representations}
+
+This section is an overview of the most common errors due to floating point arithmetic, and of their solution.
+
+\mysubsection{Introduction}
+
+One of the problems of floating point arithmetic is that global formulas are almost inexistant and error for each floating point number manipulation should be calculated by hand, depending on the variable maxima and minima, the chosen float representation, etc.
+
+This section will thus describe only general errors and things to know about floating point manipulation. A good introduction to this topic is \cite{Goldberg}, and \cite{Higham} a more recent and complete book. This section describes the general principles described in these.
+
+\mysubsubsection{Notation}
+
+We will use here analytical notation of floating points numbers we can find very commonly. We will represent a floating point number as being in the form $$d.dd...dd\times\beta^e$$where $d.dd...dd$ is the significand and has p digits, $\beta$ is the base (assumed to be even) and $e$ the exponent.
 
 To make the link with computer representations, we would have:
 \begin{itemize}
@@ -33,103 +194,31 @@ To make the link with computer representations, we would have:
 \item $e$ the exponent
 \end{itemize}
 
-\mysection{Different computer representations}
+\mysubsubsection{Non-} % communativité
 
-The representation size of a floating point number vary according to hardware architecture and user input. We will take into consideration here the most common types (which should cover 99.99\% of use cases). We describe here the IEEE-754 standard as implemented in C99, but there are strict equivalents in Fortran.
+\mysubsection{Polynomial calculations}
 
-\mysubsection{A first approach}
+\mysubsection{Summations}
 
-In a first naive approach would give the following floating point representations (all values are in number of bits):
+Two precision optimizations are possible for sums, one costless and one very costy but very efficient.
 
-\begin{tabular}{|l|S|S|S|l|}
-\hline
-\multicolumn{1}{|c|}{\textbf{name}} & \multicolumn{1}{c|}{\textbf{total}} & \multicolumn{1}{c|}{\textbf{exponent}} & \multicolumn{1}{c|}{\textbf{mantissa}} & \multicolumn{1}{c|}{\textbf{keyword in C}}\\\hline
-Single precision & 32 & 8 & 23 & \texttt{float} \\\hline
-Double precision & 64 & 11 & 52 & \texttt{double} \\\hline
-Quadruple precision & 128 & 15 & 112 & \texttt{long double} \\\hline
-\end{tabular}
+\mysubsubsection{Small numbers first}
 
-But as we will see, there are some discrepancies between this and reality, due to several implementation choices that we will detail in the next sections.
+It is a good practice, for sums of more than two floating point numbers, to start the 
 
-\mysubsection{Hardware limitation: x87 and SSE}
+\mysubsubsection{Long sums}
 
-There is currently no mainstream hardware that can make operations on floating points with more than 80 bits, and this limitation tends to even increase. This is a very important topic to understand as it is highly non-obvious and implementation choices might seem very strange.
+\mysubsection{Errors in transcendental functions}
 
-First we can distinguish between two floating point computing hardwares:
-\begin{enumerate}
-\item[x87 FPU] This is the historical hardware introduced by Intel, present in all x86 and x86\_64 computers. This hardware has 80-bits registers and thus cannot make more precise operations.
-\item[CPU] All calculations done directly with the CPU are different and use 64-bit registers, and are thus less precise.
-\end{enumerate}
+Transcendental functions (like sin and cos) are not mandatorily exactly rounded.
 
-80-bit floating point representation follows the \emph{extended precision} of IEEE-754 standards and is composed of a 15-bit exponent and a 64-bits mantissa.
+\mysection{Errors induced by floating point in common astronomical calculations}
 
-Compilers tend to use modern instructions sets such as SSE\TODO{}, AVX\TODO{} or NEON\TODO{}, which fall in the above \emph{CPU} category. On decent compilers, it is possible to decide between modern instruction sets, FPU or both\footnote{on \texttt{gcc}, the \texttt{-mfpmath} switch allows this, see \url{http://gcc.gnu.org/onlinedocs/gcc/i386-and-x86_002d64-Options.html} and \url{http://gcc.gnu.org/wiki/Math_Optimization_Flags}}. It is thus necessary to study this topic if you want to work on precision. By default, on x86 processors, the FPU is used, while modern instructions set are the default on x86\_64 processors.
+\mysubsection{Converting floating point error in angle precision error}
 
-It is important to note that on ARM processors (present on smartphones, tablets, etc.), floating point operations are done in a VFP, a kind of modified FPU. This VFP has no clear specification, but it seems not to have 80-bit registers, so smartphones and tablets fall on the \emph{CPU} category.
+\mysubsection{Errors in common astronomical calculations}
 
-\mysubsection{Real life compiler's implementation}
+\mysubsubsection{Theorical bounds}
 
-The discrepancy between hardware and a naive float approach is naturally also present between the naive approach and the various implementations of compilers. Indeed, compilers tend to stick as close to hardware as possible (which is their role) in order to use as few costy software emulation as possible.
+\mysubsubsection{Some measures}
 
-For instance, as we've seen, no hardware is capable of more than 80-bit calculations, thus hardware 128-bit calculation is impossible. We can also safely assume that users using the C99 keyword \texttt{long double} don't want software emulation. To solve this dilemma, compilers chose different options, the main things to know being summed up in the next paragraphs.
-
-\mysubsubsection{\texttt{double} on FPU}
-
-\let\enumstyle\texttt
-
-\texttt{double} keyword always uses 64-bit representation in memory, but when it comes to representation in (80-bit) FPU registers, two behaviours are possible:
-\begin{enumerate}
-\item[\enumstyle{80-bit mode}] calculations and intermediate values are made in 80-bit, which improves the precision of the calculations\footnote{but may lead in wrong comparaison results, see \url{http://gcc.gnu.org/wiki/x87note}}
-\item[\enumstyle{64-bit mode}] the mantissa of intermediate values is rounded to 53 bits (thus giving double precision precision)\footnote{This is what the \texttt{-mpc64} option of gcc or the \texttt{/fp:precise} option of MSVC do, see \url{http://gcc.gnu.org/onlinedocs/gcc/i386-and-x86\_002d64-Options.html} and \url{http://msdn.microsoft.com/en-us/library/e7s85ffb.aspx}.}.
-\end{enumerate}
-
-\mysubsubsection{\texttt{long double} on FPU}
-
-\texttt{long double} can have several representations:
-\begin{enumerate}
-\item[\enumstyle{64-bit}] this is the default on MSVC, \texttt{long double} being a synonym of \texttt{double}\footnote{see \url{http://msdn.microsoft.com/en-us/library/9cx8xs15.aspx}}
-\item[\enumstyle{96-bit}] this is the default on gcc. In this case, 16 bits are not used in calculations in 80-bit mode.
-\item[\enumstyle{128-bit}] this is the case on gcc with the \texttt{-m128bit-long-double}\footnote{see \url{http://gcc.gnu.org/onlinedocs/gcc/i386-and-x86\_002d64-Options.html}}. 48 bits are not used in calculations.
-\end{enumerate}
-
-For the sake of completeness, it's important to notice here that gcc allows \texttt{\_\_float80} type which is 80-bit long, and thus fits perfectly in FPU registers. This can be quite useful if you want to optimize on FPU. The GNU Fortran also has \texttt{KIND=10} option that does the same\footnote{see \url{http://gcc.gnu.org/onlinedocs/gfortran/KIND-Type-Parameters.html}}.
-
-\mysubsubsection{\texttt{long double} on CPU}
-
-The x86\_64 ABI\footnote{\url{http://www.x86-64.org/documentation/abi.pdf}} states that \texttt{long double} has intermediate values and calculations is in extended precision (80-bit), all operations being performed on the FPU; so no CPU (SSE/AVX) code will be used with the keyword \texttt{long double}.
-
-The ARM Development Tools\footnote{\url{http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0067d/BABFCGFC.html}} state that \texttt{long double} is 64-bit long, and thus a synonym of double.
-
-\mysubsubsection{Summing up}
-
-We can thus construct the following table summing up the previous paragraphs, giving some name conventions we'll use later. These names are just convenient and (though largely the same) not identical to IEEE-754 standard. The number of bits cells are in the form $x$/$y$, where $x$ is the number of bits used in memory and $y$ the number of bits used in calculations and intermediate values.
-
-\begin{tabu} to \linewidth{|X[2]|X[c]|X[4]|}
-\hline
-\rowfont[c]{\bfseries} Name & Nb. of bits & Name in C
-\\\hline
-Simple precision & 32/32 & \texttt{float} with \texttt{-mpc32} option\\\hline
-Mixed simple precision & 32/80 & \texttt{float} \\\hline
-Double precision & 64/64 & \texttt{double}, \texttt{long double} on ARM and modern instruction sets (SSE, AVX). If on FPU, must be set in 64-bit mode.\\\hline
-Extended double precision & 80/80 & \texttt{\_\_float80} (extension of gcc, FPU only) \\\hline
-Mixed double precision & 64/80 & in 80-bit mode FPU: \texttt{double}, \texttt{long double} on MSVC \\\hline
-Triple precision & 96/80 & \texttt{long long} on x86 (computations with FPU)\\\hline
-Quadruple precision & 128/80 & \texttt{long long} on x86\_64 (computations with FPU)\\\hline
-\end{tabu}
-
-This table is another view of the same data:
-
-\begin{tabu} to \linewidth{|X|X[c]|X[c]|X[c]|X[c]|}
-\hline
-\rowfont[c]{\bfseries} C keyword & FPU (64-bit) & FPU (80-bit) & Modern & MSVC
-\\\hline
-\texttt{float} & 32/64 & 32/80 & 32/32 & no difference\\\hline
-\texttt{double} & 64/64 & 64/80 & 64/64 & no difference \\\hline
-\texttt{\_\_float80} & error & 80/80 & error & error \\\hline
-\texttt{long double} & 96/80 or 128/80 & 96/80 or 128/80 & idem \texttt{double} on ARM, mapped to FPU with others & idem \texttt{double} \\\hline
-\end{tabu}
-
-% http://gcc.gnu.org/onlinedocs/gcc/Floating-Types.html
-% http://gcc.gnu.org/wiki/x87note
-% http://gcc.gnu.org/wiki/Math_Optimization_Flags
-% http://gcc.gnu.org/onlinedocs/gfortran/KIND-Type-Parameters.html

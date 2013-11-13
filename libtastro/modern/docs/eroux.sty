@@ -109,8 +109,11 @@
   group-separator={\,}
 }
 
-\DeclareSIUnit[number-unit-product = {\;}]{\mas}{mas}
+\let\enumstyle\textsl
+\xdef\spacearoundtables{2mm}
 
-%\usepackage{tabularx} % the the X column
+\usepackage{enumitem}
+\setlist{nolistsep}
+
 \usepackage{tabu}
 \tabulinesep=4pt
