@@ -51,7 +51,7 @@ Modern x86 and x86\_64 hardware have both SIMD (SSE or AVX) and FPU.
 
 On decent compilers, it is possible to decide between SIMD, FPU or both\footnote{on \texttt{gcc}, the \texttt{-mfpmath} switch allows this, see \url{http://gcc.gnu.org/onlinedocs/gcc/i386-and-x86_002d64-Options.html} and \url{http://gcc.gnu.org/wiki/Math_Optimization_Flags}}. It is thus necessary to study this topic if you want to work on precision. By default, on x86 processors, the FPU is used, while SIMD is the default on x86\_64 processors and ARM processors.
 
-It is important to note that on ARM processors (present on smartphones, tablets, etc.), floating point operations are sometimes done in a VFP, a kind of modified FPU. This VFP has no clear specification, but it seems not to have 80-bit registers, so smartphones and tablets should be considered to have only 64-bit registers.
+It is important to note that on ARM processors (present on smartphones, tablets, etc.), floating point operations are sometimes done in a VFP, a kind of modified FPU. This VFP has no clear specification, but it seems not to have 80-bit registers, so smartphones and tablets should be considered to have only 64-bit registers. Also, VFP is not mandatory in the ARM architecture, and can be replaced by a software fallback (softvp)\footnote{see \url{http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0348c/CIHCJIFE.html}} so the target architecture is definitely to be inspected carefully!
 
 Another form of harware implementation was present in PowerPC and SPARC processors, where 128-bit numbers could be encoded in two 64-bit registers with operations combining them. This arithmetic had a precision of about 106-bit.
 
@@ -82,12 +82,12 @@ As we've seen, almost no hardware is capable of more than 80-bit calculations, t
 
 In C99, it is possible to know the intermediate rounding of operations with the C99 macro \texttt{FLT\_EVAL\_METHOD}\footnote{\url{http://pubs.opengroup.org/onlinepubs/009695399/basedefs/math.h.html}}.
 
+\texttt{double} on ARM is 64 bytes and always computed on VFP. It's important to note here that the NEON instructions don't provide double precision operations\footnote{see \url{http://www.arm.com/products/processors/technologies/neon.php}}.
+
 \mysubsubsection{\texttt{long double} on FPU}
 
 \texttt{long double} can have several representations:
 \begin{enumerate}
-\setlength{\itemsep}{0pt}
-\setlength{\parskip}{0pt}
 \item[\enumstyle{64-bit}] this is the default on MSVC, \texttt{long double} being a synonym of \texttt{double}\footnote{see \url{http://msdn.microsoft.com/en-us/library/9cx8xs15.aspx}}
 \item[\enumstyle{96-bit}] this is the default on gcc. In this case, 16 bits are not used in calculations in 80-bit mode.
 \item[\enumstyle{128-bit}] this is the case on gcc with the \texttt{-m128bit-long-double}\footnote{see \url{http://gcc.gnu.org/onlinedocs/gcc/i386-and-x86\_002d64-Options.html}}. 48 bits are not used in calculations.
@@ -99,43 +99,59 @@ For the sake of completeness, it's important to notice here that gcc allows \tex
 
 The x86\_64 ABI\footnote{\url{http://www.x86-64.org/documentation/abi.pdf}} states that \texttt{long double} has intermediate values and calculations is in extended precision (80-bit), all operations being performed on the FPU; so no SIMD code will be used with the keyword \texttt{long double}.
 
-The ARM Development Tools\footnote{\url{http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0067d/BABFCGFC.html}} state that \texttt{long double} is 64-bit long, and thus a synonym of \texttt{double}.
+On ARM, \texttt{long double} is a synonym of double \footnote{see \url{http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0067d/BABFCGFC.html}}.
 
 \mysubsubsection{Summing up}
 
 We can thus construct the following table summing up the previous paragraphs, giving some name conventions we'll use later. These names are just convenient and (though largely the same) not identical to IEEE-754 standard. The number of bits cells are in the form $x$/$y$, where $x$ is the number of bits used in memory and $y$ the number of bits used in calculations and intermediate values.
 
-\begin{table}[h]
-\begin{tabu} to \linewidth{|X[l]|X[c]|X[c]|X[c]|}
-\hline
-\rowfont[c]{\bfseries} Compiler & SIMD & x86 FPU & x86\_64 FPU
-\\\hline
-\textbf{GCC} & 32/32 & 32/80 & 32/80\\\hline
-\textbf{MSVC} & 32/32 & 32/80 & 32/80\\\hline 
-\end{tabu}
-\caption{\texttt{float} representation}
-\end{table}
+%\begin{table}[h]
+%\begin{tabu} to \linewidth{|X[l]|X[c]|X[c]|X[c]|}
+%\hline
+%\rowfont[c]{\bfseries} Compiler & SIMD & x86 FPU & x86\_64 FPU
+%\\\hline
+%\textbf{GCC} & 32/32 & 32/80 & 32/80\\\hline
+%\textbf{MSVC} & 32/32 & 32/80 & 32/80\\\hline 
+%\end{tabu}
+%\caption{\texttt{float} representation}
+%\end{table}
+
+%\begin{table}[h]
+%\begin{tabu} to \linewidth{|X[l]|X[c]|X[c]|X[c]|}
+%\hline
+%\rowfont[c]{\bfseries} Compiler & SIMD & x86 FPU & x86\_64 FPU
+%\\\hline
+%\textbf{GCC} & 64/64 & 64/80 & 64/80\\\hline
+%\textbf{MSVC} & 64/64 & 64/80 & 64/80\\\hline
+%\end{tabu}
+%\caption{\texttt{double} representation}
+%\end{table}
+
+%\begin{table}[h]
+%\begin{tabu} to \linewidth{|X[l]|X[c]|X[c]|X[c]|}
+%\hline
+%\rowfont[c]{\bfseries} Compiler & SIMD & x86 FPU & x86\_64 FPU
+%\\\hline
+%\textbf{GCC} & 64/64 & 96/80 & 128/80\\\hline
+%\textbf{MSVC} & 64/64 & 64/80 & 64/80\\\hline
+%\end{tabu}
+%\caption{\texttt{long double} representation}
+%\end{table}
 
 \begin{table}[h]
-\begin{tabu} to \linewidth{|X[l]|X[c]|X[c]|X[c]|}
+\begin{tabu}{|X[l]|X[c]|X[c]|X[c]|}
 \hline
-\rowfont[c]{\bfseries} Compiler & SIMD & x86 FPU & x86\_64 FPU
+\rowfont[c]{\bfseries} Architecture / Compiler & float & double & long double
 \\\hline
-\textbf{GCC} & 64/64 & 64/80 & 64/80\\\hline
-\textbf{MSVC} & 64/64 & 64/80 & 64/80\\\hline
+\textbf{SSE} & 32/32 ($\times$4) & 64/64 ($\times$2) & 64/64 ($\times$2)\\\hline
+\textbf{AVX} & 32/32 ($\times$8) & 64/64 ($\times$4) & 64/64 ($\times$4)\\\hline
+\textbf{NEON} & 32/32 ($\times$2) & error & error\\\hline
+\textbf{ARM VFP} & 32/32 & 64/64 & 64/64\\\hline
+\textbf{x86 FPU (gcc)} & 32/80 & 64/80 & 96/80\\\hline
+\textbf{x86\_64 FPU (gcc)} & 32/80 & 64/80 & 128/80\\\hline
+\textbf{x86 or x86\_64 FPU (msvc)} & 64/80 & 64/80 & 64/80\\\hline
 \end{tabu}
-\caption{\texttt{double} representation}
-\end{table}
-
-\begin{table}[h]
-\begin{tabu} to \linewidth{|X[l]|X[c]|X[c]|X[c]|}
-\hline
-\rowfont[c]{\bfseries} Compiler & SIMD & x86 FPU & x86\_64 FPU
-\\\hline
-\textbf{GCC} & 64/64 & 96/80 & 128/80\\\hline
-\textbf{MSVC} & 64/64 & 64/80 & 64/80\\\hline
-\end{tabu}
-\caption{\texttt{long double} representation}
+\caption{C floating point types representation on different architectures}
 \end{table}
 
 %\vspace{\spacearoundtables}
@@ -198,23 +214,69 @@ To make the link with computer representations, we would have:
 
 \mysubsection{Polynomial calculations}
 
-Horner's method.
+When evaluating polynomial expressions, which are numerous in astronomical calculations, the standard method is to use Horner's method. A very simple example will show why:
 
-fused multiply–add
+If you evaluate $$3x^3 + 2x^2 + 4x + 5$$ in this very form, 10 operations will be performed (7 multiplications and 3 sums). But if you evaluate it as $$((3x + 2)x + 4)x + 5$$, only 6 operations (3 multiplications and 3 sums) are needed.
+
+This operation reducing implies a gain in performance and also naturally in precision: the less operations, the less errors!
+
+For further reading and error bouding, see setion 5.1 of \cite{Higham}.
+
+\mysubsection{Fused Multiply-Add}
+
+\mysubsubsection{Principles}
+
+Fused Multiply-Add (FMA) is a hardware instruction that computes a multiplication and an addition. The interesting thing is that IEEE 754-2008 standard\footnote{see section 5.4.1 of \cite{IEEE754}} specifies that the whole operation should be performed as if no rounding occured, rounding only once at the end. This means that the whole operation is precise to $\frac{1}{2}\,ula$, where a multiplication then a sum would cumulate roundings and thus be precise only to $1\,ula$. There is thus, like with Horner's method, a gain in both performance and precision.
+
+\mysubsubsection{Real-life use}
+
+FMA are sadly not really widespread. Here is what seems to be the current situation:
+\begin{itemize}
+\item x87 doesn't handle it\footnote{except for a patented extension (patent US7499962, see \href{http://www.google.com/patents/US7499962}), which no common hardware seems to implement.}
+\item AVX have FPA as an extension, thus only recent Intel hardware (as of end of 2013) will be able to use it\footnote{see \url{http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html}\TODO}
+\item ARM's VFP and NEON seem to handle FPA\footnote{see\url{http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0056d/Bcfhgcgd.html}}
+\end{itemize}
+
+The FMA had two mutually incompatible implementations, one on three operands (FMA3) and one on four operands (FMA4), each having made its way in AMD and Intel processors at different times\footnote{\url{The only source I found for this is \url{http://en.wikipedia.org/wiki/FMA_instruction_set#History}}. Thus FMA instructions will be computed by gcc only if the targer architecture is specified (or the specific \texttt{-mfma} and \texttt{-mfma4} switches). It is thus hard to make it generic\footnote{Though the very exciting gcc feature of Function Multiversionning might help a lot, see \url{http://gcc.gnu.org/onlinedocs/gcc/Function-Multiversioning.html}.}.
+
+% http://shemesh.larc.nasa.gov/NFM2010/papers/nfm2010_14_23.pdf
+% http://hal.inria.fr/docs/00/77/25/08/PDF/main.pdf
+% http://frama-c.com/
+
+Except on very specific hardwares, it is thus sadly impossible to get FPA on extended double precision. If you manage to use it, it's important to note that using FPA requires extra care about operations order and compiler optimization (see 2.6 in \cite{Higham}).
 
 \mysubsection{Summations}
 
-Two precision optimizations are possible for sums, one costless and one very costy but very efficient.
+Several optimizations for sums are possible, we'll describe the most simples. An excellent reading on the topic is chapter 4 of \cite{Higham}.
 
-\mysubsubsection{Small numbers first}
+\mysubsubsection{Recursive summation}
 
-It is a good practice, for sums of more than two floating point numbers, to start the 
+Before seing how to optimize precision, let's present the precision of what is often called \emph{recursive summation}
 
-\mysubsubsection{Long sums}
+\mysubsubsection{Ascending order}
+
+It is a good practice, for sums of more than two floating point numbers, to sum in ascending orders, treating small numbers before big ones. The reason for this is fairly simple and explained in 
+
+\mysubsubsection{Compensated Summation}
+
+\mysubsubsection{Other efficient exact sums}
+
+\cite{Langlois} % Langlois http://hal.archives-ouvertes.fr/docs/00/73/76/17/PDF/hal-scico12.pdf
+
+
 
 \mysubsection{Errors in transcendental functions}
 
 Transcendental functions (like sin and cos) are not mandatorily exactly rounded.
+
+% Section 8.3.8 of  http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
+% says 1ulp precision when rounding to nearest even
+
+\mysubsection{Errors induced by optimizers}
+
+Reordering operations
+
+algebrical simplifications
 
 \mysection{Errors induced by floating point in common astronomical calculations}
 
@@ -226,3 +288,8 @@ Transcendental functions (like sin and cos) are not mandatorily exactly rounded.
 
 \mysubsubsection{Some measures}
 
+% TODO: vector code less precise? http://software.intel.com/sites/default/files/article/326703/floating-point-differences-sept11_0.pdf p.2
+% TODO: transcendental functions: 4ulp??? http://software.intel.com/sites/default/files/article/326703/floating-point-differences-sept11_0.pdf
+% http://lipforge.ens-lyon.fr/www/crlibm/
+
+% http://gcc.gnu.org/gcc-4.3/changes.html#mpfropts << what is this? OK: for constants, evaluated at compile-time << constant folding
