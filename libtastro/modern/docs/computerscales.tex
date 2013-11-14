@@ -80,9 +80,9 @@ As we've seen, almost no hardware is capable of more than 80-bit calculations, t
 \item[\enumstyle{64-bit mode}] the mantissa of intermediate values is rounded to 53 bits (thus giving double precision precision)\footnote{This is what the \texttt{-mpc64} option of gcc or the \texttt{/fp:precise} option of MSVC do, see \url{http://gcc.gnu.org/onlinedocs/gcc/i386-and-x86\_002d64-Options.html} and \url{http://msdn.microsoft.com/en-us/library/e7s85ffb.aspx}.}.
 \end{enumerate}
 
-In C99, it is possible to know the intermediate rounding of operations with the C99 macro \texttt{FLT\_EVAL\_METHOD}\footnote{\url{http://pubs.opengroup.org/onlinepubs/009695399/basedefs/math.h.html}}.
+The FPU can also have a 32-bit mode based on the same principles as the 64-bit mode. Compilers Macros allow to change FPU mode during runtime. This is the case of \texttt{\_controlfp} of MSVC\footnote{\url{http://msdn.microsoft.com/en-us/library/e9b52ceh\%28VS.71\%29.aspx}} and \texttt{\ _FPU\_SETCW} of gcc{see \texttt{man 3 \_\_setupcw}}.
 
-\texttt{double} on ARM is 64 bytes and always computed on VFP. It's important to note here that the NEON instructions don't provide double precision operations\footnote{see \url{http://www.arm.com/products/processors/technologies/neon.php}}.
+\texttt{double} on ARM has a 64 bit representation and is always computed on VFP. It's important to note here that the NEON instructions don't provide double precision operations\footnote{see \url{http://www.arm.com/products/processors/technologies/neon.php}}.
 
 \mysubsubsection{\texttt{long double} on FPU}
 
@@ -99,44 +99,11 @@ For the sake of completeness, it's important to notice here that gcc allows \tex
 
 The x86\_64 ABI\footnote{\url{http://www.x86-64.org/documentation/abi.pdf}} states that \texttt{long double} has intermediate values and calculations is in extended precision (80-bit), all operations being performed on the FPU; so no SIMD code will be used with the keyword \texttt{long double}.
 
-On ARM, \texttt{long double} is a synonym of double \footnote{see \url{http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0067d/BABFCGFC.html}}.
+On ARM, \texttt{long double} is a synonym of double\footnote{see \url{http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0067d/BABFCGFC.html}}.
 
 \mysubsubsection{Summing up}
 
-We can thus construct the following table summing up the previous paragraphs, giving some name conventions we'll use later. These names are just convenient and (though largely the same) not identical to IEEE-754 standard. The number of bits cells are in the form $x$/$y$, where $x$ is the number of bits used in memory and $y$ the number of bits used in calculations and intermediate values.
-
-%\begin{table}[h]
-%\begin{tabu} to \linewidth{|X[l]|X[c]|X[c]|X[c]|}
-%\hline
-%\rowfont[c]{\bfseries} Compiler & SIMD & x86 FPU & x86\_64 FPU
-%\\\hline
-%\textbf{GCC} & 32/32 & 32/80 & 32/80\\\hline
-%\textbf{MSVC} & 32/32 & 32/80 & 32/80\\\hline 
-%\end{tabu}
-%\caption{\texttt{float} representation}
-%\end{table}
-
-%\begin{table}[h]
-%\begin{tabu} to \linewidth{|X[l]|X[c]|X[c]|X[c]|}
-%\hline
-%\rowfont[c]{\bfseries} Compiler & SIMD & x86 FPU & x86\_64 FPU
-%\\\hline
-%\textbf{GCC} & 64/64 & 64/80 & 64/80\\\hline
-%\textbf{MSVC} & 64/64 & 64/80 & 64/80\\\hline
-%\end{tabu}
-%\caption{\texttt{double} representation}
-%\end{table}
-
-%\begin{table}[h]
-%\begin{tabu} to \linewidth{|X[l]|X[c]|X[c]|X[c]|}
-%\hline
-%\rowfont[c]{\bfseries} Compiler & SIMD & x86 FPU & x86\_64 FPU
-%\\\hline
-%\textbf{GCC} & 64/64 & 96/80 & 128/80\\\hline
-%\textbf{MSVC} & 64/64 & 64/80 & 64/80\\\hline
-%\end{tabu}
-%\caption{\texttt{long double} representation}
-%\end{table}
+We can thus construct the following table summing up the previous paragraphs, giving some name conventions we'll use later. These names are just convenient and (though largely the same) not identical to IEEE-754 standard. The number of bits cells are in the form $x$/$y$, where $x$ is the number of bits used in memory and $y$ the number of bits used in calculations and intermediate values. When a "($\times x$)" is present, $x$ indicates the number of simultaneous operations on the type the architecture is capable of.
 
 \begin{table}[h]
 \begin{tabu}{|X[l]|X[c]|X[c]|X[c]|}
@@ -145,48 +112,14 @@ We can thus construct the following table summing up the previous paragraphs, gi
 \\\hline
 \textbf{SSE} & 32/32 ($\times$4) & 64/64 ($\times$2) & 64/64 ($\times$2)\\\hline
 \textbf{AVX} & 32/32 ($\times$8) & 64/64 ($\times$4) & 64/64 ($\times$4)\\\hline
-\textbf{NEON} & 32/32 ($\times$2) & error & error\\\hline
+\textbf{NEON} & 32/32 ($\times$2) & unavailable & unavailable\\\hline
 \textbf{ARM VFP} & 32/32 & 64/64 & 64/64\\\hline
 \textbf{x86 FPU (gcc)} & 32/80 & 64/80 & 96/80\\\hline
 \textbf{x86\_64 FPU (gcc)} & 32/80 & 64/80 & 128/80\\\hline
-\textbf{x86 or x86\_64 FPU (msvc)} & 64/80 & 64/80 & 64/80\\\hline
+\textbf{x86 or x86\_64 FPU (msvc)} & 32/80 & 64/80 & 64/80\\\hline
 \end{tabu}
 \caption{C floating point types representation on different architectures}
 \end{table}
-
-%\vspace{\spacearoundtables}
-
-%\begin{tabu} to \linewidth{|X[2]|X[c]|X[4]|}
-%\hline
-%\rowfont[c]{\bfseries} Name & Nb. of bits & Name in C
-%\\\hline
-%Simple precision & 32/32 & \texttt{float} in SIMD\\\hline
-%Mixed simple precision & 32/80 & \texttt{float} in FPU\\\hline
-%Double precision & 64/64 & \texttt{double}, \texttt{long double} on ARM and modern instruction sets (SSE, AVX). If on FPU, must be set in 64-bit mode.\\\hline
-%Extended double precision & 80/80 & not available as such (only internal registers) \\\hline
-%Mixed double precision & 64/80 & \texttt{double} in FPU, also \texttt{long double} on MSVC \\\hline
-%Mixed triple precision & 96/80 & \texttt{long double} on x86 FPU\\\hline
-%Quadruple precision & 128/128 & \texttt{\_\_float128} of \texttt{gcc}, software emulation except on a few hardwares\\\hline
-%Mixed quadruple precision & 128/80 & \texttt{long double} on x86\_64 FPU\\\hline
-%\end{tabu}
-
-%\vspace{\spacearoundtables}
-
-%This table is another view of the same data:
-
-%\vspace{\spacearoundtables}
-
-%\begin{tabu} to \linewidth{|X|X[c]|X[c]|X[c]|X[c]|}
-%\hline
-%\rowfont[c]{\bfseries} C keyword & FPU (64-bit) & FPU (80-bit) & SIMC & MSVC
-%\\\hline
-%\texttt{float} & 32/64 & 32/80 & 32/32 & no difference\\\hline
-%\texttt{double} & 64/64 & 64/80 & 64/64 & no difference \\\hline
-%\texttt{long double} & 96/80 or 128/80 & 96/80 or 128/80 & idem \texttt{double} on ARM, mapped to FPU with others & idem \texttt{double} \\\hline
-%\texttt{\_\_float128} & 128/128 & 128/128 or 128/128 & error \\\hline
-%\end{tabu}
-
-%\vspace{\spacearoundtables}
 
 \mysection{Common errors due to floating point representations}
 
@@ -237,7 +170,7 @@ FMA are sadly not really widespread. Here is what seems to be the current situat
 \item ARM's VFP and NEON seem to handle FPA\footnote{see\url{http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0056d/Bcfhgcgd.html}}
 \end{itemize}
 
-The FMA had two mutually incompatible implementations, one on three operands (FMA3) and one on four operands (FMA4), each having made its way in AMD and Intel processors at different times\footnote{\url{The only source I found for this is \url{http://en.wikipedia.org/wiki/FMA_instruction_set#History}}. Thus FMA instructions will be computed by gcc only if the targer architecture is specified (or the specific \texttt{-mfma} and \texttt{-mfma4} switches). It is thus hard to make it generic\footnote{Though the very exciting gcc feature of Function Multiversionning might help a lot, see \url{http://gcc.gnu.org/onlinedocs/gcc/Function-Multiversioning.html}.}.
+The FMA had two mutually incompatible implementations, one on three operands (FMA3) and one on four operands (FMA4), each having made its way in AMD and Intel processors at different times\footnote{The only source I found for this is \url{http://en.wikipedia.org/wiki/FMA\_instruction\_set\#History}}. Thus FMA instructions will be computed by gcc only if the targer architecture is specified (or the specific \texttt{-mfma} and \texttt{-mfma4} switches). It is thus hard to make it generic\footnote{Though the very exciting gcc feature of Function Multiversionning might help a lot, see \url{http://gcc.gnu.org/onlinedocs/gcc/Function-Multiversioning.html}.}.
 
 % http://shemesh.larc.nasa.gov/NFM2010/papers/nfm2010_14_23.pdf
 % http://hal.inria.fr/docs/00/77/25/08/PDF/main.pdf
@@ -247,36 +180,97 @@ Except on very specific hardwares, it is thus sadly impossible to get FPA on ext
 
 \mysubsection{Summations}
 
-Several optimizations for sums are possible, we'll describe the most simples. An excellent reading on the topic is chapter 4 of \cite{Higham}.
+Several optimizations for sums are possible, we'll describe the most simples. An excellent reading on the topic is chapter 4 of \cite{Higham}. This topic is quite important, as astronomical calculations often sum large amounts of numbers (more than a thousand).
 
 \mysubsubsection{Recursive summation}
 
-Before seing how to optimize precision, let's present the precision of what is often called \emph{recursive summation}
+Before seing how to optimize precision, let's present the precision of what is often called \emph{recursive summation}, meaning the naive approach of summing each term consecutively.
+
+If we call $n$ the number of terms in the summation, the bound of error of recursive summation is $n\times\epsilon$ where $\epsilon$ is the error bound of one summation, $0.5\,ulp$ with IEEE-754 compliant systems. This means $n\times0.5\times2^{e-1023} = n\times2^{e-1022}$.
+
+To take a realistic example in astronomical calculations, let's take $n=1024=2^{10}$ and let's say we're working on 64bit registers, with values ranging around $0.5$, meaning $e\approx1022$, we have thus an error bounded by $1$, meaning totally unreliable results!
+
+Of course this is a bound which will most certainly never be reached, but it's definitely something to pay attention to.
+
+A refinement of this value is given in Table 4.1 of  \cite{Higham}.
 
 \mysubsubsection{Ascending order}
 
-It is a good practice, for sums of more than two floating point numbers, to sum in ascending orders, treating small numbers before big ones. The reason for this is fairly simple and explained in 
+It is a good practice, for sums of more than two floating point numbers, to sum in ascending order of exponent (if we can know or guess it), treating small numbers before big ones. The reason for this is fairly simple and can be explained by the following example.
 
-\mysubsubsection{Compensated Summation}
+Suppose $\beta=10$, $p=3$, $e=4$ (which means we manipule decimal numbers with three digits). Let's add $0.4$, $0.4$ and $100$. Without ascending order, we would have:
+
+$$1.00\times 10^2 + 4.00\times 10^{-1} = 1.00\times 10^2, 1.00\times 10^2 + 4.00\times 10^{-1} = 1.00\times 10^2$$
+
+And thus a result of 100, due to the fact that 1.004 would require a minimum value of $4$ for $p$. Now let's do it in the ascending order:
+
+$$4.00\times 10^{-1} + 4.00\times 10^{-1} = 8.00\times 10^{-1}, 1.00\times 10^2 + 8.00 \times 10^{-1} = 1.01\times 10^2$$
+
+which is much closer. A counter-example is if, in the same system, if you add $100$, $-100$ and $1$ in ascending order, you have:
+
+$$1.00\times 10^{-1} + 1.00\times 10^{2} = 1.00\times 10^{2} - 1.00\times 10^{2} = 0$$
+
+whereas in the descending order:
+
+$$1.00\times 10^{2} - 1.00\times 10^{2} = 0.00\times 10^{0} + 1.00\times 10^{-1} = 1.00\times 10^{-1}$$
+
+which is the true answer.
+
+Descending order is more often more accurate though, and it seems reasonable to use it, especially since it's free if you can guess the exponent order (which is the case in most astronomical calculations).
+
+The gain in accuracy is not very good and not easily predictable though, so this method is rarely documented as a worthy improvement. The mean error table of \cite{Higham} gives an improvement by 3 compared to standard recursive summation.
+
+\mysubsubsection{Paired Summation}
+
+A simple method to really improve the accuracy of calculations is to compute the sum by pairs. For example, the paired computation of $$y=x_1+x_2+x_3+x_4+x_5+x_6$$ is $$y=(x_1+x_2)+(x_3+x_4)+(x_5+x_6)$$
+
+This very simple and straightforward improvement that has an error of $log_2(n)\times\epsilon$ instead of $n\times\epsilon$.
+
+\mysubsubsection{Compensated Summation}\label{compensated}
+
+The method described here was invented in the 60s, and is often known as the Kahan method, from the name of its author, William Kahan. This method gives a value of the summation which is exact by $1\,ulp$, by compensating the error each time. This is a very large improvement and allows the code to be proven.
+
+The method used won't be detailed here as it would take too much space, but it's well documented on the Web\footnote{See for instance \url{http://en.wikipedia.org/wiki/Kahan_summation_algorithm} and \url{http://www.astro.umd.edu/~dcr/Courses/ASTR615/ps2sol/node1.html}}.
+
+The cost is quite big though, the number of operations being multiplied by 4. Results with this method are really noticeable.
+
+For virtually infinite precision accuracy, a "double compensated summation" exists (see Algorithm 4.3 in \cite{Higham}) taking 10 operations per additions, and needing numbers to be sorted before. This method is thus extremely slow.
 
 \mysubsubsection{Other efficient exact sums}
 
-\cite{Langlois} % Langlois http://hal.archives-ouvertes.fr/docs/00/73/76/17/PDF/hal-scico12.pdf
+New algorithms have appeared recently to compute long summations exactly, with an efficiency improved a lot. Documentations and implementations of these algorithms are not avaible freely, but an overview can be found in \cite{Langlois}\TODO . % TODO: Langlois http://hal.archives-ouvertes.fr/docs/00/73/76/17/PDF/hal-scico12.pdf
 
+\mysubsubsection{Conclusion}
 
+It's important to define the balance between accuracy and speed, as the range is large between very slow and very accurate functions and fast and inaccurate ones.
 
-\mysubsection{Errors in transcendental functions}
+Something very important and documented in all books on the topic is to take into account the possibility of increasing precision of the floating point representation. Indeed, compared to single precision, a recursive summation in double precision has only small speed decrease (around $1.5times$) and better accuracy than compensated summation.
 
-Transcendental functions (like sin and cos) are not mandatorily exactly rounded.
+\mysubsection{Errors in trigonometrical functions}
 
-% Section 8.3.8 of  http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
-% says 1ulp precision when rounding to nearest even
+Transcendental functions (like sin and cos) guaranteed accuracy cannot be as good as other functions due to the tablemaker's dillema. Section 8.3.10 of \cite{Intel}\TODO specifies that the error cannot exceed 1\,ulp if rounding mode is \emph{nearest even}.
 
-\mysubsection{Errors induced by optimizers}
+% TODO: Intel:  http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
 
-Reordering operations
+It's important to also notice that, on FPU, the Internal $\pi$ representation used in trigonometric functions has a higher precision than any possible floating point hardware representation (it has a 66bit mantissa\footnote{See \cite[Intel], 8.3.8.}). Thus moduling an angle by $2\pi$ to put it in the range will be less precise than letting the FPU do by itself.
 
-algebrical simplifications
+\mysubsection{Errors induced by compilers}
+
+Something to be very cautious about is compiler optimizations. While these are necessary to improve speed, they can sometimes break precision.
+
+\mysubsubsection{Constants computation}
+
+On some compilers, litteral constant evaluation (for example \texttt{cos(1.65)}) was made with the precision of the constant, and thus could hold errors. This was fixed in gcc in 4.3 version which now uses arbitrary precision\footnote{see \url{http://gcc.gnu.org/gcc-4.3/changes.html\#mpfropts}}. It is thus important to check your compiler before doing any such thing; and the best way to get portable code is to write already evaluated.
+
+\mysubsubsection{Fast maths}
+
+Most compilers can compile code that will run faster at the cost of precision loss. These optimizations make computations not follow the IEEE-754 standard strictly and thus give unpredictable precision. This is the case of the \texttt{-Ofast}, \texttt{-ffast-math} and \texttt{-funsafe-math-optimizations} options of gcc. These would be useful in case of speed optimization.
+
+\mysubsubsection{Arithmetic reduction}
+
+The most dangerous compiler optimization is arithmetic reduction, as it might break precision optimizations. The principle is that compilers will try to treat operations as operations on real numbers, and thus consider them distributive and associative. At a certain optimization level, it will even totally kill compensated summation (see \ref{compensated})\footnote{by a process described in \url{http://en.wikipedia.org/wiki/Kahan_summation_algorithm\#Computer_languages} and easily noticeable on a test.}.
+
+Decent compilers allow to to disable optimization for one function though\footnote{for gcc, see \texttt{optimize} function attribute and \texttt{pragma GCC optimize}, \url{http://gcc.gnu.org/onlinedocs/gcc/Function-Attributes.html} and \url{http://gcc.gnu.org/onlinedocs/gcc/Function-Specific-Option-Pragmas.html\#Function-Specific-Option-Pragmas}}.
 
 \mysection{Errors induced by floating point in common astronomical calculations}
 
@@ -288,8 +282,9 @@ algebrical simplifications
 
 \mysubsubsection{Some measures}
 
+
+
 % TODO: vector code less precise? http://software.intel.com/sites/default/files/article/326703/floating-point-differences-sept11_0.pdf p.2
-% TODO: transcendental functions: 4ulp??? http://software.intel.com/sites/default/files/article/326703/floating-point-differences-sept11_0.pdf
 % http://lipforge.ens-lyon.fr/www/crlibm/
 
 % http://gcc.gnu.org/gcc-4.3/changes.html#mpfropts << what is this? OK: for constants, evaluated at compile-time << constant folding
