@@ -80,7 +80,7 @@ As we've seen, almost no hardware is capable of more than 80-bit calculations, t
 \item[\enumstyle{64-bit mode}] the mantissa of intermediate values is rounded to 53 bits (thus giving double precision precision)\footnote{This is what the \texttt{-mpc64} option of gcc or the \texttt{/fp:precise} option of MSVC do, see \url{http://gcc.gnu.org/onlinedocs/gcc/i386-and-x86\_002d64-Options.html} and \url{http://msdn.microsoft.com/en-us/library/e7s85ffb.aspx}.}.
 \end{enumerate}
 
-The FPU can also have a 32-bit mode based on the same principles as the 64-bit mode. Compilers Macros allow to change FPU mode during runtime. This is the case of \texttt{\_controlfp} of MSVC\footnote{\url{http://msdn.microsoft.com/en-us/library/e9b52ceh\%28VS.71\%29.aspx}} and \texttt{\ _FPU\_SETCW} of gcc{see \texttt{man 3 \_\_setupcw}}.
+The FPU can also have a 32-bit mode based on the same principles as the 64-bit mode. Compilers Macros allow to change FPU mode during runtime. This is the case of \texttt{\_controlfp} of MSVC\footnote{\url{http://msdn.microsoft.com/en-us/library/e9b52ceh\%28VS.71\%29.aspx}} and \texttt{\_FPU\_SETCW} of gcc{see \texttt{man 3 \_\_setupcw}}.
 
 \texttt{double} on ARM has a 64 bit representation and is always computed on VFP. It's important to note here that the NEON instructions don't provide double precision operations\footnote{see \url{http://www.arm.com/products/processors/technologies/neon.php}}.
 
@@ -143,7 +143,17 @@ To make the link with computer representations, we would have:
 \item $e$ the exponent
 \end{itemize}
 
-\mysubsubsection{Non-} % communativité
+\mysubsubsection{Algebric properties} % communativité
+
+A difficulty we'll discuss further later (\ref{arithmeticreduction} and \ref{summations}) is the lack of good arithmetic properties of floating point operations. They of course have almost the same properties as their corresponding real number operations, but when precision counts these properties don't apply anymore.
+
+Maybe the most unnatural property is the fact that \emph{floating point operations are not associative}. For instance $$(0.1 + 0.2) + 0.3 \neq 0.1 + (0.2 + 0.3)$$\footnote{Section \ref{ascendingorder} explains why in details}. So operation order shall be carefully chosen.
+
+Also, \emph{floating point operations are not distributive}: $$0.1 \times (0.3 - 0.4) \neq (0.1 \times 0.3) - (0.1 \times 0.4)$$.
+
+For all these reasons, one must really be careful with comparisons, as rounding errors will make them unrelevant.
+
+This leads in difficulties in operations ordering, and this is mostly what the rest of the section is about.
 
 \mysubsection{Polynomial calculations}
 
@@ -172,13 +182,9 @@ FMA are sadly not really widespread. Here is what seems to be the current situat
 
 The FMA had two mutually incompatible implementations, one on three operands (FMA3) and one on four operands (FMA4), each having made its way in AMD and Intel processors at different times\footnote{The only source I found for this is \url{http://en.wikipedia.org/wiki/FMA\_instruction\_set\#History}}. Thus FMA instructions will be computed by gcc only if the targer architecture is specified (or the specific \texttt{-mfma} and \texttt{-mfma4} switches). It is thus hard to make it generic\footnote{Though the very exciting gcc feature of Function Multiversionning might help a lot, see \url{http://gcc.gnu.org/onlinedocs/gcc/Function-Multiversioning.html}.}.
 
-% http://shemesh.larc.nasa.gov/NFM2010/papers/nfm2010_14_23.pdf
-% http://hal.inria.fr/docs/00/77/25/08/PDF/main.pdf
-% http://frama-c.com/
-
 Except on very specific hardwares, it is thus sadly impossible to get FPA on extended double precision. If you manage to use it, it's important to note that using FPA requires extra care about operations order and compiler optimization (see 2.6 in \cite{Higham}).
 
-\mysubsection{Summations}
+\mysubsection{Summations}\label{summations}
 
 Several optimizations for sums are possible, we'll describe the most simples. An excellent reading on the topic is chapter 4 of \cite{Higham}. This topic is quite important, as astronomical calculations often sum large amounts of numbers (more than a thousand).
 
@@ -194,7 +200,7 @@ Of course this is a bound which will most certainly never be reached, but it's d
 
 A refinement of this value is given in Table 4.1 of  \cite{Higham}.
 
-\mysubsubsection{Ascending order}
+\mysubsubsection{Ascending order}\ref{ascendingorder}
 
 It is a good practice, for sums of more than two floating point numbers, to sum in ascending order of exponent (if we can know or guess it), treating small numbers before big ones. The reason for this is fairly simple and can be explained by the following example.
 
@@ -266,7 +272,7 @@ On some compilers, litteral constant evaluation (for example \texttt{cos(1.65)})
 
 Most compilers can compile code that will run faster at the cost of precision loss. These optimizations make computations not follow the IEEE-754 standard strictly and thus give unpredictable precision. This is the case of the \texttt{-Ofast}, \texttt{-ffast-math} and \texttt{-funsafe-math-optimizations} options of gcc. These would be useful in case of speed optimization.
 
-\mysubsubsection{Arithmetic reduction}
+\mysubsubsection{Arithmetic reduction}\label{arithmeticreduction}
 
 The most dangerous compiler optimization is arithmetic reduction, as it might break precision optimizations. The principle is that compilers will try to treat operations as operations on real numbers, and thus consider them distributive and associative. At a certain optimization level, it will even totally kill compensated summation (see \ref{compensated})\footnote{by a process described in \url{http://en.wikipedia.org/wiki/Kahan_summation_algorithm\#Computer_languages} and easily noticeable on a test.}.
 
@@ -274,17 +280,67 @@ Decent compilers allow to to disable optimization for one function though\footno
 
 \mysection{Errors induced by floating point in common astronomical calculations}
 
+For this part, we'll consider the following most common floating point types:
+
+\begin{enumerate}
+\item[Single precision] 32-bit representation, 32-bit operations
+\item[Mixed single precision] 32-bit representation, 80-bit operations
+\item[Double precision] 64-bit representation, 64-bit operations
+\item[Mixed double precision] 64-bit representation, 80-bit operations
+\item[Extended precision] at least 80-bit representation, 80-bit operations (case of long double on x87 with gcc)
+\item[Quadruple precision] 128-bit representation, 128-bit operations
+\end{enumerate}
+
+For extended precision, we will consider the values to be 80-bits, as these are all other additional bits are garbage.
+
+We'll consider also that computed values will be in radiants.
+
+For final result values, we'll consider them to be and have have an absolute value greater than 0.5 and less than $\pi$, this allows to say that the exponent will be between -1 and 2. The maximum exponent ($e$) and the mantissa size ($p$) for the different representations in memory is:
+
+\begin{table}[h]
+\centering
+\sisetup{table-format=3.0, table-figures-exponent = 1}
+\begin{tabular}{|c|c|S|}
+\hline
+\textbf{Nb. of bits} & \textbf{$e_{max}$} & \textbf{$p$} \\\\hline
+\textbf{32} & 127 & 23\\\hline
+\textbf{64} & 1023 & 52\\\hline
+\textbf{80} & 16383 & 64\\\hline
+\textbf{128} & 16383 & 112\\\hline
+\end{tabular}
+\caption{Maximum accuracy of final results}
+\end{table}
+
 \mysubsection{Converting floating point error in angle precision error}
 
-\mysubsection{Errors in common astronomical calculations}
+\mysubsubsection{Maximum accuracy allowed by floating point types}
 
-\mysubsubsection{Theorical bounds}
+The very optimistic bound for accuracy of result value is the ulp of the floating point representation. Taking 2 as the exponent, we get an maximal error in radians of $2^{-p+2-1} = 2^{-(p-1)}$. The following table gives this maximal accuracy in seconds:
 
-\mysubsubsection{Some measures}
+\begin{table}[h]
+\centering
+\sisetup{table-format=1.1, table-figures-exponent = 1}
+\begin{tabular}{|c|S|}
+\hline
+\textbf{Nb. of bits} & \multicolumn{1}{c|}{\textbf{Max. accuracy (in s)}}\\\hline
+\textbf{32} & 5e-2\\\hline
+\textbf{64} & 4.6e-11\\\hline
+\textbf{80} & 1e-14\\\hline
+\textbf{128} & 4e-29\\\hline
+\end{tabular}
+\caption{Maximum accuracy of final results}
+\end{table}
+
+\mysubsection{Error bounds in common astronomical calculations}
 
 
+\mysubsection{Measuring errors}
 
-% TODO: vector code less precise? http://software.intel.com/sites/default/files/article/326703/floating-point-differences-sept11_0.pdf p.2
-% http://lipforge.ens-lyon.fr/www/crlibm/
+\mysubsubsection{Simple experiments}
 
-% http://gcc.gnu.org/gcc-4.3/changes.html#mpfropts << what is this? OK: for constants, evaluated at compile-time << constant folding
+\mysubsubsection{Verfication tools}
+
+Some tools are being created to measure the accuracy of floating point programs, by directly looking into the assembler code. The Frama-C\footnote{\url{http://frama-c.com}} framework (with the WP Plugin\footnote{\url{http://frama-c.com/wp.html}}) and the Why3\footnote{http://why3.lri.fr/} framework are good examples, though not easy to use. These require the use of ACSL annotations \cite{ACSL}\footnote{For floating point numbers, see section 2.2.5.}.
+% TODO: ACSL : http://frama-c.com/download/acsl.pdf
+
+
