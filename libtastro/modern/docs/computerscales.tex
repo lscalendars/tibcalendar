@@ -143,6 +143,16 @@ To make the link with computer representations, we would have:
 \item $e$ the exponent
 \end{itemize}
 
+\mysubsubsection{Errors of floating points}
+
+The errors introduced by floating point are usually given in the \emph{unit in the last place} (ulp) unit. To understand it, let's take an example with $\beta=10, p=3, e_{max}=4$. For the number $1.04\times 10^{-2}$, the ulp is $0.01\times 10^{-2} = 1.10^{-4}$, meaning the smallest number representable with the same $\beta$, $p$ and $e$. This unit is used in measures of precision of operations. For example, IEEE-754 makes it mandatory for the sum operations to be accurate at $\frac{1}{2}ulp$, which means that when computing $z=x+y$, if $z_r$ is the real result and $z_f$ is the floating point number returned by the function, we have $z_r\in[z_f-\frac{1}{2}ulp(z), z_f-\frac{1}{2}ulp(z)]$.
+
+In general, the ulp can be expressed as $\beta^{-(p-1)+e}$, so for floating point on computers, we have $1\,ulp=2^{e-p+1}$ and $\frac{1}{2}ulp=2^{e-p}$.
+
+% MULLER: http://ljk.imag.fr/membres/Carine.Lucas/TPScilab/JMMuller/ulp-toms.pdf
+
+It is possible in C99 to get an interesting quantity corresponding most of the time to $ulp(x)$ with the code \texttt{nextafter(x, DBL\_MAX);}\footnote{see \texttt{man 3 nextafter}}.
+
 \mysubsubsection{Algebric properties} % communativité
 
 A difficulty we'll discuss further later (\ref{arithmeticreduction} and \ref{summations}) is the lack of good arithmetic properties of floating point operations. They of course have almost the same properties as their corresponding real number operations, but when precision counts these properties don't apply anymore.
@@ -155,7 +165,7 @@ For all these reasons, one must really be careful with comparisons, as rounding 
 
 This leads in difficulties in operations ordering, and this is mostly what the rest of the section is about.
 
-\mysubsection{Polynomial calculations}
+\mysubsection{Polynomial calculations}\label{polynomials}
 
 When evaluating polynomial expressions, which are numerous in astronomical calculations, the standard method is to use Horner's method. A very simple example will show why:
 
@@ -165,7 +175,7 @@ This operation reducing implies a gain in performance and also naturally in prec
 
 For further reading and error bouding, see setion 5.1 of \cite{Higham}.
 
-\mysubsection{Fused Multiply-Add}
+\mysubsection{Fused Multiply-Add}\label{fma}
 
 \mysubsubsection{Principles}
 
@@ -282,14 +292,14 @@ Decent compilers allow to to disable optimization for one function though\footno
 
 For this part, we'll consider the following most common floating point types:
 
-\begin{enumerate}
-\item[Single precision] 32-bit representation, 32-bit operations
-\item[Mixed single precision] 32-bit representation, 80-bit operations
-\item[Double precision] 64-bit representation, 64-bit operations
-\item[Mixed double precision] 64-bit representation, 80-bit operations
-\item[Extended precision] at least 80-bit representation, 80-bit operations (case of long double on x87 with gcc)
-\item[Quadruple precision] 128-bit representation, 128-bit operations
-\end{enumerate}
+\begin{itemize}
+\item \emph{Single precision} 32-bit representation, 32-bit operations
+\item \emph{Mixed single precision} 32-bit representation, 80-bit operations
+\item \emph{Double precision} 64-bit representation, 64-bit operations
+\item \emph{Mixed double precision} 64-bit representation, 80-bit operations
+\item \emph{Extended precision} at least 80-bit representation, 80-bit operations (case of long double on x87 with gcc)
+\item \emph{Quadruple precision} 128-bit representation, 128-bit operations
+\end{itemize}
 
 For extended precision, we will consider the values to be 80-bits, as these are all other additional bits are garbage.
 
@@ -299,10 +309,9 @@ For final result values, we'll consider them to be and have have an absolute val
 
 \begin{table}[h]
 \centering
-\sisetup{table-format=3.0, table-figures-exponent = 1}
-\begin{tabular}{|c|c|S|}
+\begin{tabular}{|c|S[table-format=5.0]|S[table-format=3.0]|}
 \hline
-\textbf{Nb. of bits} & \textbf{$e_{max}$} & \textbf{$p$} \\\\hline
+\textbf{Nb. of bits} & \multicolumn{1}{c|}{\textbf{$e_{max}$}} & \multicolumn{1}{c|}{\textbf{$p$}} \\\hline
 \textbf{32} & 127 & 23\\\hline
 \textbf{64} & 1023 & 52\\\hline
 \textbf{80} & 16383 & 64\\\hline
@@ -319,7 +328,7 @@ The very optimistic bound for accuracy of result value is the ulp of the floatin
 
 \begin{table}[h]
 \centering
-\sisetup{table-format=1.1, table-figures-exponent = 1}
+\sisetup{table-format=1.1, table-figures-exponent = 2}
 \begin{tabular}{|c|S|}
 \hline
 \textbf{Nb. of bits} & \multicolumn{1}{c|}{\textbf{Max. accuracy (in s)}}\\\hline
@@ -331,8 +340,50 @@ The very optimistic bound for accuracy of result value is the ulp of the floatin
 \caption{Maximum accuracy of final results}
 \end{table}
 
+% rules p. 47 of http://www.cs.berkeley.edu/~wkahan/MktgMath.pdf ?
+
 \mysubsection{Error bounds in common astronomical calculations}
 
+\mysubsubsection{vsop87}
+
+Computing a vsop87 coordinate for one planet at time $t$ involves three operations:
+
+\begin{itemize}
+\item \emph{base operation} with the form $a_i\times cos(b_i + c_i \times t)$, where $a_i$, $b_i$ and $c_i$ are given litterals
+\item \emph{summations} consisting of big sums of terms computed with \emph{base operations}
+\item \emph{polynomials} consisting in evaluating a short ($degree < 6$) polynomial with coefficients being results of previous sums, and variable $t$
+\end{itemize}
+
+Let's note $n_1$, $n_2$, $n_3$, $n_4$, $n_5$ the number of terms in the different summations. The number of basic operations is thus $N=n_1+n_2+n_3+n_4+n_5$. 
+
+For calendrical calculations, we consider dates between years -2000 and 4000, $t$ being here in julian millenia (\num{365250} julian days), we can consider: $$2.71 < t < 8.72$$ We also consider that the ask t contains no conversion error.
+
+The number of operations in the polynomial evaluation, if taken with Horner's formula, is 10 (5 additions, 5 multiplications)\footnote{see \ref{polynomial}}. 
+
+The error induced in the summations is bound by $N/2\,ulp$ if made in recusive summation, and around $\frac{1}{2}\,ulp$ if made with a precise summation algorithm (like Kahan)\footnote{see \ref{summations}}.
+
+For the error introduced by one base operation $a_i\times cos(b_i + c_i \times t)$, we must decompose it:
+\begin{itemize}
+\item the bound of the error introduced in the conversion in binary of the decimal constants $a_i$, $b_i$ and $c_i$ are respectively $\frac{1}{2}\,ulp(a_i)$, $\frac{1}{2}\,ulp(b_i)$, $\frac{1}{2}\,ulp(c_i)$
+\item the error introduced by the operations of $b_i + c_i \times t$ is bound by $1\,ulp(b_i+c_i\times t)$ or by half of it if computed with an FMA (see \ref{fma})
+\item without counting the error on multiplication, the error introduced by $c_i \times t$ is bound by $\frac{t_{max}}{2}=5\,ulp(c_i)$
+\item the global error bound of $b_i + c_i \times t$ is thus $ulp(b_i) + 5\,ulp(c_i) + (\frac{1}{2} or 1)\,ulp(b_i+c_i\times t)$ according to the fact that it's made with a FMA or not
+\item the error introduced by $cos$ is bound by $1\,ulp$ on most hardwares (we'll consider it's the case).
+\item without taking the previous error into consideration, the bound of the error introduced by $cos(\alpha)$ when $\alpha$ has an error of $\epsilon$ (this is called forward error\footnote{see section 1.5 of \cite{Higham}}) is the maximum distance between $cos(\alpha)$ and $cos(\alpha + \epsilon)$. This maximum is attained when the derivate ($sin(\alpha)$) has its maximum, when $\alpha = \frac{\pi}{2}$. The bound is thus $cos(\frac{\pi}{2}+\epsilon)-cos(\frac{\pi}{2}) = -sin(\epsilon) \approx \epsilon$ for small $\epsilon$
+\item the error bound of $cos(b_i+c_i\times t)$ is thus $ulp(b_i) + 5\,ulp(c_i) + (0.5 or 1)\,ulp(b_i+c_i\times t)+ ulp(cos(b_i+c_i\times t))$
+\end{itemize}
+
+The total error bound for a base operation is thus $$ulp(a_i) + ulp(b_i) + 5\,ulp(c_i) + (0.5 or 1)\,ulp(b_i+c_i\times t)+ ulp(cos(b_i+c_i\times t)) + \frac{1}{2}ulp(a_i\times cos(b_i+c_i\times t))$$
+
+In the worst case, all these ulp are with the same exponent $e$. In this case we have the precision of the basic operation being 9.5 or 10 ulp($e$)TODO
+
+, hence a maximum of $\rfloor log_2(10)\rfloor = 3$ corrupted digits.
+
+In the big sums, we usually have a very proeminent first $a_1$ and starting from the second one, we have $a_i<\frac{a_1}{10}$. This means that the three last digits of all $a_i$ after the first will be lost. So we can assume that only three digits are corrupted in the final result if we make the sum in the ascending order and with the Kahan formula.
+
+Now if we take into account the polynomial evaluation, we have the same kind phenomenon as described just before: only one term will prevail, other terms' last digits won't be taken into account.
+
+At the end, we have a very good accuracy with only 3 corrupted digits.
 
 \mysubsection{Measuring errors}
 

@@ -20,6 +20,8 @@ Code standards improvement
   relicensing agreement? Might be unnecessary if the code is under BSD, but
   who knows... http://www.jbkempf.com/blog/post/2012/How-to-properly-
   relicense-a-large-open-source-project-part-2
+ - before using arbitrary precision, check if long long int overflow (with 
+   IEEE-754 exceptions)
 
 General development
 ===================
