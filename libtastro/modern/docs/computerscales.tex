@@ -353,7 +353,7 @@ The number of operations in the polynomial evaluation, if taken with Horner's fo
 
 The error induced in the summations is bound by $N/2\,ulp$ if made in recusive summation, and around $\frac{1}{2}\,ulp$ if made with a precise summation algorithm (like Kahan)\footnote{see \ref{summations}}.
 
-Now let's compute the error of the base operation. A first important remark: we always have $0<b_i<2\pi$\footnote{because $cos(2\pi+x)=cos(x)$, this bound is always respected in the original files.}. Also, $0<a_i<0.1$ seems always respected. The biggest problem is $c_i$, as this one has very large bounds, approximately $0.01<c_i<5\times10^5$ (and thus its exponent $-4<e_c<13$).
+Now let's compute the error of the base operation. A first important remark: we always have $0<b_i<2\pi$\footnote{because $cos(2\pi+x)=cos(x)$, this bound is always respected in the original files.}. Also, $0<a_i<0.1$ seems always respected. The biggest problem is $c_i$, as this one has very large bounds, approximately $0.01<c_i<5\times10^5$ (and thus its exponent $-4<e_c<19$).
 
 We can take a few steps in evaluating the error bound of one base operation $a_i\times cos(b_i + c_i \times t)$:
 \begin{itemize}
@@ -366,7 +366,7 @@ We can take a few steps in evaluating the error bound of one base operation $a_i
 \item without taking the previous error into consideration, the bound of the error introduced by $cos(\alpha)$ when $\alpha$ has an error of $\epsilon$ (this is called forward error\footnote{see section 1.5 of \cite{Higham}}) is the maximum distance between $cos(\alpha)$ and $cos(\alpha + \epsilon)$. This maximum is attained when the derivate ($sin(\alpha)$) has its maximum, when $\alpha = \frac{\pi}{2}$. The bound is thus $cos(\frac{\pi}{2}+\epsilon)-cos(\frac{\pi}{2}) = -sin(\epsilon) \approx \epsilon$ for small $\epsilon$
 \end{itemize}
 
-Now, is 6\,ulp($c_i$) small? We have $ulp(c_i)=2^{e_c-p+1}$\footnote{see \ref{ulp}}, with $-4<e_c<13$. Results are given in Table~\ref{table:ulpci}.
+Now, is 6\,ulp($c_i$) small? We have $ulp(c_i)=2^{e_c-p+1}$\footnote{see \ref{ulp}}, with $-4<e_c<19$. Results are given in Table~\ref{table:ulpci}.
 
 \begin{table}[h]
 \centering
@@ -374,10 +374,10 @@ Now, is 6\,ulp($c_i$) small? We have $ulp(c_i)=2^{e_c-p+1}$\footnote{see \ref{ul
 \begin{tabular}{|c|S|S|}
 \hline
 \textbf{Nb. of bits} & \multicolumn{1}{c|}{\textbf{$ulp(c_i)_{min}$}} & \multicolumn{1}{c|}{\textbf{$ulp(c_i)_{max}$}}\\\hline
-\textbf{32} & 1.5e-8 & 2e-3 \\\hline % p=23
-\textbf{64} & 2.7e-17 & 3.6e-12\\\hline % p=52
-\textbf{80} & 6.7e-21 & 8.9e-16\\\hline % p=64
-\textbf{128} & 3.2e-30 & 2.4e-35\\\hline % p=112
+\textbf{32} & 1.5e-8 & 1.2e-1 \\\hline % p=23
+\textbf{64} & 2.7e-17 & 2.3e-10\\\hline % p=52
+\textbf{80} & 6.7e-21 & 5.7e-14\\\hline % p=64
+\textbf{128} & 3.2e-30 & 2.0e-28\\\hline % p=112
 \end{tabular}
 \caption{$ulp(c_i)$}
 \label{table:ulpci}
@@ -396,9 +396,9 @@ As an approximation, we can say that $s_i$ is approximately the first term of th
 
 Looking at the numbers of the vsop87 files, we can see that $a_1 of s_1 \approx \frac{a_1 of s_0}{10}$, $a_1 of s_2\approx \frac{a_1 of s_1}{10}$, etc. so we can approximate $s_1 \approx \frac{s_0}{10}$, $s_2\approx \frac{s_1}{10}$, etc. So if we want to bind the error, we can take $t=10$, and say that all terms of the polynomial are about the same size\footnote{note that this is not true for calendrical calculations around year 2000, which will thus hold more precise results.}. So all the errors of the different terms will be summed.
 
-Now computing the error on the term $s_i\times t^i$. We have to come back to the error of the first basic operation of $s_i$, which is $< a_i\times 6\times ulp(c_i)$. As $a_1 of s_1\approx \frac{a_1 of s_0}{10}$, etc. we can bind $a_i$ by $10^{-i-1}$, but if we multiply it by $t^i$ with $t\approx 10$, the bound will be $10^{-1}$ and thus be the same as the first sum, for which we have binded the error by $E_{basicop} < 2^{-2}\times 6 \times 2^{e_c-p+1}$. To get the worse situation, we can say that $e_c$ is its maximum: $e_c=13$.So the total error of the polynomial evaluation will be bounded by 5\times the error on one term, which means a total error bound for a vsop87 coordinate of:
+Now computing the error on the term $s_i\times t^i$. We have to come back to the error of the first basic operation of $s_i$, which is $< a_i\times 6\times ulp(c_i)$. As $a_1 of s_1\approx \frac{a_1 of s_0}{10}$, etc. we can bind $a_i$ by $10^{-i-1}$, but if we multiply it by $t^i$ with $t\approx 10$, the bound will be $10^{-1}$ and thus be the same as the first sum, for which we have binded the error by $E_{basicop} < 2^{-2}\times 6 \times 2^{e_c-p+1}$. To get the worse situation, we can say that $e_c$ is its maximum: $e_c=19$.So the total error of the polynomial evaluation will be bounded by 5\times the error on one term, which means a total error bound for a vsop87 coordinate of:
 
-$$E_{vsop87} < 5 \times 2^{-2}\times 6 \times 2^{e_c-p+1} < 2^{e_c-p+4} < 2^{17-p}$$
+$$E_{vsop87} < 5 \times 2^{-2}\times 6 \times 2^{e_c-p+1} < 2^{e_c-p+4} < 2^{23-p}$$
 
 Converting this error bound in seconds, we can compute the final results, given in Table~\ref{table:vsopfloaterror}.
 
@@ -408,10 +408,10 @@ Converting this error bound in seconds, we can compute the final results, given 
 \begin{tabular}{|c|S|}
 \hline
 \textbf{Nb. of bits} & \multicolumn{1}{c|}{\textbf{Error bound (in s)}} \\\hline
-\textbf{32} & 3.2e3 \\\hline % p=23
-\textbf{64} & 6e-6 \\\hline % p=52
-\textbf{80} & 1.4e-10 \\\hline % p=64
-\textbf{128} & 5.2e-24 \\\hline % p=112
+\textbf{32} & 2.0e5 \\\hline % p=23
+\textbf{64} & 3.8e-4 \\\hline % p=52
+\textbf{80} & 9.3e-8 \\\hline % p=64
+\textbf{128} & 3.3e-22 \\\hline % p=112
 \end{tabular}
 \caption{Maximum error of vsop87 coordinate due to floating point operations}
 \label{table:vsopfloaterror}
