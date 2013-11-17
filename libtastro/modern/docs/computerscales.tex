@@ -15,14 +15,14 @@ Real numbers are represented by floating point numbers, that can be schematized 
 
 In arbitrary precision libraries, operations are made in software and thus doesn't depend too much on hardware representation, at the cost of an important speed loss. The system is the same though, but the size of the exponent and the mantissa is given by the user\footnote{Note that the mainstream GMP/MPFR doesn't allow to set truely arbitrary exponent}.
 
-The representation size of a floating point number vary according to hardware architecture and user input. We will take into consideration here the most common types (which should cover 99.99\% of use cases). We describe here the IEEE-754 standard as implemented in C99, but there are strict equivalents in Fortran.
+The representation size of a floating point number vary according to hardware architecture and user input. We will take into consideration here the most common types (which should cover 99.99\% of use cases). We describe here the IEEE-754 \footnote{See \cite{IEEE754}.} standard as implemented in C99\footnote{See \cite{c99} annex F.}, but there are strict equivalents in Fortran.
 
 \mysubsection{Norms and definitions}
 
-This paragraph describes the most simple description of floats, namely the description of the main types as in the IEEE-754 norm. This can be summarized in the following table:
+This paragraph describes the most simple description of floats, namely the description of the main types as in the IEEE-754 norm. This can be summarized in Table~\ref{table:basicfptypes}
 
-\begin{center}
-\vspace{\spacearoundtables}
+\begin{table}
+\centering
 \begin{tabular}{|l|S|S|S|}
 \hline
 \multicolumn{1}{|c|}{\textbf{name}} & \multicolumn{1}{c|}{\textbf{total}} & \multicolumn{1}{c|}{\textbf{exponent}} & \multicolumn{1}{c|}{\textbf{mantissa}} \\\hline
@@ -30,8 +30,9 @@ Single precision & 32 & 8 & 23 \\\hline
 Double precision & 64 & 11 & 52 \\\hline
 Quadruple precision & 128 & 15 & 112 \\\hline
 \end{tabular}
-\vspace{\spacearoundtables}
-\end{center}
+\caption{Most basic floating point number types}
+\label{table:basicfptypes}
+\end{table}
 
 But as we will see, there are some discrepancies between this and reality, due to several implementation choices that we will detail in the next sections.
 
@@ -103,7 +104,7 @@ On ARM, \texttt{long double} is a synonym of double\footnote{see \url{http://inf
 
 \mysubsubsection{Summing up}
 
-We can thus construct the following table summing up the previous paragraphs, giving some name conventions we'll use later. These names are just convenient and (though largely the same) not identical to IEEE-754 standard. The number of bits cells are in the form $x$/$y$, where $x$ is the number of bits used in memory and $y$ the number of bits used in calculations and intermediate values. When a "($\times x$)" is present, $x$ indicates the number of simultaneous operations on the type the architecture is capable of.
+We can thus construct Table~\ref{table:ctypes} summing up the previous paragraphs, giving some name conventions we'll use later. These names are just convenient and (though largely the same) not identical to IEEE-754 standard. The number of bits cells are in the form $x$/$y$, where $x$ is the number of bits used in memory and $y$ the number of bits used in calculations and intermediate values. When a "($\times x$)" is present, $x$ indicates the number of simultaneous operations on the type the architecture is capable of.
 
 \begin{table}[h]
 \begin{tabu}{|X[l]|X[c]|X[c]|X[c]|}
@@ -119,6 +120,7 @@ We can thus construct the following table summing up the previous paragraphs, gi
 \textbf{x86 or x86\_64 FPU (msvc)} & 32/80 & 64/80 & 64/80\\\hline
 \end{tabu}
 \caption{C floating point types representation on different architectures}
+\label{table:ctypes}
 \end{table}
 
 \mysection{Common errors due to floating point representations}
@@ -264,7 +266,7 @@ Something very important and documented in all books on the topic is to take int
 
 \mysubsection{Errors in trigonometrical functions}
 
-Transcendental functions (like sin and cos) guaranteed accuracy cannot be as good as other functions due to the tablemaker's dillema. Section 8.3.10 of \cite{Intel}\TODO specifies that the error cannot exceed 1\,ulp if rounding mode is \emph{nearest even}.
+Transcendental functions (like sin and cos) guaranteed accuracy cannot be as good as other functions due to the tablemaker's dillema. Section 8.3.10 of \citep{Intel}\TODO specifies that the error cannot exceed 1\,ulp if rounding mode is \emph{nearest even}.
 
 % TODO: Intel:  http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
 
@@ -290,22 +292,9 @@ Decent compilers allow to to disable optimization for one function though\footno
 
 \mysection{Errors induced by floating point in common astronomical calculations}
 
-For this part, we'll consider the following most common floating point types:
+For this part, we'll consider that 96/80-bit and 128/80-bit numbers are 80-bit, as the other bits are garbage. We'll also consider that computed values will be in radiants.
 
-\begin{itemize}
-\item \emph{Single precision} 32-bit representation, 32-bit operations
-\item \emph{Mixed single precision} 32-bit representation, 80-bit operations
-\item \emph{Double precision} 64-bit representation, 64-bit operations
-\item \emph{Mixed double precision} 64-bit representation, 80-bit operations
-\item \emph{Extended precision} at least 80-bit representation, 80-bit operations (case of long double on x87 with gcc)
-\item \emph{Quadruple precision} 128-bit representation, 128-bit operations
-\end{itemize}
-
-For extended precision, we will consider the values to be 80-bits, as these are all other additional bits are garbage.
-
-We'll consider also that computed values will be in radiants.
-
-For final result values, we'll consider them to be and have have an absolute value greater than 0.5 and less than $\pi$, this allows to say that the exponent will be between -1 and 2. The maximum exponent ($e$) and the mantissa size ($p$) for the different representations in memory is:
+For final result values, we'll consider them to be and have have an absolute value greater than 0.5 and less than $\pi$, this allows to say that the exponent will be between -1 and 2. The maximum exponent ($e$) and the mantissa size ($p$) for the different representations in memory is given in Table~\ref{table:fpformats}.
 
 \begin{table}[h]
 \centering
@@ -318,13 +307,14 @@ For final result values, we'll consider them to be and have have an absolute val
 \textbf{128} & 16383 & 112\\\hline
 \end{tabular}
 \caption{Caracteristics of the different floating point formats}
+\label{table:fpformats}
 \end{table}
 
 \mysubsection{Converting floating point error in angle precision error}
 
 \mysubsubsection{Maximum accuracy allowed by floating point types}
 
-The very optimistic bound for accuracy of result value is the ulp of the floating point representation. Taking 2 as the exponent, we get an maximal error in radians of $2^{-p+2-1} = 2^{-(p-1)}$. The following table gives this maximal accuracy in seconds:
+The very optimistic bound for accuracy of result value is the ulp of the floating point representation. Taking 2 as the exponent, we get an maximal error in radians of $2^{-p+2-1} = 2^{-(p-1)}$. Table~\ref{table:fpmaxaccuracy} gives this maximal accuracy in seconds.
 
 \begin{table}[h]
 \centering
@@ -338,6 +328,7 @@ The very optimistic bound for accuracy of result value is the ulp of the floatin
 \textbf{128} & 4e-29\\\hline
 \end{tabular}
 \caption{Maximum accuracy of final results}
+\label{table:fpmaxaccuracy}
 \end{table}
 
 % rules p. 47 of http://www.cs.berkeley.edu/~wkahan/MktgMath.pdf ?
@@ -346,7 +337,7 @@ The very optimistic bound for accuracy of result value is the ulp of the floatin
 
 \mysubsubsection{vsop87}
 
-Computing a vsop87 coordinate for one planet at time $t$ involves three operations:
+We will study here the error due to floating point operations in the vsop87 calcuations series C and D (the only two involved in calendrical calculations). Computing a vsop87 C or D coordinate for a planet at time $t$ involves three operations:
 
 \begin{itemize}
 \item \emph{base operation} with the form $a_i\times cos(b_i + c_i \times t)$, where $a_i$, $b_i$ and $c_i$ are given litterals
@@ -367,15 +358,15 @@ Now let's compute the error of the base operation. A first important remark: we 
 We can take a few steps in evaluating the error bound of one base operation $a_i\times cos(b_i + c_i \times t)$:
 \begin{itemize}
 \item the bound of the error introduced in the conversion in binary of the decimal constants $a_i$, $b_i$ and $c_i$ are respectively $\frac{1}{2}\,ulp(a_i)$, $\frac{1}{2}\,ulp(b_i)$, $\frac{1}{2}\,ulp(c_i)$
-\item the error introduced by the operations of $b_i + c_i \times t$ is bound by $1\,ulp(b_i+c_i\times t)$ or by half of it if computed with an FMA (see \ref{fma})
+\item the error introduced by the operations of $b_i + c_i \times t$ is bound by $ulp(b_i+c_i\times t)$ or by half of it if computed with an FMA (see \ref{fma})
 \item without counting the error on multiplication, the error introduced by $c_i \times t$ is bound by $\frac{t_{max}}{2}=5\,ulp(c_i)$
 \item the global error bound of $b_i + c_i \times t$ is thus $ulp(b_i) + 5\,ulp(c_i) + (\frac{1}{2} or 1)\,ulp(b_i+c_i\times t)$ according to the fact that it's made with a FMA or not
-\item in the previous error, we can make a few simplifications: $ulp(b_i) \ll ulp(c_i)$, and $ulp(b_i+c_i\times t)\approx ulp(c_i)$. We have thus an error of about (5.5 or 6)\,ulp($c_i$)
+\item in the previous error, we can make a few simplifications when in the worse case (when $c_i \gg b_i$ and $c_i \gg a_i$): $ulp(b_i) \ll ulp(c_i)$, and $ulp(b_i+c_i\times t)\approx ulp(c_i)$. We have thus an error of about (5.5 or 6)\,ulp($c_i$)
 \item the error introduced by $cos$ is bound by $1\,ulp$ on most hardwares (we'll consider it's the case).
 \item without taking the previous error into consideration, the bound of the error introduced by $cos(\alpha)$ when $\alpha$ has an error of $\epsilon$ (this is called forward error\footnote{see section 1.5 of \cite{Higham}}) is the maximum distance between $cos(\alpha)$ and $cos(\alpha + \epsilon)$. This maximum is attained when the derivate ($sin(\alpha)$) has its maximum, when $\alpha = \frac{\pi}{2}$. The bound is thus $cos(\frac{\pi}{2}+\epsilon)-cos(\frac{\pi}{2}) = -sin(\epsilon) \approx \epsilon$ for small $\epsilon$
 \end{itemize}
 
-Now, is 6\,ulp($c_i$) small? We have $ulp(c_i)=2^{e_c-p+1}$\footnote{see \ref{ulp}}, with $-4<e_c<13$. We have thus the following table:
+Now, is 6\,ulp($c_i$) small? We have $ulp(c_i)=2^{e_c-p+1}$\footnote{see \ref{ulp}}, with $-4<e_c<13$. Results are given in Table~\ref{table:ulpci}.
 
 \begin{table}[h]
 \centering
@@ -389,11 +380,12 @@ Now, is 6\,ulp($c_i$) small? We have $ulp(c_i)=2^{e_c-p+1}$\footnote{see \ref{ul
 \textbf{128} & 3.2e-30 & 2.4e-35\\\hline % p=112
 \end{tabular}
 \caption{$ulp(c_i)$}
+\label{table:ulpci}
 \end{table}
 
-We can thus make the approximation $sin(6\times ulp(c_i))\approx 6\times ulp(c_i)$. The total error of $cos(b_i+c_i\times t)$ is thus $\approx 6\times ulp(c_i)$.
+We can thus make the approximation $sin(6\times ulp(c_i))\approx 6\times ulp(c_i)$. The total error of $cos(b_i+c_i\times t)$ is thus bounded by $\approx 6\times ulp(c_i)$.
 
-Now, we can say $ulp(a_i) \ll ulp(c_i)$ and neglect it, and the total error of a basic operation is thus $a_i\times 6\times ulp(c_i)$. To get the biggest bound, we can use $a_i<0.1$ and thus $e_a<-2$, so expanding everything we have 
+Now, we can say $ulp(a_i) \ll ulp(c_i)$ and neglect it, we can also neglect $ulp(cos(b_i+c_i\times t))$ as $|cos(x)|\leq 1$. So the total error of a basic operation is thus bounded by $a_i\times 6\times ulp(c_i)$. We can use $a_i<0.1$ and thus $e_a<-2$ to get the final error:
 $$E_{basicop} < 2^{-2}\times 6 \times 2^{e_c-p+1} < 2^{e_c-p+2}$$
 
 Now, having $a_i<\frac{a_1}{100}$ for $i>1$, we can say that if the sum is made with the Kahan formula, the total error of the sum can be approximated by the error of the first basic operation.
@@ -408,7 +400,7 @@ Now computing the error on the term $s_i\times t^i$. We have to come back to the
 
 $$E_{vsop87} < 5 \times 2^{-2}\times 6 \times 2^{e_c-p+1} < 2^{e_c-p+4} < 2^{17-p}$$
 
-Converting this error bound in seconds, we can compute the following table:
+Converting this error bound in seconds, we can compute the final results, given in Table~\ref{table:vsopfloaterror}.
 
 \begin{table}[h]
 \centering
@@ -422,9 +414,10 @@ Converting this error bound in seconds, we can compute the following table:
 \textbf{128} & 5.2e-24 \\\hline % p=112
 \end{tabular}
 \caption{Maximum error of vsop87 coordinate due to floating point operations}
+\label{table:vsopfloaterror}
 \end{table}
 
-So, looking at table \ref{vsopprecision}, we can conclude that 64-bit internal operations is enough for vsop87 calculations. From the previous calculations, we can also say that computing the first basic operation of each group with more precision will drastically improve the precision of the whole calculation (almost giving it the improved precision).
+So, looking at Table~\ref{table:vsopprecision}, we can conclude that 64-bit internal operations is enough for vsop87 calculations. From the previous calculations, we can also say that computing the first basic operation of each group with more precision will drastically improve the precision of the whole calculation (almost giving it the improved precision).
 
 \mysubsection{Measuring errors}
 

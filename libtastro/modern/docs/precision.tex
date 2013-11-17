@@ -11,6 +11,7 @@ normalheadings%headings=medium,% small headings
 ]{scrbook}
 
 \usepackage{eroux}
+\usepackage[numbers,square]{natbib} % These need to be in this file!
 
 \title{Astronomical calculations in lunisolar calendars}
 \subtitle{Overview of accuracy and optimization possibility}
@@ -54,6 +55,8 @@ normalheadings%headings=medium,% small headings
 
 \include{timescales}
 
+\include{observerposition}
+
 \mychapter{Coordinate systems}
 
 \mychapter{Errors due to Time and Coordinate system calculations}
@@ -66,39 +69,6 @@ normalheadings%headings=medium,% small headings
 
 \mysection{Earth Rotation Angle (ERA)}
 
-\mysection{Position of the observer}
-
-Calendrical calculations are supposedly made by humans above the sea, not at the geocenter. So the observed longitude of a celestial body 
-
-$R_o$ is the distance of the observer from the geocenter ($R_E+altitude$)
-$D_{E-M}$ is the Earth-Moon distance
-$\Theta$ is the resulting error
-
-The error will be maximized by an observation of the moon when it's $90°$ from vernal equinox and at its perigee (about $D_{E-Mmin}\approx360000km$) made by someone on the top of the Everest ($R_o=R_E+8,848km$) and considering the Everest is on the Ecliptic. In this case we would have:
-
-$$\Theta_{max} = atan(R_o/D_{E-Mmin}) = 3655as$$
-
-% atan(6379.85/360000) = .01771995065419387521rad = 3655s
-
-Which is an error to be avoided by all means!
-
-If we take an observation at sea level, with a $30°$ angle and an average distance (Sun-Earth distance for inner planets and Sun-planet distance for outer ones), we can compute the following table:
-
-\begin{center}
-\sisetup{table-figures-exponent = 1}
-\begin{tabular}{|l|S|S|}
-\hline
-\textbf{Celestial body} & \multicolumn{1}{c|}{\textbf{$\Theta_{max}$}} & \multicolumn{1}{c|}{\textbf{$\Theta$}}  \\\hline
-Sun & 9 & 4\\\hline % min: 147Mkm, mean: 150km
-Moon & 3655 & 1706\\\hline % min: 360kkm, mean: 385kkm
-Mercury & 17 & 7\\\hline %  min: 77 Mkm, mean: 100Mkm
-Mars & 24 & 3\\\hline % min: 54.6Mm, mean: 225Mkm
-Venus & 35 & 4\\\hline % min: 38Mkm, mean: 150Mkm
-Saturn & 1 & 453\\\hline % min  1200Mkm, mean: 1450Mkm
-Jupiter & 2e-3 & 8e-4 \\\hline % min: 629kMkm, mean: 770kMkm
-\end{tabular}
-\end{center}
-
 \mychapter{Other inaccuracies}
 
 \mysection{iterations in the light tralvel time}
@@ -106,5 +76,6 @@ Jupiter & 2e-3 & 8e-4 \\\hline % min: 629kMkm, mean: 770kMkm
 \mysection{Aberration of light}
 
 
-
+\bibliographystyle{./plainnat} %% TODO: I need the "./" on my broken system, it shoud disappear...
+\bibliography{./precision}
 \end{document}

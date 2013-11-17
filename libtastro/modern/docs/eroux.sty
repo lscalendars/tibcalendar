@@ -7,7 +7,6 @@
 \pdfprotrudechars=2
 \pdfadjustspacing=2
 
-\usepackage[square,sort,comma,numbers]{natbib}
 \usepackage{polyglossia}
 \setmainlanguage{english}
 
@@ -101,7 +100,9 @@
 % no matter what cost is in terms of additional lines, don't make too-long lines
 \sloppy
 
-\usepackage[pdfencoding=auto,unicode, bookmarks, colorlinks=false, pdfborder={0 0 0}]{hyperref}
+\usepackage[hyphens]{url} % break links on hyphens too
+\usepackage[breaklinks,pdfencoding=auto,unicode, bookmarks, colorlinks=false, pdfborder={0 0 0}]{hyperref}
+
 \usepackage{siunitx}
 \sisetup{%
   output-decimal-marker={.},
