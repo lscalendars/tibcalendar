@@ -143,7 +143,7 @@ To make the link with computer representations, we would have:
 \item $e$ the exponent
 \end{itemize}
 
-\mysubsubsection{Errors of floating points}
+\mysubsubsection{Errors of floating points}\label{ulp}
 
 The errors introduced by floating point are usually given in the \emph{unit in the last place} (ulp) unit. To understand it, let's take an example with $\beta=10, p=3, e_{max}=4$. For the number $1.04\times 10^{-2}$, the ulp is $0.01\times 10^{-2} = 1.10^{-4}$, meaning the smallest number representable with the same $\beta$, $p$ and $e$. This unit is used in measures of precision of operations. For example, IEEE-754 makes it mandatory for the sum operations to be accurate at $\frac{1}{2}ulp$, which means that when computing $z=x+y$, if $z_r$ is the real result and $z_f$ is the floating point number returned by the function, we have $z_r\in[z_f-\frac{1}{2}ulp(z), z_f-\frac{1}{2}ulp(z)]$.
 
@@ -317,7 +317,7 @@ For final result values, we'll consider them to be and have have an absolute val
 \textbf{80} & 16383 & 64\\\hline
 \textbf{128} & 16383 & 112\\\hline
 \end{tabular}
-\caption{Maximum accuracy of final results}
+\caption{Caracteristics of the different floating point formats}
 \end{table}
 
 \mysubsection{Converting floating point error in angle precision error}
@@ -362,28 +362,69 @@ The number of operations in the polynomial evaluation, if taken with Horner's fo
 
 The error induced in the summations is bound by $N/2\,ulp$ if made in recusive summation, and around $\frac{1}{2}\,ulp$ if made with a precise summation algorithm (like Kahan)\footnote{see \ref{summations}}.
 
-For the error introduced by one base operation $a_i\times cos(b_i + c_i \times t)$, we must decompose it:
+Now let's compute the error of the base operation. A first important remark: we always have $0<b_i<2\pi$\footnote{because $cos(2\pi+x)=cos(x)$, this bound is always respected in the original files.}. Also, $0<a_i<0.1$ seems always respected. The biggest problem is $c_i$, as this one has very large bounds, approximately $0.01<c_i<5\times10^5$ (and thus its exponent $-4<e_c<13$).
+
+We can take a few steps in evaluating the error bound of one base operation $a_i\times cos(b_i + c_i \times t)$:
 \begin{itemize}
 \item the bound of the error introduced in the conversion in binary of the decimal constants $a_i$, $b_i$ and $c_i$ are respectively $\frac{1}{2}\,ulp(a_i)$, $\frac{1}{2}\,ulp(b_i)$, $\frac{1}{2}\,ulp(c_i)$
 \item the error introduced by the operations of $b_i + c_i \times t$ is bound by $1\,ulp(b_i+c_i\times t)$ or by half of it if computed with an FMA (see \ref{fma})
 \item without counting the error on multiplication, the error introduced by $c_i \times t$ is bound by $\frac{t_{max}}{2}=5\,ulp(c_i)$
 \item the global error bound of $b_i + c_i \times t$ is thus $ulp(b_i) + 5\,ulp(c_i) + (\frac{1}{2} or 1)\,ulp(b_i+c_i\times t)$ according to the fact that it's made with a FMA or not
+\item in the previous error, we can make a few simplifications: $ulp(b_i) \ll ulp(c_i)$, and $ulp(b_i+c_i\times t)\approx ulp(c_i)$. We have thus an error of about (5.5 or 6)\,ulp($c_i$)
 \item the error introduced by $cos$ is bound by $1\,ulp$ on most hardwares (we'll consider it's the case).
 \item without taking the previous error into consideration, the bound of the error introduced by $cos(\alpha)$ when $\alpha$ has an error of $\epsilon$ (this is called forward error\footnote{see section 1.5 of \cite{Higham}}) is the maximum distance between $cos(\alpha)$ and $cos(\alpha + \epsilon)$. This maximum is attained when the derivate ($sin(\alpha)$) has its maximum, when $\alpha = \frac{\pi}{2}$. The bound is thus $cos(\frac{\pi}{2}+\epsilon)-cos(\frac{\pi}{2}) = -sin(\epsilon) \approx \epsilon$ for small $\epsilon$
-\item the error bound of $cos(b_i+c_i\times t)$ is thus $ulp(b_i) + 5\,ulp(c_i) + (0.5 or 1)\,ulp(b_i+c_i\times t)+ ulp(cos(b_i+c_i\times t))$
 \end{itemize}
 
-The total error bound for a base operation is thus $$ulp(a_i) + ulp(b_i) + 5\,ulp(c_i) + (0.5 or 1)\,ulp(b_i+c_i\times t)+ ulp(cos(b_i+c_i\times t)) + \frac{1}{2}ulp(a_i\times cos(b_i+c_i\times t))$$
+Now, is 6\,ulp($c_i$) small? We have $ulp(c_i)=2^{e_c-p+1}$\footnote{see \ref{ulp}}, with $-4<e_c<13$. We have thus the following table:
 
-In the worst case, all these ulp are with the same exponent $e$. In this case we have the precision of the basic operation being 9.5 or 10 ulp($e$)TODO
+\begin{table}[h]
+\centering
+\sisetup{table-format=1.1, table-figures-exponent = 2}
+\begin{tabular}{|c|S|S|}
+\hline
+\textbf{Nb. of bits} & \multicolumn{1}{c|}{\textbf{$ulp(c_i)_{min}$}} & \multicolumn{1}{c|}{\textbf{$ulp(c_i)_{max}$}}\\\hline
+\textbf{32} & 1.5e-8 & 2e-3 \\\hline % p=23
+\textbf{64} & 2.7e-17 & 3.6e-12\\\hline % p=52
+\textbf{80} & 6.7e-21 & 8.9e-16\\\hline % p=64
+\textbf{128} & 3.2e-30 & 2.4e-35\\\hline % p=112
+\end{tabular}
+\caption{$ulp(c_i)$}
+\end{table}
 
-, hence a maximum of $\rfloor log_2(10)\rfloor = 3$ corrupted digits.
+We can thus make the approximation $sin(6\times ulp(c_i))\approx 6\times ulp(c_i)$. The total error of $cos(b_i+c_i\times t)$ is thus $\approx 6\times ulp(c_i)$.
 
-In the big sums, we usually have a very proeminent first $a_1$ and starting from the second one, we have $a_i<\frac{a_1}{10}$. This means that the three last digits of all $a_i$ after the first will be lost. So we can assume that only three digits are corrupted in the final result if we make the sum in the ascending order and with the Kahan formula.
+Now, we can say $ulp(a_i) \ll ulp(c_i)$ and neglect it, and the total error of a basic operation is thus $a_i\times 6\times ulp(c_i)$. To get the biggest bound, we can use $a_i<0.1$ and thus $e_a<-2$, so expanding everything we have 
+$$E_{basicop} < 2^{-2}\times 6 \times 2^{e_c-p+1} < 2^{e_c-p+2}$$
 
-Now if we take into account the polynomial evaluation, we have the same kind phenomenon as described just before: only one term will prevail, other terms' last digits won't be taken into account.
+Now, having $a_i<\frac{a_1}{100}$ for $i>1$, we can say that if the sum is made with the Kahan formula, the total error of the sum can be approximated by the error of the first basic operation.
 
-At the end, we have a very good accuracy with only 3 corrupted digits.
+There is the same kind of reduction applying for the polynomial. If we note it in the form $s_0+s_1\times t+s_2\times t^2+s_3\times s_3+s_4\times t^4+s_5\times t^5$, where $s_0, s_1$, etc. are the result of the summations of the basic operations. We shall also remember that $2<t<9$. 
+
+As an approximation, we can say that $s_i$ is approximately the first term of the sum, and that the first term of the sum is bound by the corresponding $a_1$ (as $cos(x)\leq 1$). 
+
+Looking at the numbers of the vsop87 files, we can see that $a_1 of s_1 \approx \frac{a_1 of s_0}{10}$, $a_1 of s_2\approx \frac{a_1 of s_1}{10}$, etc. so we can approximate $s_1 \approx \frac{s_0}{10}$, $s_2\approx \frac{s_1}{10}$, etc. So if we want to bind the error, we can take $t=10$, and say that all terms of the polynomial are about the same size\footnote{note that this is not true for calendrical calculations around year 2000, which will thus hold more precise results.}. So all the errors of the different terms will be summed.
+
+Now computing the error on the term $s_i\times t^i$. We have to come back to the error of the first basic operation of $s_i$, which is $< a_i\times 6\times ulp(c_i)$. As $a_1 of s_1\approx \frac{a_1 of s_0}{10}$, etc. we can bind $a_i$ by $10^{-i-1}$, but if we multiply it by $t^i$ with $t\approx 10$, the bound will be $10^{-1}$ and thus be the same as the first sum, for which we have binded the error by $E_{basicop} < 2^{-2}\times 6 \times 2^{e_c-p+1}$. To get the worse situation, we can say that $e_c$ is its maximum: $e_c=13$.So the total error of the polynomial evaluation will be bounded by 5\times the error on one term, which means a total error bound for a vsop87 coordinate of:
+
+$$E_{vsop87} < 5 \times 2^{-2}\times 6 \times 2^{e_c-p+1} < 2^{e_c-p+4} < 2^{17-p}$$
+
+Converting this error bound in seconds, we can compute the following table:
+
+\begin{table}[h]
+\centering
+\sisetup{table-format=1.1, table-figures-exponent = 2}
+\begin{tabular}{|c|S|}
+\hline
+\textbf{Nb. of bits} & \multicolumn{1}{c|}{\textbf{Error bound (in s)}} \\\hline
+\textbf{32} & 3.2e3 \\\hline % p=23
+\textbf{64} & 6e-6 \\\hline % p=52
+\textbf{80} & 1.4e-10 \\\hline % p=64
+\textbf{128} & 5.2e-24 \\\hline % p=112
+\end{tabular}
+\caption{Maximum error of vsop87 coordinate due to floating point operations}
+\end{table}
+
+So, looking at table \ref{vsopprecision}, we can conclude that 64-bit internal operations is enough for vsop87 calculations. From the previous calculations, we can also say that computing the first basic operation of each group with more precision will drastically improve the precision of the whole calculation (almost giving it the improved precision).
 
 \mysubsection{Measuring errors}
 
