@@ -212,7 +212,7 @@ Of course this is a bound which will most certainly never be reached, but it's d
 
 A refinement of this value is given in Table 4.1 of  \cite{Higham}.
 
-\mysubsubsection{Ascending order}\ref{ascendingorder}
+\mysubsubsection{Ascending order}\label{ascendingorder}
 
 It is a good practice, for sums of more than two floating point numbers, to sum in ascending order of exponent (if we can know or guess it), treating small numbers before big ones. The reason for this is fairly simple and can be explained by the following example.
 
@@ -345,15 +345,20 @@ We will study here the error due to floating point operations in the vsop87 calc
 \item \emph{polynomials} consisting in evaluating a short ($degree < 6$) polynomial with coefficients being results of previous sums, and variable $t$
 \end{itemize}
 
-Let's note $n_1$, $n_2$, $n_3$, $n_4$, $n_5$ the number of terms in the different summations. The number of basic operations is thus $N=n_1+n_2+n_3+n_4+n_5$. 
+For calendrical calculations, we consider dates between years -2000 and 4000, $t$ being here in julian millenia (\num{365250} julian days), we can consider: $$2.71 < t < 8.72$$ We also consider that the $t$ contains no conversion error.
 
-For calendrical calculations, we consider dates between years -2000 and 4000, $t$ being here in julian millenia (\num{365250} julian days), we can consider: $$2.71 < t < 8.72$$ We also consider that the ask t contains no conversion error.
+By looking at the files, we can set some bounds to the different factors used in the calculations:
 
-The number of operations in the polynomial evaluation, if taken with Horner's formula, is 10 (5 additions, 5 multiplications)\footnote{see \ref{polynomial}}. 
+\begin{equation}
+0<b_i<2\pi\footnote{because $cos(2\pi+x)=cos(x)$, this bound is always respected in the original files.}
+\end{equation}
 
-The error induced in the summations is bound by $N/2\,ulp$ if made in recusive summation, and around $\frac{1}{2}\,ulp$ if made with a precise summation algorithm (like Kahan)\footnote{see \ref{summations}}.
+\begin{equation}
+0<a_i<0.1
+\label{ai}
+\end{equation}
 
-Now let's compute the error of the base operation. A first important remark: we always have $0<b_i<2\pi$\footnote{because $cos(2\pi+x)=cos(x)$, this bound is always respected in the original files.}. Also, $0<a_i<0.1$ seems always respected. The biggest problem is $c_i$, as this one has very large bounds, approximately $0.01<c_i<5\times10^5$ (and thus its exponent $-4<e_c<19$).
+The biggest problem is $c_i$, as this one has very large bounds, approximately $0.01<c_i<5\times10^5$ (and thus its exponent $-4<e_c<19$).
 
 We can take a few steps in evaluating the error bound of one base operation $a_i\times cos(b_i + c_i \times t)$:
 \begin{itemize}
@@ -386,19 +391,50 @@ Now, is 6\,ulp($c_i$) small? We have $ulp(c_i)=2^{e_c-p+1}$\footnote{see \ref{ul
 We can thus make the approximation $sin(6\times ulp(c_i))\approx 6\times ulp(c_i)$. The total error of $cos(b_i+c_i\times t)$ is thus bounded by $\approx 6\times ulp(c_i)$.
 
 Now, we can say $ulp(a_i) \ll ulp(c_i)$ and neglect it, we can also neglect $ulp(cos(b_i+c_i\times t))$ as $|cos(x)|\leq 1$. So the total error of a basic operation is thus bounded by $a_i\times 6\times ulp(c_i)$. We can use $a_i<0.1$ and thus $e_a<-2$ to get the final error:
-$$E_{basicop} < 2^{-2}\times 6 \times 2^{e_c-p+1} < 2^{e_c-p+2}$$
 
-Now, having $a_i<\frac{a_1}{100}$ for $i>1$, we can say that if the sum is made with the Kahan formula, the total error of the sum can be approximated by the error of the first basic operation.
+\begin{equation}
+E_{basicop} < 2^{-2}\times 6 \times 2^{e_c-p+1} < 2^{e_c-p+2}
+\label{eq:basicop}
+\end{equation}
 
-There is the same kind of reduction applying for the polynomial. If we note it in the form $s_0+s_1\times t+s_2\times t^2+s_3\times s_3+s_4\times t^4+s_5\times t^5$, where $s_0, s_1$, etc. are the result of the summations of the basic operations. We shall also remember that $2<t<9$. 
+Now, looking at the numbers, we have
 
-As an approximation, we can say that $s_i$ is approximately the first term of the sum, and that the first term of the sum is bound by the corresponding $a_1$ (as $cos(x)\leq 1$). 
+\begin{equation}
+\forall i>1, a_i<\frac{a_1}{100}
+\label{eq:a1ai}
+\end{equation}
 
-Looking at the numbers of the vsop87 files, we can see that $a_1 of s_1 \approx \frac{a_1 of s_0}{10}$, $a_1 of s_2\approx \frac{a_1 of s_1}{10}$, etc. so we can approximate $s_1 \approx \frac{s_0}{10}$, $s_2\approx \frac{s_1}{10}$, etc. So if we want to bind the error, we can take $t=10$, and say that all terms of the polynomial are about the same size\footnote{note that this is not true for calendrical calculations around year 2000, which will thus hold more precise results.}. So all the errors of the different terms will be summed.
+Thus, we can say that if the sum is made with the Kahan formula, the total error of the sum can be approximated by the error of the first basic operation.
 
-Now computing the error on the term $s_i\times t^i$. We have to come back to the error of the first basic operation of $s_i$, which is $< a_i\times 6\times ulp(c_i)$. As $a_1 of s_1\approx \frac{a_1 of s_0}{10}$, etc. we can bind $a_i$ by $10^{-i-1}$, but if we multiply it by $t^i$ with $t\approx 10$, the bound will be $10^{-1}$ and thus be the same as the first sum, for which we have binded the error by $E_{basicop} < 2^{-2}\times 6 \times 2^{e_c-p+1}$. To get the worse situation, we can say that $e_c$ is its maximum: $e_c=19$.So the total error of the polynomial evaluation will be bounded by 5\times the error on one term, which means a total error bound for a vsop87 coordinate of:
+There is the same kind of reduction applying for the polynomial. We suppose that the evaluation is made with Horner's formula and thus has 5 additions and 5 multiplications\footnote{see \ref{polynomials}}. If we note it in the form $s_0+s_1\times t+s_2\times t^2+s_3\times s_3+s_4\times t^4+s_5\times t^5$, where $s_0, s_1$, etc. are the result of the summations of the basic operations. We shall also remember that $2<t<9$. 
 
-$$E_{vsop87} < 5 \times 2^{-2}\times 6 \times 2^{e_c-p+1} < 2^{e_c-p+4} < 2^{23-p}$$
+Due to eq. \ref{eq:a1ai}, we can say that $s_i$ is approximately the first term of the sum, and that the first term of the sum is bound by the corresponding $a_1$ (as $cos(x)\leq 1$). 
+
+Let's note $a_{i,j}$ the $a_i$ of sum $s_j$.
+
+Looking at the files, we can see that 
+
+\begin{equation}
+a_{1,i+1} \approx \frac{a_{1,i}}{10}
+\label{eq:ai1ai}
+\end{equation}
+
+We can thus approximate 
+
+\begin{equation}
+s_{i+1} \approx \frac{s_{i}}{10}
+\label{eq:si1si}
+\end{equation}
+
+So if we want to bind the error, we can take $t=10$, and say that all terms of the polynomial are about the same size\footnote{note that this is not true for calendrical calculations around year 2000, with $t\approx 7$ which will thus hold slightly more precise results.}. So all the errors of the different terms will be summed.
+
+Now computing the error on the term $s_i\times t^i$. We have to come back to the error of the first basic operation of $s_i$, which is bound is given by eq.~\ref{eq:basicop}. Due to eq.~\ref{eq:si1si} and \ref{ai} we can bind $s_i$ by $10^{-i-1}$, but if we multiply it by $t^i$ with $t\approx 10$, the bound will be $10^{-1}$ and thus be the same as $s_0$, for which we have binded the error by $E_{basicop} < 2^{-2}\times 6 \times 2^{e_c-p+1}$. 
+
+To get the most pessimistic error bound, we can say that $e_c$ is its maximum: $e_c=19$.So the total error of the polynomial evaluation will be bounded by 5\times the error on one term, which means a total error bound for a vsop87 coordinate of:
+
+\begin{equation}
+E_{vsop87} < 5 \times 2^{-2}\times 6 \times 2^{e_c-p+1} < 2^{e_c-p+4} < 2^{23-p}
+\end{equation}
 
 Converting this error bound in seconds, we can compute the final results, given in Table~\ref{table:vsopfloaterror}.
 
