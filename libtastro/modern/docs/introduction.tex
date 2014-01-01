@@ -57,6 +57,68 @@ It makes sense to translate them to astronomical calculations, taking a calculat
 \label{ATP}
 \end{figure}
 
+\mysubsection{Astronomical values}
+
+\mysubsubsection{Orbital caracteristics}
+
+For future calculations, we'll need a set of orbital values which we'll present and justify here. The values we'll use for $a$ and $e$, presented in Table \cite{table:planetorbitalvalues}, come from \cite{NASA-factsheet}. % (TODO: http://nssdc.gsfc.nasa.gov/planetary/planetfact.html)
+
+\begin{table}
+\centering
+\begin{tabular}{|l|S[table-format=1.3,table-figures-exponent=1]|S[table-format=1.2,table-figures-exponent=1]|}
+\hline
+\multicolumn{1}{|c|}{\textbf{Celestial body}} & \multicolumn{1}{c|}{\textbf{$a$ (km)}} & \multicolumn{1}{c|}{\textbf{$e$}} \\\hline
+Sun (Earth) & 1.496e8 & 1.67e-2\\\hline
+Moon & 3.84e5 & 5.49e-2\\\hline
+Mercury & 5.79e7 & 2.056e-1\\\hline
+Mars & 2.279e8 & 9.35e-2\\\hline
+Venus & 1.082e8 & 6.77e-3\\\hline
+Saturn & 1.433e9 & 5.65e-2\\\hline
+Jupiter & 7.786e8 & 4.89e-2 \\\hline
+\end{tabular}
+\caption{Planet caracteristics used in the calculations}
+\label{table:planetorbitalvalues}
+\end{table}
+
+Then we need the maximum speed of celestial bodies. The first estimation of it (which we'll use) is obtained by the Kepler laws: $$\sqrt{2GM}\times \sqrt{\frac{1}{r}-\frac{1}{2a}}$$. We use $G=6.67384\times 10^{11} m^3kg^{-1}s^{-2}$\footnote{As recommended by \cite{CODATA}}, $GM_{Sun}=1.3271244\times 10^{20}m^3s^{-2}$ and $GM_{Earth}=3.986004\times 10^{14}m^3s^{-2}$ (as recommended by TODO). The maximum speed of a celestial body is thus $v_{max}=\sqrt{\frac{GM}{a}}\times \sqrt{\frac{1+e}{1-e}}$. Expressed numerically, we have:
+
+% TODO: http://maia.usno.navy.mil/NSFA/NSFA_cbe.html\#ConstGrav2009
+
+\begin{itemize}
+\item for planets, $v_{max} = \frac{364297.18}{\sqrt{a}}\times \sqrt{\frac{1+e}{1-e}}$\
+\item for the Moon, $v_{max} = \frac{631.34}{\sqrt{a}}\times \sqrt{\frac{1+e}{1-e}}$
+\end{itemize}
+
+These formulas correspond to the formulas page 238 of \cite{Meeus}, except that the latter have $a$ in astronomical unit.
+
+We will also need the shortest possible distance from Earth to another celestial body. For the Sun and Moon this is straightforward; for other planets we obtain a minimal bound by substracting the sun distance of the Earth at Aphelion and of the planet at Perihelion (for outer planets, or the opposite for inner planets). This gives the following formulas:
+
+\begin{itemize}
+\item for the Sun, $r_{min}=a_{Earth}(1-e_{Earth})$
+\item for the Moon, $r_{min}=a_{Moon}(1-e_{Moon})$
+\item for inner planets, $r_{min}=a_{Earth}(1-e_{Earth}) - a_{p}(1+e_{p})$
+\item for outer planets, $r_{min}=a_{p}(1-e_{p}) - a_{Earth}(1+e_{Earth})$
+\end{itemize}
+
+Note that these formulas are not precise as they rely simply on a very theoretical motion, For planets, we'll use the data given in \cite{NASA-factsheet} which are more precise. We can now compute the values of Table \cite{table:planetvalues}.
+
+\begin{table}
+\centering
+\begin{tabular}{|l|S[table-format=1.2,table-figures-exponent=1]|S[table-format=2.2,table-figures-exponent=0]|}
+\hline
+\multicolumn{1}{|c|}{\textbf{Celestial body}} & \multicolumn{1}{c|}{\textbf{$r_{min}$ (km)}} & \multicolumn{1}{c|}{\textbf{$v_{max}$ (km/s)}} \\\hline
+Sun & 1.47e8 & 30.29\\\hline % mean: 150km
+Moon & 3.63e5 & 1.08\\\hline % mean: 385kkm ; the Internet often gives the value 3.56, never seen a source about this
+Mercury & 7.7e7 & 58.98\\\hline % mean: 100Mkm
+Mars & 5.5e7 & 26.5\\\hline % mean: 225Mkm
+Venus & 3.8e7 & 35.26\\\hline % mean: 150Mkm
+Saturn & 1.2e9 & 10.18\\\hline % mean: 1450Mkm
+Jupiter & 5.9e11 & 13.71\\\hline % mean: 770kMkm
+\end{tabular}
+\caption{Planet caracteristics used in the calculations}
+\label{table:planetvalues}
+\end{table}
+
 \mysection{Thanks}
 
 I would like to thank a lot people without who this paper would never have been possible.

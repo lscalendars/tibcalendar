@@ -38,13 +38,13 @@ A first thing can be to determine $v_{obs}=v_E+v_S$. If we consider the observer
 v_E = \frac{2\pi r_E}{86400} = 0.46km/s
 \end{equation}
 
-Now for $v_S$, we easily major it by $v_S<110000km/h=3.96\time 10^8km/s$\footnote{reference missing}. For planets, we can thus neglect $v_E$ and major $v_{obs}$:
+Table~\cite{table:planetvalues} gives $v_S < 30.29 km/s$. For planets, we can thus neglect $v_E$ and major $v_{obs}$:
 
 \begin{equation}
-v_{obs} < 4\times 10^8km/s
+v_{obs} < 30.29 km/s
 \end{equation}
 
-Now, the maximum error angle by second is the difference between the angle and the angle one second later. It has its maximum when the first angle is 0, so we just need to calculate the angle after one second. This angle corresponds to Fig~\ref{maxangularerror}.
+Now, the maximum error angle by second is the difference between the angle and the angle one second later. It has its maximum when the first angle is 0, so we just need to calculate the angle after one second. For planets, this angle corresponds to Fig~\ref{maxangularerror}.
 
 \begin{figure}
 \centering 
@@ -60,29 +60,29 @@ Now, the maximum error angle by second is the difference between the angle and t
 \caption{Maximum angular error for short times}\label{maxangularerror}
 \end{figure}
 
-This figure can be easily simplified in a simple triangle and we can deduce 
+This figure can be easily simplified in a simple triangle and we can deduce $\Theta_{max}$ for planets:
 
 \begin{equation}
-\Theta_{max}=atan(\frac{v_{obs}+v_{cb}}{r_{min}})
+\Theta_{max}=atan(\frac{v_{obs}-v_{cb}}{r_{min}})
 \end{equation}
 
-The values used in the following calculations are the ones given in Table~\ref{table:planetvalues}\footnote{These values come from random Internet sites consistent with each other, but if someone has a more reliable source, I'd be glad to use it!}.
+For Sun and Moon, the reference is not moving, so we can simply take the same value with $v_{cb}=0$. Table~\cite{table:planetvalues} gives $r_{min}$ and $v_{cb_{max}}$, we can thus deduce Table~\cite{table:thetamaxtime}. Note that the values for the planets are over-pessimistic and could be refined by taking the account that all planets rotate in the same direction. We don't need to do this because the biggest error, which we'll take as reference, is on the Moon which has a quite accurate value.
 
 \begin{table}
 \centering
-\begin{tabular}{|l|S[table-format=1.2,table-figures-exponent = 1|S[table-format=1.1,table-figures-exponent = 1|}
+\begin{tabular}{|l|S[table-format=1.1,table-figures-exponent=1]|}
 \hline
-\multicolumn{1}{|c|}{\textbf{Celestial body}} & \multicolumn{1}{c|}{\textbf{$r_{min}$ (km)}} & \multicolumn{1}{c|}{\textbf{$v_{cb}$ (km/s)}} \\\hline
-Sun & 1.47e8 & 1.0e8\\\hline % min: 147Mkm, mean: 150km
-Moon & 3.56e5 & 1706\\\hline % min: 360kkm, mean: 385kkm
-Mercury & 7.7e7 & 7\\\hline %  min: 77 Mkm, mean: 100Mkm
-Mars & 5.5e7 & 3\\\hline % min: 54.6Mm, mean: 225Mkm
-Venus & 3.8e7 & 4\\\hline % min: 38Mkm, mean: 150Mkm
-Saturn & 1.2e9 & 453\\\hline % min  1200Mkm, mean: 1450Mkm
-Jupiter & 6.3e11 & 8e-4 \\\hline % min: 629kMkm, mean: 770kMkm
+\multicolumn{1}{|c|}{\textbf{Celestial body}} & \multicolumn{1}{c|}{\textbf{$\Theta_{max}$ (s)}} \\\hline
+Sun & 4.3e-2\\\hline
+Moon & 6.1e-1\\\hline
+Mercury & 2.4e-1\\\hline
+Mars & 2.1e-1\\\hline
+Venus & 3.6e-1\\\hline
+Saturn & 6.9e-3\\\hline
+Jupiter & 1.5e-5\\\hline
 \end{tabular}
-\caption{Planet caracteristics used in the calculations}
-\label{table:planetvalues}
+\caption{Maximum angular error for a time error of 1s}
+\label{table:thetamaxtime}
 \end{table}
 
 \mysection{Astronomical timescales}
