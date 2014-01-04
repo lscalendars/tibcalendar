@@ -4,7 +4,9 @@
 
 \mysubsection{The tibetan calendar}
 
-A typical Tibetan almanach contains angle data written in the following form: $x;y;z$ where $x$ is the lunar mansion (27\textsuperscript{th} of circle), $y$ is in nâdis (60\textsuperscript{th} of lunar mansion) and $z$ in pâlas (60th of nâdis). It is almost the same as Western angle notation, but dividing the circle first in 27, not in 360. So a first approach would say that computations must be accurate enough to get these numbers right. In order to get these right, the precision must be at least $0.5 pâla = 6.67 s$\footnote{$1 pâla$ being a $27\times60\times60^{th}$ of circle and $1s$ being a $360\times60\times60^{th}$ of circle, we have $1 pâla = \frac{360}{27} s = 13.33 s$}.
+\mysubsubsection{Angular scales}
+
+A typical Tibetan almanach contains angle data written in the following form $x;y;z$ where $x$ is the lunar mansion (27\textsuperscript{th} of circle), $y$ is in nâdis (60\textsuperscript{th} of lunar mansion) and $z$ in pâlas (60\textsuperscript{th} of nâdi). It is almost the same as Western angle notation, but dividing the circle first in 27, not in 360. So a first approach would say that computations must be accurate enough to get these numbers right. In order to get these right, the precision must be at least $0.5 pâla = 6.67 s$\footnote{$1 pâla$ being a $27\times60\times60^{th}$ of circle and $1s$ being a $360\times60\times60^{th}$ of circle, we have $1 pâla = \frac{360}{27} s = 13.33 s$}.
 
 Internally, calculations are made with more precision, adding two more sets of digits, $x;y;z$ become $x;y;z;z_2;z_3$ where $z_2$ is in shvâsa (6\textsuperscript{th} of pâla) and $z_3$ in bhâga, a fraction of shvâsa that varies according to calculation type. They are mostly:
 \begin{itemize}
@@ -12,5 +14,10 @@ Internally, calculations are made with more precision, adding two more sets of d
 \item 149209, used for planets, corresponding to a precision of \num{1.49e-5}\,s
 \end{itemize}
 
+\mysubsubsection{Time scale}
+
+Times is expressed almost in the same way as angles, in the form $x;y;z$ where $x$ is the day of the week (0 is saturday), $y$ is in nâdis (60\textsuperscript{th} of day, 24 minutes) and $z$ in pâlas (60th of nâdi, 24s).
+
+Subunits used internally are shvâsa (6\textsuperscript{th} of pâla, 4s) and the same kind of fraction of shvâsa as angle scales.
 
 \mysubsection{Other calendars}

@@ -47,14 +47,14 @@ v_{obs} < 30.29 km/s
 Now, the maximum error angle by second is the difference between the angle and the angle one second later. It has its maximum when the first angle is 0, so we just need to calculate the angle after one second. For planets, this angle corresponds to Fig~\ref{maxangularerror}.
 
 \begin{figure}
-\centering 
+\centering
 \begin{tikzpicture}[scale=2]
-\draw [<-] (-2,0) node[anchor=north] {$P_{obs}(t_1)$} -- node[anchor=north] {$\vec{v}_{obs}$} (0,0) node[anchor=north] {$P_{obs}(t_0)$} -- %node[northwest=2mm] {$r_{min}$} 
+\draw [<-] (-2,0) node[anchor=north] {$P_{obs}(t_1)$} -- node[anchor=north] {$\vec{v}_{obs}$} (0,0) node[anchor=north] {$P_{obs}(t_0)$} -- %node[northwest=2mm] {$r_{min}$}
 (0,2) node[anchor=south] {$P_{cb}(t_0)$};
 \node [anchor=center] at (-0.25,1.35) {$r_{min}$};
 \draw [->] (0,2) -- node[anchor=south] {$\vec{v}_{cb}$} (2,2) node[anchor=south] {$P_{cb}(t_1)$};
 \draw [gray] (2,2) -- (-2,0);
-\draw (-1.3,0) arc (0:26.56:0.7);
+\draw (-1.3,0) arc (0:26.56:0.707);
 \node [anchor=center] at (-1,0.2) {$\Theta_{max}$};
 \end{tikzpicture}
 \caption{Maximum angular error for short times}\label{maxangularerror}
@@ -79,7 +79,7 @@ Mercury & 2.4e-1\\\hline
 Mars & 2.1e-1\\\hline
 Venus & 3.6e-1\\\hline
 Saturn & 6.9e-3\\\hline
-Jupiter & 1.06e-1\\\hline
+Jupiter & 1.1e-1\\\hline
 \end{tabular}
 \caption{Maximum angular error for a time error of 1s}
 \label{table:thetamaxtime}
@@ -89,13 +89,49 @@ Jupiter & 1.06e-1\\\hline
 
 In this section we study the impact of an angular error on a time determination. The typical case is the computation of the time of full moon (or any moon phase). This is done by computing the time at which the angle of the sun and the angle of the moon are separated by $\pi$. But both angle computations will contain errors, what we will do here is to bind the effect of this error on the computed time.
 
-We won't consider planets here, as they never intervene in this kind of computations, but we'll consider the phase of the moon.
+We won't consider planets here, as they never intervene in this kind of computations, but we'll consider the phase of the moon. This also simplifies the calculations as we can consider $v_{obs}=0$.
 
-Basically, for small angular errors $\Theta$ (which we'll consider here), the error on time ($\Delta_T$) will be:
+For a small angular error $\Theta$, let's consider $d_{cb}$ the distance crossed by the celestial body for to this angle. If we note $\Delta t$ the time error corresponding to this angle, we have $d_{cb}=v_{cb}\times \Delta t$. Let's consider Fig~\ref{distanceerror}.
 
-%\begin{equation}
-%\Delta_T = 
-%\end{equation}
+\begin{figure}
+\centering 
+\begin{tikzpicture}[scale=2]
+\draw (0,0) node[anchor=north] {$P_{obs}$} -- (0,2) node[anchor=south] {$P_{cb}(t_0)$};
+\node [anchor=center] at (-0.25,1) {$r$};
+\draw (0,2) -- node[anchor=south] {$d_{cb}$} (2,2) node[anchor=south] {$P_{cb}(t_1)$};
+\draw (2,2) -- (0,0);
+\draw (0.5,0.5) arc (45:90:0.707);
+\node [anchor=center] at (0.35,0.8) {$\Theta$};
+\end{tikzpicture}
+\caption{Distance error for angular error $\Theta$}\label{distanceerror}
+\end{figure}
+
+We have the relationship
+
+\begin{equation}
+tan(\Theta) = \frac{d_{cb}}{r}=\frac{v_{cb}\times \Delta t}{r}
+\end{equation}
+
+From which we deduce:
+
+\begin{equation}
+\Delta t = \frac{atan(\Theta)\times r}{v_{cb}} < \frac{atan(\Theta)\times r_{max}}{v_{cb_{min}}}
+\end{equation}
+
+So, considering that the error for the phase of the Moon is the error for the Moon plus the error for the Sun, we can compute Table~\ref{table:maxtimeerror}.
+
+\begin{table}
+\centering
+\begin{tabular}{|l|S[table-format=2.2,table-figures-exponent=0]|}
+\hline
+\multicolumn{1}{|c|}{\textbf{Angular error for}} & \multicolumn{1}{c|}{\textbf{$\Delta t_{max}$} (s)} \\\hline
+Sun & 25.15 \\\hline
+Moon & 2.06 \\\hline
+Phase of the Moon & 27.21 \\\hline
+\end{tabular}
+\caption{Maximum error on time for an angular error $\Theta$ = 1s} % 1s=0.0000048481368 rad, atan(1s)=0.0000048481368
+\label{table:maxtimeerror}
+\end{table}
 
 \mysection{Astronomical timescales}
 
