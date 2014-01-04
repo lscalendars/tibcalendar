@@ -100,20 +100,20 @@ We will also need the shortest possible distance from Earth to another celestial
 \item for outer planets, $r_{min}=a_{p}(1-e_{p}) - a_{Earth}(1+e_{Earth})$
 \end{itemize}
 
-Note that these formulas are not precise as they rely simply on a very theoretical motion, For planets, we'll use the data given in \cite{NASA-factsheet} which are more precise. We can now compute the values of Table \cite{table:planetvalues}.
+Note that these formulas are not precise as they rely simply on a very theoretical motion, For planets, we'll use the data given in \cite{NASA-factsheet} which are more precise. We can now compute the values of Table \cite{table:planetvalues}. We do the same for maximum distance $r_{max}$.
 
 \begin{table}
 \centering
-\begin{tabular}{|l|S[table-format=1.2,table-figures-exponent=1]|S[table-format=2.2,table-figures-exponent=0]|S[table-format=2.2,table-figures-exponent=0]|}
+\begin{tabular}{|l|S[table-format=1.2,table-figures-exponent=1]|S[table-format=1.2,table-figures-exponent=1]|S[table-format=2.2,table-figures-exponent=0]|S[table-format=2.2,table-figures-exponent=0]|}
 \hline
-\multicolumn{1}{|c|}{\textbf{Celestial body}} & \multicolumn{1}{c|}{\textbf{$r_{min}$} (km)} & \multicolumn{1}{c|}{\textbf{$v_{max}$} (km/s)} & \multicolumn{1}{c|}{\textbf{$v_{min}$} (km/s)} \\\hline
-Sun & 1.47e8 & 30.29 & 29.29\\\hline % mean: 150km
-Moon & 3.63e5 & 1.08 & 0.96\\\hline % mean: 385kkm ; the Internet often gives the value 3.56, never seen a source about this
-Mercury & 7.7e7 & 58.98 & 38.86\\\hline % mean: 100Mkm
-Mars & 5.5e7 & 26.5 & 21.97\\\hline % mean: 225Mkm
-Venus & 3.8e7 & 35.26 & 34.78\\\hline % mean: 150Mkm
-Saturn & 1.2e9 & 10.18 & 9.09\\\hline % mean: 1450Mkm
-Jupiter & 5.9e11 & 13.71 & 12.43\\\hline % mean: 770kMkm
+\multicolumn{1}{|c|}{\textbf{Celestial body}} & \multicolumn{1}{c|}{\textbf{$r_{min}$} (km)} & \multicolumn{1}{c|}{\textbf{$r_{max}$} (km)} & \multicolumn{1}{c|}{\textbf{$v_{max}$} (km/s)} & \multicolumn{1}{c|}{\textbf{$v_{min}$} (km/s)} \\\hline
+Sun & 1.47e8 & 1.52e8 & 30.29 & 29.29\\\hline % mean: 150km
+Moon & 3.57e5 & 4.07e5 & 1.08 & 0.96\\\hline % mean: 385kkm
+Mercury & 7.7e7 & 221.9 & 58.98 & 38.86\\\hline % mean: 100Mkm
+Mars & 5.5e7 & 4.01e8 & 26.5 & 21.97\\\hline % mean: 225Mkm
+Venus & 3.8e7 & 2.61e8 & 35.26 & 34.78\\\hline % mean: 150Mkm
+Saturn & 1.2e9 & 1.66e9 & 10.18 & 9.09\\\hline % mean: 1450Mkm
+Jupiter & 5.9e8 & 9.68e8 & 13.71 & 12.43\\\hline % mean: 770kMkm
 \end{tabular}
 \caption{Planet caracteristics used in the calculations}
 \label{table:planetvalues}

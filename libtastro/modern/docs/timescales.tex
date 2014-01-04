@@ -74,16 +74,28 @@ For Sun and Moon, the reference is not moving, so we can simply take the same va
 \hline
 \multicolumn{1}{|c|}{\textbf{Celestial body}} & \multicolumn{1}{c|}{\textbf{$\Theta_{max}$ (s)}} \\\hline
 Sun & 4.3e-2\\\hline
-Moon & 6.1e-1\\\hline
+Moon & 6.2e-1\\\hline
 Mercury & 2.4e-1\\\hline
 Mars & 2.1e-1\\\hline
 Venus & 3.6e-1\\\hline
 Saturn & 6.9e-3\\\hline
-Jupiter & 1.5e-5\\\hline
+Jupiter & 1.06e-1\\\hline
 \end{tabular}
 \caption{Maximum angular error for a time error of 1s}
 \label{table:thetamaxtime}
 \end{table}
+
+\mysubsection{Impact of angular error on time}
+
+In this section we study the impact of an angular error on a time determination. The typical case is the computation of the time of full moon (or any moon phase). This is done by computing the time at which the angle of the sun and the angle of the moon are separated by $\pi$. But both angle computations will contain errors, what we will do here is to bind the effect of this error on the computed time.
+
+We won't consider planets here, as they never intervene in this kind of computations, but we'll consider the phase of the moon.
+
+Basically, for small angular errors $\Theta$ (which we'll consider here), the error on time ($\Delta_T$) will be:
+
+%\begin{equation}
+%\Delta_T = 
+%\end{equation}
 
 \mysection{Astronomical timescales}
 
