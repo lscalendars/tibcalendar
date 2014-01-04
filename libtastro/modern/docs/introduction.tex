@@ -67,7 +67,7 @@ For future calculations, we'll need a set of orbital values which we'll present 
 \centering
 \begin{tabular}{|l|S[table-format=1.3,table-figures-exponent=1]|S[table-format=1.2,table-figures-exponent=1]|}
 \hline
-\multicolumn{1}{|c|}{\textbf{Celestial body}} & \multicolumn{1}{c|}{\textbf{$a$ (km)}} & \multicolumn{1}{c|}{\textbf{$e$}} \\\hline
+\multicolumn{1}{|c|}{\textbf{Celestial body}} & \multicolumn{1}{c|}{\textbf{$a$} (km)} & \multicolumn{1}{c|}{\textbf{$e$}} \\\hline
 Sun (Earth) & 1.496e8 & 1.67e-2\\\hline
 Moon & 3.84e5 & 5.49e-2\\\hline
 Mercury & 5.79e7 & 2.056e-1\\\hline
@@ -80,16 +80,16 @@ Jupiter & 7.786e8 & 4.89e-2 \\\hline
 \label{table:planetorbitalvalues}
 \end{table}
 
-Then we need the maximum speed of celestial bodies. The first estimation of it (which we'll use) is obtained by the Kepler laws: $$\sqrt{2GM}\times \sqrt{\frac{1}{r}-\frac{1}{2a}}$$. We use $G=6.67384\times 10^{11} m^3kg^{-1}s^{-2}$\footnote{As recommended by \cite{CODATA}}, $GM_{Sun}=1.3271244\times 10^{20}m^3s^{-2}$ and $GM_{Earth}=3.986004\times 10^{14}m^3s^{-2}$ (as recommended by TODO). The maximum speed of a celestial body is thus $v_{max}=\sqrt{\frac{GM}{a}}\times \sqrt{\frac{1+e}{1-e}}$. Expressed numerically, we have:
+Then we need the maximum speed of celestial bodies. The first estimation of it (which we'll use) is obtained by the Kepler laws: $$\sqrt{2GM}\times \sqrt{\frac{1}{r}-\frac{1}{2a}}$$. We use $G=6.67384\times 10^{2} km^3kg^{-1}s^{-2}$\footnote{As recommended by \cite{CODATA}}, $GM_{Sun}=1.3271244\times 10^{11} km^3s^{-2}$ and $GM_{Earth}=3.986004\times 10^{5}km^3s^{-2}$ (as recommended by TODO). The maximum speed of a celestial body is thus $v_{max}=\sqrt{\frac{GM}{a}}\times \sqrt{\frac{1+e}{1-e}}$. Expressed numerically, we have:
 
 % TODO: http://maia.usno.navy.mil/NSFA/NSFA_cbe.html\#ConstGrav2009
 
 \begin{itemize}
-\item for planets, $v_{max} = \frac{364297.18}{\sqrt{a}}\times \sqrt{\frac{1+e}{1-e}}$\
-\item for the Moon, $v_{max} = \frac{631.34}{\sqrt{a}}\times \sqrt{\frac{1+e}{1-e}}$
+\item for planets, $v_{max} \approx{} \frac{364297.18}{\sqrt{a}}\times \sqrt{\frac{1+e}{1-e}}$\
+\item for the Moon, $v_{max} \approx{} \frac{631.34}{\sqrt{a}}\times \sqrt{\frac{1+e}{1-e}}$
 \end{itemize}
 
-These formulas correspond to the formulas page 238 of \cite{Meeus}, except that the latter have $a$ in astronomical unit.
+These formulas correspond to the formulas page 238 of \cite{Meeus}, except that the latter have $a$ in astronomical unit. A few calculations will require minimum speed of the plantets, for it we simply take the last formulas, replacing $e$ by $-e$.
 
 We will also need the shortest possible distance from Earth to another celestial body. For the Sun and Moon this is straightforward; for other planets we obtain a minimal bound by substracting the sun distance of the Earth at Aphelion and of the planet at Perihelion (for outer planets, or the opposite for inner planets). This gives the following formulas:
 
@@ -104,16 +104,16 @@ Note that these formulas are not precise as they rely simply on a very theoretic
 
 \begin{table}
 \centering
-\begin{tabular}{|l|S[table-format=1.2,table-figures-exponent=1]|S[table-format=2.2,table-figures-exponent=0]|}
+\begin{tabular}{|l|S[table-format=1.2,table-figures-exponent=1]|S[table-format=2.2,table-figures-exponent=0]|S[table-format=2.2,table-figures-exponent=0]|}
 \hline
-\multicolumn{1}{|c|}{\textbf{Celestial body}} & \multicolumn{1}{c|}{\textbf{$r_{min}$ (km)}} & \multicolumn{1}{c|}{\textbf{$v_{max}$ (km/s)}} \\\hline
-Sun & 1.47e8 & 30.29\\\hline % mean: 150km
-Moon & 3.63e5 & 1.08\\\hline % mean: 385kkm ; the Internet often gives the value 3.56, never seen a source about this
-Mercury & 7.7e7 & 58.98\\\hline % mean: 100Mkm
-Mars & 5.5e7 & 26.5\\\hline % mean: 225Mkm
-Venus & 3.8e7 & 35.26\\\hline % mean: 150Mkm
-Saturn & 1.2e9 & 10.18\\\hline % mean: 1450Mkm
-Jupiter & 5.9e11 & 13.71\\\hline % mean: 770kMkm
+\multicolumn{1}{|c|}{\textbf{Celestial body}} & \multicolumn{1}{c|}{\textbf{$r_{min}$} (km)} & \multicolumn{1}{c|}{\textbf{$v_{max}$} (km/s)} & \multicolumn{1}{c|}{\textbf{$v_{min}$} (km/s)} \\\hline
+Sun & 1.47e8 & 30.29 & 29.29\\\hline % mean: 150km
+Moon & 3.63e5 & 1.08 & 0.96\\\hline % mean: 385kkm ; the Internet often gives the value 3.56, never seen a source about this
+Mercury & 7.7e7 & 58.98 & 38.86\\\hline % mean: 100Mkm
+Mars & 5.5e7 & 26.5 & 21.97\\\hline % mean: 225Mkm
+Venus & 3.8e7 & 35.26 & 34.78\\\hline % mean: 150Mkm
+Saturn & 1.2e9 & 10.18 & 9.09\\\hline % mean: 1450Mkm
+Jupiter & 5.9e11 & 13.71 & 12.43\\\hline % mean: 770kMkm
 \end{tabular}
 \caption{Planet caracteristics used in the calculations}
 \label{table:planetvalues}
